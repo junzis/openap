@@ -34,11 +34,11 @@ engine:
   type: turbofan
   mount: wing
   number: 2
-  default: Trent 1000-E2
+  default: Trent 1000-C2
   options:
     - GEnx-1B70
     - GEnx-1B67
     - GEnx-1B64
     - Trent 1000-E2
     - Trent 1000-C2
-    - Trent 1000-A2
+    - Trent 1000-A1

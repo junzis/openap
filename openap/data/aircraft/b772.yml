@@ -34,8 +34,8 @@ engine:
   type: turbofan
   mount: wing
   number: 2
-  default: PW4090
+  default: Trent 895
   options:
     - GE90-94B
-    - PW4090
+    - PW4077
     - Trent 895

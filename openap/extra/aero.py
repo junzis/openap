@@ -23,6 +23,7 @@ Speed conversion at altitude h[m] in ISA:
 """
 
 import numpy as np
+import casadi as ca
 
 """Aero and Geo Constants """
 kts = 0.514444  # knot -> m/s
@@ -56,11 +57,19 @@ def atmos(h):
             Air pressure (Pa), density (kg/m3), and temperature (K).
 
     """
-    T = np.maximum(288.15 - 0.0065 * h, 216.65)
+    
+    T = ca.fmax(288.15 - 0.0065 * h, 216.65)   
     rhotrop = 1.225 * (T / 288.15) ** 4.256848030018761
-    dhstrat = np.maximum(0.0, h - 11000.0)
+    dhstrat = ca.fmax(0.0, h - 11000.0)
     rho = rhotrop * np.exp(-dhstrat / 6341.552161)
     p = rho * R * T
+
+    # T = np.maximum(288.15 - 0.0065 * h, 216.65)
+    # rhotrop = 1.225 * (T / 288.15) ** 4.256848030018761
+    # # dhstrat = np.maximum(0.0, h - 11000.0)
+    # dhstrat = fmax(0.0, h - 11000.0)
+    # rho = rhotrop * np.exp(-dhstrat / 6341.552161)
+    # p = rho * R * T
     return p, rho, T
 
 
@@ -107,6 +116,7 @@ def density(h):
 
 
 def vsound(h):
+    
     """Compute speed of sound at a given altitude.
 
     Args:
@@ -119,6 +129,57 @@ def vsound(h):
     T = temperature(h)
     a = np.sqrt(gamma * R * T)
     return a
+
+def h_ISA(p):
+    """Compute ISA altitude for a given pressure.
+
+    Args:
+        p (float or ndarray): Pressure (in Pa).
+
+    Returns:
+        float or ndarray: altitude (m).
+
+    """
+    # Lower altitude regions
+    if p >= 22630:
+        T = T0 * (p0/p)**((-0.0065*R)/g0)
+        h = (T-T0)/-0.0065
+    elif p<22630 and p>=5470:
+        T1 = T0-0.0065*(11000)
+        p1 = 22630
+        h = -R*T1/g0*ca.log(p/p1)+11000
+    else: 
+        raise ValueError("The given pressure is too low, you are above 20 kilometers altitude")
+    
+    return h
+
+def latlon(lat1, lon1, d, brg, h=0):
+    """Get lat/lon given current point, distance and bearing
+
+    Args:
+        lat1 (float or ndarray): Starting latitude (in degrees).
+        lon1 (float or ndarray): Starting longitude (in degrees).
+        d (float or ndarray): distance from point 1 (meters)
+        brg (float or ndarray): bearing at point 1 (in degrees)
+        h (float or ndarray): Altitude (in meters). Defaults to 0.
+
+    Returns:
+        lat2: Point latitude.
+        lon2: Point longitude
+
+    """
+    # convert decimal degrees to radians
+    lat1 = np.radians(lat1)
+    lon1 = np.radians(lon1)
+    brg = np.radians(brg)
+
+    # haversine formula
+    lat2 = np.arcsin(np.sin(lat1)*np.cos(d/(r_earth+h)) + np.cos(lat1)*np.sin(d/(r_earth+h))*np.cos(brg))
+    lon2 = lon1 + np.arctan2(np.sin(brg)*np.sin(d/(r_earth+h))*np.cos(lat1), np.cos(d/(r_earth+h))-np.sin(lat1)*np.sin(lat2))
+    lat2 = np.degrees(lat2)
+    lon2 = np.degrees(lon2)
+    return lat2, lon2
+
 
 
 def distance(lat1, lon1, lat2, lon2, h=0):

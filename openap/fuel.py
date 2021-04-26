@@ -38,7 +38,7 @@ class FuelFlow(object):
 
         self.fuel_flow_model = lambda x: c3 * x ** 3 + c2 * x ** 2 + c1 * x
 
-    @ndarrayconvert
+    # @ndarrayconvert
     def at_thrust(self, acthr, alt=0):
         """Compute the fuel flow at a given total thrust.
 
@@ -63,7 +63,7 @@ class FuelFlow(object):
 
         return fuelflow
 
-    @ndarrayconvert
+    # @ndarrayconvert
     def takeoff(self, tas, alt=None, throttle=1):
         """Compute the fuel flow at takeoff.
 
@@ -85,7 +85,7 @@ class FuelFlow(object):
         fuelflow = throttle * self.at_thrust(Tmax)
         return fuelflow
 
-    @ndarrayconvert
+    # @ndarrayconvert
     def enroute(self, mass, tas, alt, path_angle=0):
         """Compute the fuel flow during climb, cruise, or descent.
 
@@ -114,9 +114,9 @@ class FuelFlow(object):
 
         fuelflow = self.at_thrust(T, alt)
 
-        # do not return value outside performance boundary, with a margin of 20%
-        T_max = self.thrust.climb(tas=0, alt=alt, roc=0)
-        fuelflow = np.where(T > 1.20 * T_max, np.nan, fuelflow)
+        # do not return value outside performance boundary, with a margin of 15%
+        T_max = self.thrust.climb(tas=tas, alt=alt, roc=0)
+        fuelflow = np.where(T > 1.15 * T_max, np.nan, fuelflow)
 
         return fuelflow
 
