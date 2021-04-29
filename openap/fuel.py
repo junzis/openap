@@ -7,7 +7,7 @@ from openap.extra import ndarrayconvert
 
 
 class FuelFlow(object):
-    """Fuel flow model based on ICAO emmision databank."""
+    """Fuel flow model based on ICAO emission databank."""
 
     def __init__(self, ac, eng=None):
         """Initialize FuelFlow object.

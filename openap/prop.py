@@ -40,7 +40,7 @@ def aircraft(ac):
     files = glob.glob(dir_aircraft + ac + ".yml")
 
     if len(files) == 0:
-        raise RuntimeError("Aircraft data not found.")
+        raise RuntimeError(f"Data for aircraft {ac} not found.")
 
     f = files[0]
     acdict = yaml.safe_load(open(f))
@@ -130,6 +130,6 @@ def engine(eng):
 
         seleng["fuel_ch"] = fuel_ch
     else:
-        raise RuntimeError("Engine data not found.")
+        raise RuntimeError(f"Data for engine {eng} not found.")
 
     return seleng

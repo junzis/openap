@@ -1,4 +1,4 @@
-aircraft: Boeing 777-200ER
+aircraft: Boeing 777-200/200ER 
 
 fuselage:
   length:   63.73
@@ -36,6 +36,9 @@ engine:
   number: 2
   default: Trent 895
   options:
+    - GE90-77B
+    - PW4077
+    - Trent 877
     - GE90-94B
     - PW4077
     - Trent 895

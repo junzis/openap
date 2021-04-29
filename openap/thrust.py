@@ -40,7 +40,7 @@ class Thrust(object):
         elif type(aircraft['engine']['options']) == list:
             eng_options = list(aircraft['engine']['options'])
         if engine['name'] not in eng_options:
-            raise RuntimeError('Engine and aircraft mismatch. Avaiable engines are %s' % eng_options)
+            raise RuntimeError('Engine {eng} and aircraft {ac} mismatch. Available engines for {ac} are {eng_options}')
 
         self.cruise_alt = aircraft['cruise']['height'] / aero.ft
         # self.cruise_alt = 30000

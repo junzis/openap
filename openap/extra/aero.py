@@ -1,4 +1,4 @@
-"""Aero library inspried by @ProfHoekstra/bluesky.
+"""Aero library inspired by @ProfHoekstra/bluesky.
 
 Functions for aeronautics in this module
     - physical quantities always in SI units
@@ -9,15 +9,15 @@ International Standard Atmosphere
     a = vsound(h)         # speed of sound [m/s] as function of h[m]
     p = pressure(h)       # calls atmos but retruns only pressure [Pa]
     T = temperature(h)    # calculates temperature [K]
-    rho = density(h)      # calls atmos but retruns only density [kg/m3]
+    rho = density(h)      # calls atmos but returns only density [kg/m3]
 
 Speed conversion at altitude h[m] in ISA:
     mach = tas2mach(v_tas,h)    # true airspeed (v_tas) to mach number conversion
     v_tas = mach2tas(mach,h)    # true airspeed (v_tas) to mach number conversion
-    v_tas = eas2tas(v_eas,h)     # equivalent airspeed to true airspeed, h in [m]
-    v_eas = tas2eas(v_tas,h)     # true airspeed to equivent airspeed, h in [m]
-    v_tas = cas2tas(v_cas,h)     # v_cas  to v_tas conversion both m/s, h in [m]
-    v_cas = tas2cas(v_tas,h)     # v_tas to v_cas conversion both m/s, h in [m]
+    v_tas = eas2tas(v_eas,h)    # equivalent airspeed to true airspeed, h in [m]
+    v_eas = tas2eas(v_tas,h)    # true airspeed to equivent airspeed, h in [m]
+    v_tas = cas2tas(v_cas,h)    # v_cas  to v_tas conversion both m/s, h in [m]
+    v_cas = tas2cas(v_tas,h)    # v_tas to v_cas conversion both m/s, h in [m]
     v_cas = mach2cas(mach,h)    # mach to v_cas conversion v_cas in m/s, h in [m]
     mach   = cas2mach(v_cas,h)  # v_cas to mach copnversion v_cas in m/s, h in [m]
 """
@@ -367,7 +367,7 @@ def cas2mach(v_cas, h):
 
 
 def crossover_alt(v_cas, mach):
-    """Conver the crossover altitude given constant CAS and Mach.
+    """Convert the crossover altitude given constant CAS and Mach.
 
     Args:
         v_cas (float or ndarray): Calibrated airspeed (m/s).

@@ -80,8 +80,8 @@ class Generator(object):
 
         Args:
             **dt (int): Time step in seconds.
-            **cas_const_cl (int): Constaant CAS for climb (kt).
-            **mach_const_cl (float): Constaant Mach for climb (-).
+            **cas_const_cl (int): Constant CAS for climb (kt).
+            **mach_const_cl (float): Constant Mach for climb (-).
             **alt_cr (int): Target cruise altitude (ft).
             **random (bool): Generate trajectory with random paramerters.
 
@@ -163,7 +163,7 @@ class Generator(object):
         h_const_mach = aero.crossover_alt(vcas_const, mach_const)
         if h_const_mach > h_cr:
             print(
-                "Warining: const mach crossover altitude higher than cruise altitude, altitude clipped."
+                "Warning: const mach crossover altitude higher than cruise altitude, altitude clipped."
             )
 
         data = []
@@ -228,6 +228,8 @@ class Generator(object):
             "seg": data[:, 5],
             "cas_const_cl": cas_const,
             "mach_const_cl": mach_const,
+            "h_const_cas_start": h_const_cas,
+            "h_const_mach_start": h_const_mach,
             "alt_cr": alt_cr,  # alt_cr, ft
         }
 
@@ -238,8 +240,8 @@ class Generator(object):
 
         Args:
             **dt (int): Time step in seconds.
-            **cas_const_de (int): Constaant CAS for climb (kt).
-            **mach_const_de (float): Constaant Mach for climb (-).
+            **cas_const_de (int): Constant CAS for climb (kt).
+            **mach_const_de (float): Constant Mach for climb (-).
             **alt_cr (int): Target cruise altitude (ft).
             **random (bool): Generate trajectory with random paramerters.
 
@@ -249,6 +251,7 @@ class Generator(object):
         """
         dt = kwargs.get("dt", 1)
         random = kwargs.get("random", False)
+        withcr = kwargs.get("withcr", True)
 
         a_lnd = self.wrap.landing_acceleration()["default"]
         v_app = self.wrap.finalapp_vcas()["default"]
@@ -318,13 +321,13 @@ class Generator(object):
         h_const_mach = aero.crossover_alt(vcas_const, mach_const)
         if h_const_mach > h_cr:
             print(
-                "Warining: const mach crossover altitude higher than cruise altitude, altitude clipped."
+                "Warning: const mach crossover altitude higher than cruise altitude, altitude clipped."
             )
 
         data = []
 
         # intitial conditions
-        a = -0.5
+        a = -0.2
         t = 0
         s = 0
         h = h_cr
@@ -338,7 +341,7 @@ class Generator(object):
             s = s + v * dt
             h = h + vs * dt
 
-            if t < 60:
+            if t < 60 and withcr:
                 v = aero.mach2tas(mach_const, h)
                 vs = 0
                 seg = "CR"
@@ -381,6 +384,12 @@ class Generator(object):
             "cas_const_de": cas_const,
             "vcas_const_de": vcas_const,
             "mach_const_de": mach_const,
+            "v_app": v_app,
+            "vs_constmach": vs_constmach,
+            "vs_constcas": vs_constcas,
+            "vs_post_constcas": vs_post_constcas,
+            "h_const_mach_end": h_const_mach,
+            "h_const_cas_end": h_const_cas,
             "alt_cr": alt_cr,
         }
 
@@ -474,10 +483,10 @@ class Generator(object):
 
         Args:
             **dt (int): Time step in seconds.
-            **cas_const_cl (int): Constaant CAS for climb (kt).
-            **mach_const_cl (float): Constaant Mach for climb (-).
-            **cas_const_de (int): Constaant CAS for climb (kt).
-            **mach_const_de (float): Constaant Mach for climb (-).
+            **cas_const_cl (int): Constant CAS for climb (kt).
+            **mach_const_cl (float): Constant Mach for climb (-).
+            **cas_const_de (int): Constant CAS for climb (kt).
+            **mach_const_de (float): Constant Mach for climb (-).
             **range_cr (int): Cruise range (km).
             **alt_cr (int): Target cruise altitude (ft).
             **mach_cr (float): Cruise Mach number (-).

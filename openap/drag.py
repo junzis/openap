@@ -45,9 +45,9 @@ class Drag(object):
 
         """
         polar_files = glob.glob(dir_dragpolar + "*.yml")
-        ac_polar_avaiable = [s[-8:-4].lower() for s in polar_files]
+        ac_polar_available = [s[-8:-4].lower() for s in polar_files]
 
-        if self.ac in ac_polar_avaiable:
+        if self.ac in ac_polar_available:
             ac = self.ac
         else:
             if self.ac.startswith("a32"):
@@ -67,7 +67,7 @@ class Drag(object):
             elif self.ac.startswith("b77"):
                 ac = "b777"
             else:
-                raise RuntimeError("%s drag polar not avaiable." % self.ac.upper())
+                raise RuntimeError("%s drag polar not available." % self.ac.upper())
 
             print("warning: %s drag polar used for %s." % (ac.upper(), self.ac.upper()))
 

@@ -34,7 +34,7 @@ engine:
   type: turbofan
   mount: wing
   number: 4
-  default: RB211-524G
+  default: CF6-80C2B5F
   options:
     - PW4062
     - CF6-80C2B1F
