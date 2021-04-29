@@ -34,7 +34,7 @@ engine:
   type: turbofan
   mount: wing
   number: 4
-  default: Trent 970-84
+  default: GP7270
   options:
     A380-841: Trent 970-84
     A380-842: Trent 972-84
