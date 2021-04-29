@@ -81,7 +81,7 @@ def search_engine(eng):
     ENG = eng.strip().upper()
     engines = pd.read_fwf(db_engine)
 
-    available_engines = engines.query("name.str.startswith(@ENG)", engine="python")
+    available_engines = engines.query("name.str.startswith(@ENG)")
 
     if available_engines.shape[0] == 0:
         print("Engine not found.")
@@ -111,9 +111,7 @@ def engine(eng):
     engines = engines.merge(emissions, how="left", left_on="name", right_on="engine")
 
     # try to look for the unique engine
-    available_engines = engines.query(
-        "name.str.upper().str.startswith(@ENG)", engine="python"
-    )
+    available_engines = engines.query("name.str.upper().str.startswith(@ENG)")
     if available_engines.shape[0] >= 1:
         available_engines.index = available_engines.name
 

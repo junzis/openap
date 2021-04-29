@@ -1,9 +1,7 @@
 import numpy as np
 from openap import aero, prop, Thrust, Drag, FuelFlow
-from scipy.optimize import minimize, shgo
+from scipy.optimize import minimize
 from numdifftools import Jacobian
-
-import nlopt
 
 
 def calc_normfactor(x):
@@ -31,9 +29,6 @@ class CruiseOptimizer(object):
         self.x0 = np.array([0.3, 25000 * aero.ft])
         self.normfactor = calc_normfactor(self.x0)
 
-        self.opt = nlopt.opt(nlopt.LD_MMA)
-        opt.set_lower_bounds()
-
         self.bounds = None
         self.update_bounds()
 
@@ -47,21 +42,18 @@ class CruiseOptimizer(object):
             [[machmin, machmax], [hmin, hmax]]
         ) * self.normfactor.reshape(2, -1)
 
-        opt.set_lower_bounds([machmin, hmin])
-        opt.set_uppper_bounds([machmax, hmax])
-
     def func_fuel(self, x, mass):
         mach, h = denormalize(x, self.normfactor)
         va = aero.mach2tas(mach, h)
         ff = self.fuelflow.enroute(mass, va / aero.kts, h / aero.ft)
-        ff_m = ff / (va + 1e-9)
+        ff_m = ff / (va + 1e-3) * 1000
         # print("%.03f" % mach, "%d" % (h/aero.ft), "%.05f" % ff_m)
         return ff_m
 
     def func_time(self, x, mass):
         mach, h = denormalize(x, self.normfactor)
         va = aero.mach2tas(mach, h)
-        va_inv = 1 / (va + 1e-9)
+        va_inv = 1 / (va + 1e-4) * 1000
         # print("%.03f" % mach, "%d" % (h/aero.ft), "%.02f" % va)
         return va_inv
 
@@ -101,62 +93,50 @@ class CruiseOptimizer(object):
             raise RuntimeError("Optimization goal [%s] not avaiable." % goal)
 
         x0 = self.x0 * self.normfactor
-
-        self.set_min_objective(func)
-        self.opt.add_inequality_constraint(
-            lambda x, m: self.func_cons_thrust(x, m), 1e-8
+        res = minimize(
+            func,
+            x0,
+            args=(mass,),
+            bounds=self.bounds,
+            jac=lambda x, m: Jacobian(lambda x: func(x, m))(x),
+            options={"maxiter": 200},
+            constraints=(
+                {
+                    "type": "ineq",
+                    "args": (mass,),
+                    "fun": lambda x, m: self.func_cons_thrust(x, m),
+                    "jac": lambda x, m: Jacobian(lambda x: self.func_cons_thrust(x, m))(
+                        x
+                    ),
+                },
+                {
+                    "type": "ineq",
+                    "args": (mass,),
+                    "fun": lambda x, m: self.func_cons_lift(x, m),
+                    "jac": lambda x, m: Jacobian(lambda x: self.func_cons_lift(x, m))(
+                        x
+                    ),
+                },
+            ),
         )
-        self.opt.add_inequality_constraint(lambda x, m: self.func_cons_lift(x, m), 1e-8)
-        self.opt.set_xtol_rel(1e-6)
-        x = opt.optimize(x0)
-
-        minf = opt.last_optimum_value()
-
-        print("optimum at ", x[0], x[1])
-        print("minimum value = ", minf)
-        print("result code = ", opt.last_optimize_result())
-
-        return minf
-
-        # res = shgo(
-        #     func,
-        #     # x0,
-        #     args=(mass,),
-        #     bounds=self.bounds,
-        #     # method="SLSQP",
-        #     # jac=lambda x, m: Jacobian(lambda x: func(x, m))(x),
-        #     # options={"maxiter": 200},
-        #     constraints=(
-        #         {
-        #             "type": "ineq",
-        #             "args": (mass,),
-        #             "fun": lambda x, m: self.func_cons_thrust(x, m),
-        #             "jac": lambda x, m: Jacobian(lambda x: self.func_cons_thrust(x, m))(
-        #                 x
-        #             ),
-        #         },
-        #         {
-        #             "type": "ineq",
-        #             "args": (mass,),
-        #             "fun": lambda x, m: self.func_cons_lift(x, m),
-        #             "jac": lambda x, m: Jacobian(lambda x: self.func_cons_lift(x, m))(
-        #                 x
-        #             ),
-        #         },
-        #     ),
-        # )
-        # return res
+        return res
 
 
 if __name__ == "__main__":
 
     opt = CruiseOptimizer("A320")
 
-    opt.update_bounds(hmin=20000 * aero.ft, hmax=37000 * aero.ft)
+    # opt.update_bounds(hmin=30000 * aero.ft, hmax=37000 * aero.ft)
 
-    res = opt.optimize("fuel", mass=68000)
+    m = 68000
 
-    print(res)
+    res = opt.optimize("fuel", mass=m)
+    if res.success:
+        print("success", "mass=%d" % m, end=" ")
+    else:
+        print(res.message)
+        print("fail", "mass=%d" % m, end=" ")
+
     x = denormalize(res.x, opt.normfactor)
     print("mach=%.03f" % x[0], "alt=%d" % (x[1] / aero.ft))
 
