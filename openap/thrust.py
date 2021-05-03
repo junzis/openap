@@ -68,7 +68,7 @@ class Thrust(object):
         m = -1.2043e-1 * vratio - 8.8889e-9 * roc**2 + 2.4444e-5 * roc + 4.7379e-1
         return m
 
-    @ndarrayconvert
+    # @ndarrayconvert
     def takeoff(self, tas, alt=None):
         """Calculate thrust during the takeoff.
 
@@ -105,7 +105,7 @@ class Thrust(object):
         F = ratio * self.eng_max_thrust * self.eng_number
         return F
 
-    @ndarrayconvert
+    # @ndarrayconvert
     def cruise(self, tas, alt):
         """Calculate thrust at the cruise.
 
@@ -119,7 +119,7 @@ class Thrust(object):
         """
         return self.climb(tas, alt, roc=0)
 
-    @ndarrayconvert
+    # @ndarrayconvert
     def climb(self, tas, alt, roc):
         """Calculate thrust during the climb.
 
