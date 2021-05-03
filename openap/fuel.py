@@ -7,7 +7,7 @@ from openap.extra import ndarrayconvert
 
 
 class FuelFlow(object):
-    """Fuel flow model based on ICAO emission databank."""
+    """Fuel flow model based on ICAO emmision databank."""
 
     def __init__(self, ac, eng=None):
         """Initialize FuelFlow object.
@@ -38,7 +38,7 @@ class FuelFlow(object):
 
         self.fuel_flow_model = lambda x: c3 * x ** 3 + c2 * x ** 2 + c1 * x
 
-    @ndarrayconvert
+    # @ndarrayconvert
     def at_thrust(self, acthr, alt=0):
         """Compute the fuel flow at a given total thrust.
 
@@ -63,7 +63,7 @@ class FuelFlow(object):
 
         return fuelflow
 
-    @ndarrayconvert
+    # @ndarrayconvert
     def takeoff(self, tas, alt=None, throttle=1):
         """Compute the fuel flow at takeoff.
 
@@ -85,7 +85,7 @@ class FuelFlow(object):
         fuelflow = throttle * self.at_thrust(Tmax)
         return fuelflow
 
-    @ndarrayconvert
+    # @ndarrayconvert
     def enroute(self, mass, tas, alt, path_angle=0):
         """Compute the fuel flow during climb, cruise, or descent.
 

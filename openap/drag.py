@@ -9,6 +9,8 @@ from openap import prop
 from openap.extra import aero
 from openap.extra import ndarrayconvert
 
+import casadi as ca
+
 curr_path = os.path.dirname(os.path.realpath(__file__))
 dir_dragpolar = curr_path + "/data/dragpolar/"
 
@@ -73,27 +75,31 @@ class Drag(object):
         dragpolar = yaml.safe_load(open(f))
         return dragpolar
 
-    @ndarrayconvert
+    # @ndarrayconvert
     def _calc_drag(self, mass, tas, alt, cd0, k, path_angle):
         v = tas * aero.kts
         h = alt * aero.ft
-        gamma = np.radians(path_angle)
+        # gamma = np.radians(path_angle)
+        gamma = path_angle*np.pi/180
 
         S = self.aircraft["wing"]["area"]
 
         rho = aero.density(h)
         qS = 0.5 * rho * v ** 2 * S
         L = mass * aero.g0 * np.cos(gamma)
-        qS = np.where(qS < 1e-3, 1e-3, qS)
+        qS = ca.if_else(qS<1e-3,1e-3,qS)
+        # qS = np.where(qS < 1e-3, 1e-3, qS)
         cl = L / qS
         cd = cd0 + k * cl ** 2
         D = cd * qS
+        
+        # D = int(D)
 
-        D = D.astype(int)
+        # D = D.astype(int)
 
         return D
 
-    @ndarrayconvert
+    # @ndarrayconvert
     def clean(self, mass, tas, alt, path_angle=0):
         """Compute drag at clean configuration (considering compressibility).
 
@@ -115,7 +121,7 @@ class Drag(object):
             mach_crit = self.polar["mach_crit"]
             mach = aero.tas2mach(tas * aero.kts, alt * aero.ft)
 
-            dCdw = np.where(mach > mach_crit, 20 * (mach - mach_crit) ** 4, 0)
+            dCdw = ca.if_else(mach > mach_crit, 20 * (mach - mach_crit) ** 4, 0)
         else:
             dCdw = 0
 
@@ -124,7 +130,7 @@ class Drag(object):
         D = self._calc_drag(mass, tas, alt, cd0, k, path_angle)
         return D
 
-    @ndarrayconvert
+    # @ndarrayconvert
     def nonclean(self, mass, tas, alt, flap_angle, path_angle=0, landing_gear=False):
         """Compute drag at at non-clean configuratio.
 

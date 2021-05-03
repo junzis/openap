@@ -35,7 +35,7 @@ class Emission(object):
         ratio = (theta ** 3.3) / (delta ** 1.02)
         return beta, theta, delta, ratio
 
-    @ndarrayconvert
+    # @ndarrayconvert
     def co2(self, ffac):
         """Compute CO2 emission at given fuel flow.
 
@@ -48,7 +48,7 @@ class Emission(object):
         """
         return ffac * 3149
 
-    @ndarrayconvert
+    # @ndarrayconvert
     def h2o(self, ffac):
         """Compute H2O emission at given fuel flow.
 
@@ -61,7 +61,7 @@ class Emission(object):
         """
         return ffac * 1230
 
-    @ndarrayconvert
+    # @ndarrayconvert
     def nox(self, ffac, tas, alt=0):
         """Compute NOx emission at given fuel flow, speed, and altitude.
 
@@ -88,7 +88,7 @@ class Emission(object):
         nox_rate = nox_fl * ffac
         return nox_rate
 
-    @ndarrayconvert
+    # @ndarrayconvert
     def co(self, ffac, tas, alt=0):
         """Compute CO emission at given fuel flow, speed, and altitude.
 
@@ -127,7 +127,7 @@ class Emission(object):
         co_rate = co_fl * ffac
         return co_rate
 
-    @ndarrayconvert
+    # @ndarrayconvert
     def hc(self, ffac, tas, alt=0):
         """Compute HC emission at given fuel flow, speed, and altitude.
 
