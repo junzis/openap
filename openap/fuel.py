@@ -65,7 +65,7 @@ class FuelFlow(object):
             )
             self.polyfuel = func_fuel3(c3, c2, c1)
         else:
-            raise RuntimeError(f"polydeg must be 2 or 3")
+            raise ValueError(f"Polydeg must be 2 or 3")
 
     @ndarrayconvert
     def at_thrust(self, acthr, alt=0, limit=True):
