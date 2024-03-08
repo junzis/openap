@@ -194,10 +194,12 @@ class Drag(object):
         )
 
         if landing_gear:
-            # TODO: Where does this equation come from?
+            # Equation 6.1 in Mair and Birdsall (1996)
+            # 3.16e-5 is the K_uc factor value corresponding to
+            # maximum flap deflection
             delta_cd_gear = (
                 self.aircraft["limits"]["MTOW"]
-                * g0
+                * self.aero.g0
                 / self.aircraft["wing"]["area"]
                 * 3.16e-5
                 * self.aircraft["limits"]["MTOW"] ** (-0.215)
