@@ -60,14 +60,36 @@ class Thrust(object):
             self.eng_cruise_thrust = 0.2 * self.eng_max_thrust + 890
 
     def _dfunc(self, mratio):
+        """
+        Linear fit to the data from Table 2 in Bartel and Young (2008).
+
+        Args:
+            mratio (float or ndarray): Ratio of mach number to reference mach
+                number
+            
+        Returns:
+            float or ndarray: parameter 'd' in Equation 15 from Bartel
+                and Young (2008)
+        """
         d = -0.4204 * mratio + 1.0824
         return d
 
     def _nfunc(self, roc):
+        """
+        Linear fit to data from Table 3 in Bartel and Young (2008),
+        assuming the following climb rates:
+
+        Fast climb : 4000 ft / min
+        Moderate climb : 2500 ft / min
+        Slow climb : 1000 ft / min
+        """
         n = 2.667e-05 * roc + 0.8633
         return n
 
     def _mfunc(self, vratio, roc):
+        """
+        Based on data from Table 4 in Bartel and Young (2008).
+        """
         m = -1.2043e-1 * vratio - 8.8889e-9 * roc ** 2\
             + 2.4444e-5 * roc + 4.7379e-1
         return m
@@ -148,14 +170,14 @@ class Thrust(object):
         roc = self.np.abs(roc)
 
         h = alt * self.aero.ft
-        tas = self.np.where(tas < 10, 10, tas)
+        tas = self.np.maximum(10, tas)
 
         mach = self.aero.tas2mach(tas * self.aero.kts, h)
         vcas = self.aero.tas2cas(tas * self.aero.kts, h)
 
         P = self.aero.pressure(h)
 
-        # TODO: What are these quantities
+        
         P10 = self.aero.pressure(10000 * self.aero.ft)
         Pcr = self.aero.pressure(self.cruise_alt * self.aero.ft)
 
@@ -165,29 +187,36 @@ class Thrust(object):
         vcas_ref = self.aero.mach2cas(self.cruise_mach,
                         self.cruise_alt * self.aero.ft)
 
-        # TODO: What are these quantities
+        
         # segment 3: alt > 30000:
         d = self._dfunc(mach / self.cruise_mach)
+
+        # Equation 16 in Bartel and Young (2008)
         b = (mach / self.cruise_mach) ** (-0.11)
+
+        # Equation 15 in Bartel and Young (2008)
         ratio_seg3 = d * self.np.log(P / Pcr) + b
 
-        # TODO: What are these quantities
         # segment 2: 10000 < alt <= 30000:
+        # Equation 18 in Bartel and Young (2008)
         a = (vcas / vcas_ref) ** (-0.1)
         n = self._nfunc(roc)
-        ratio_seg2 = a * (P / Pcr) ** (-0.355 * (vcas / vcas_ref) + n)
 
-        # TODO: What are these quantities
+        # Equation 17 in Bartel and Young (2008)
+        ratio_seg2 = a * (P / Pcr) ** (-0.355 * (vcas / vcas_ref) + n)
+        
         # segment 1: alt <= 10000:
+        # Equation 17 in Bartel and Young (2008)
         F10 = Fcr * a * (P10 / Pcr) ** (-0.355 * (vcas / vcas_ref) + n)
         m = self._mfunc(vcas / vcas_ref, roc)
+
+        # Equation 19 in Bartel and Young (2008)
         ratio_seg1 = m * (P / Pcr) + (F10 / Fcr - m * (P10 / Pcr))
 
-        # TODO: What are these quantities
-        ratio = self.np.where(
-            alt > 30000, ratio_seg3, self.np.where(alt > 10000,
-                                                        ratio_seg2, ratio_seg1)
-        )
+        condlist = [alt > 30000,  (10000 < alt) & (alt <= 30000),
+                    (alt < 10000)]
+        choicelist = [ratio_seg3, ratio_seg2, ratio_seg1]
+        ratio = self.np.select(condlist, choicelist)
 
         F = ratio * Fcr
         return F
