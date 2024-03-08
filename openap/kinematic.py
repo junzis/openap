@@ -20,14 +20,13 @@ Examples:
         }
 
 """
-
 import os
 import glob
 import pandas as pd
 
 curr_path = os.path.dirname(os.path.realpath(__file__))
-dir_wrap = curr_path + "/data/wrap/"
-file_synonym = curr_path + "/data/wrap/_synonym.csv"
+dir_wrap = os.path.join(curr_path, "/data/wrap/")
+file_synonym = os.path.join(curr_path, "/data/wrap/_synonym.csv")
 
 wrap_synonym = pd.read_csv(file_synonym)
 
@@ -52,24 +51,25 @@ class WRAP(object):
         ac_wrap_available = [s[-8:-4].lower() for s in wrap_files]
 
         if self.ac not in ac_wrap_available and not self.use_synonym:
-            raise RuntimeError(f"Kinematic model for {self.ac} not avaiable in OpenAP.")
+            raise ValueError((f"Kinematic model for {self.ac} not"
+                                " available in OpenAP."))
 
         if self.ac not in ac_wrap_available and self.use_synonym:
             syno = wrap_synonym.query("orig==@self.ac")
             if syno.shape[0] > 0:
                 self.ac = syno.new.iloc[0]
             else:
-                raise RuntimeError(
-                    f"Kinematic model for {self.ac} not avaiable in OpenAP."
+                raise ValueError(
+                    f"Kinematic model for {self.ac} not available in OpenAP."
                 )
 
-        self.df = pd.read_fwf(dir_wrap + self.ac + ".txt")
+        self.df = pd.read_fwf(os.path.join(dir_wrap, self.ac + ".txt"))
 
     def _get_var(self, var):
         r = self.df[self.df["variable"] == var]
 
         if r.shape[0] == 0:
-            raise RuntimeError("variable not found")
+            raise ValueError(f"Variable {var} not found")
 
         v = r.values[0]
 
