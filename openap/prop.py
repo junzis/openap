@@ -1,4 +1,4 @@
-"""Retrive properties of aircraft and engines."""
+"""Retrieve properties of aircraft and engines."""
 
 import os
 import glob
@@ -7,10 +7,12 @@ import numpy as np
 import pandas as pd
 from functools import lru_cache
 
+from openap.extra.aero import ft
+
 curr_path = os.path.dirname(os.path.realpath(__file__))
-dir_aircraft = curr_path + "/data/aircraft/"
-file_engine = curr_path + "/data/engine/engines.csv"
-file_synonym = curr_path + "/data/aircraft/_synonym.csv"
+dir_aircraft = os.path.join(curr_path, "/data/aircraft/")
+file_engine = os.path.join(curr_path, "/data/engine/engines.csv")
+file_synonym = os.path.join(curr_path, "/data/aircraft/_synonym.csv")
 
 aircraft_synonym = pd.read_csv(file_synonym)
 
@@ -96,7 +98,8 @@ def search_engine(eng):
     ENG = eng.strip().upper()
     engines = pd.read_csv(file_engine)
 
-    available_engines = engines.query("name.str.startswith(@ENG)", engine="python")
+    available_engines = engines.query("name.str.startswith(@ENG)",
+                                        engine="python")
 
     if available_engines.shape[0] == 0:
         print("Engine not found.")
@@ -137,12 +140,16 @@ def engine(eng):
         if np.isfinite(seleng["cruise_sfc"]):
             sfc_cr = seleng["cruise_sfc"]
             sfc_to = seleng["ff_to"] / (seleng["max_thrust"] / 1000)
-            fuel_ch = np.round((sfc_cr - sfc_to) / (seleng["cruise_alt"] * 0.3048), 8)
+
+            # TODO: Why round to 8 decimals?
+            fuel_ch = np.round((sfc_cr - sfc_to) / (seleng["cruise_alt"] * ft),
+                                8)
         else:
+            # TODO: Where does this value come from?
             fuel_ch = 6.7e-7
 
         seleng["fuel_ch"] = fuel_ch
     else:
-        raise RuntimeError(f"Data for engine {eng} not found.")
+        raise ValueError(f"Data for engine {eng} not found.")
 
     return seleng
