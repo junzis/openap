@@ -1,9 +1,10 @@
 """OpenAP FuelFlow model."""
 
 import importlib
+
 from openap import prop
 from openap.extra import ndarrayconvert
-
+from openap.extra.aero import ft, g0
 
 def func_fuel2(a, b):
     return lambda x: a * (x + b) ** 2
@@ -24,7 +25,8 @@ class FuelFlow(object):
             eng (string): Engine type (for example: CFM56-5A3).
                 Leave empty to use the default engine specified
                 by in the aircraft database.
-            polydeg (int): Order of the polynomials for fuel flow model (2 or 3), defaults to 2.
+            polydeg (int): Order of the polynomials for fuel flow model
+                            (2 or 3), defaults to 2.
 
         """
         if not hasattr(self, "np"):
@@ -70,7 +72,8 @@ class FuelFlow(object):
         """Compute the fuel flow at a given total thrust.
 
         Args:
-            acthr (int or ndarray): The total net thrust of the aircraft (unit: N).
+            acthr (int or ndarray): The total net thrust of the
+                aircraft (unit: N).
             alt (int or ndarray): Aircraft altitude (unit: ft).
 
         Returns:
@@ -84,11 +87,11 @@ class FuelFlow(object):
         ratio = acthr / maxthr
 
         if limit:
-            ratio = self.np.where(ratio < 0.07, 0.07, ratio)
-            ratio = self.np.where(ratio > 1, 1, ratio)
+            # TODO: Where does the 0.07 come from?
+            ratio = self.np.clip(ratio, 0.07, 1.0)
 
         ff_sl = self.polyfuel(ratio)
-        ff_corr_alt = self.engine["fuel_ch"] * (engthr / 1000) * (alt * 0.3048)
+        ff_corr_alt = self.engine["fuel_ch"] * (engthr / 1000) * (alt * ft)
         ff_eng = ff_sl + ff_corr_alt
 
         fuelflow = ff_eng * n_eng
@@ -105,7 +108,8 @@ class FuelFlow(object):
 
         Args:
             tas (int or ndarray): Aircraft true airspeed (unit: kt).
-            alt (int or ndarray): Altitude of airport (unit: ft). Defaults to sea-level.
+            alt (int or ndarray): Altitude of airport (unit: ft).
+                Defaults to sea-level.
             throttle (float or ndarray): The throttle setting, between 0 and 1.
                 Defaults to 1, which is at full thrust.
 
@@ -137,10 +141,9 @@ class FuelFlow(object):
         """
         D = self.drag.clean(mass=mass, tas=tas, alt=alt, path_angle=path_angle)
 
-        # Convert angles from degrees to radians.
-        gamma = path_angle * 3.142 / 180
+        gamma = self.np.radians(path_angle)
 
-        T = D + mass * 9.81 * self.np.sin(gamma)
+        T = D + mass * g0 * self.np.sin(gamma)
 
         if limit:
             T_max = self.thrust.climb(tas=tas, alt=alt, roc=0)
