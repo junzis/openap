@@ -73,7 +73,7 @@ class Thrust(object):
         return m
 
     @ndarrayconvert
-    def takeoff(self, tas, alt=None):
+    def takeoff(self, tas, alt=0.0):
         """Calculate thrust at take-off condition.
 
         Args:
@@ -84,35 +84,28 @@ class Thrust(object):
             float or ndarray: Total thrust (unit: N).
 
         """
+        # Flight mach number
         mach = self.aero.tas2mach(tas * self.aero.kts, 0)
 
+        # Engine bypass ratio
         eng_bpr = self.eng_bpr
 
-        # TODO: What is this quantity and equation?
+        # G0 is the "Gas generator function", defined as the ratio of 
+        # the kinetic energy to the flow of enthalpy into the jet core
+        # This is a fit to Fig. 5 in Bartel and Young (2008)
         G0 = 0.0606 * self.eng_bpr + 0.6337
 
-        if alt is None:
-            # at sea level
-            # TODO: What is this quantity and equation?
-            ratio = (
-                1
-                - 0.377 * (1 + eng_bpr) / self.np.sqrt((1 + 0.82 * eng_bpr) * G0) * mach
-                + (0.23 + 0.19 * self.np.sqrt(eng_bpr)) * mach ** 2
-            )
+        P = self.aero.pressure(alt * self.aero.ft)
+        dP = P / self.aero.p0
 
-        else:
-            # at certain altitude
-            P = self.aero.pressure(alt * self.aero.ft)
-            dP = P / self.aero.p0
+        # Equations 12, 13 and 14 in Bartel and Young (2008)
+        # Evaluate to 1 if dP = 1, which is the case for alt = 0 ft
+        A = -0.4327 * dP ** 2 + 1.3855 * dP + 0.0472
+        Z = 0.9106 * dP ** 3 - 1.7736 * dP ** 2 + 1.8697 * dP
+        X = 0.1377 * dP ** 3 - 0.4374 * dP ** 2 + 1.3003 * dP
 
-            # TODO: Where are these quantities coming from and what do they
-            # mean?
-            A = -0.4327 * dP ** 2 + 1.3855 * dP + 0.0472
-            Z = 0.9106 * dP ** 3 - 1.7736 * dP ** 2 + 1.8697 * dP
-            X = 0.1377 * dP ** 3 - 0.4374 * dP ** 2 + 1.3003 * dP
-
-            # TODO: Equation reference
-            ratio = (
+        # Equation 11 in Bartel and Young (2008)
+        ratio = (
                 A
                 - 0.377
                 * (1 + eng_bpr)
@@ -120,7 +113,7 @@ class Thrust(object):
                 * Z
                 * mach
                 + (0.23 + 0.19 * self.np.sqrt(eng_bpr)) * X * mach ** 2
-            )
+        )
 
         F = ratio * self.eng_max_thrust * self.eng_number
         return F
