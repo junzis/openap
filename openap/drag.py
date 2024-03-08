@@ -132,20 +132,23 @@ class Drag(object):
             sweep = self.np.radians(self.aircraft["wing"]["sweep"])
             tc = self.aircraft["wing"]["t/c"]
 
-            # TODO: where does 0.11 come from?
+            # Default thickness to chord ratio is 0.11, based on 
+            # data from Obert (2009) (I think Figure 16.1)
             if tc is None:
                 tc = 0.11
 
             cos_sweep = self.np.cos(sweep)
 
-            # TODO: Where does this equation come from?
+            # Equation 17 and 18 in Gur et al. (2010)
+            # Only for a conventional airfoil
             mach_crit = (
                 0.87 - 0.108 / cos_sweep - 0.1 * cl / (cos_sweep ** 2)\
                 - tc / cos_sweep
             ) / cos_sweep
 
+           
+            # Equation 15 in Gur et al. (2010)
             dmach = np.maximum(mach - mach_crit, 0.0)
-            # TODO: Where does this equation come from?
             dCdw = 20 * dmach ** 4
 
         else:
@@ -182,7 +185,7 @@ class Drag(object):
         cfc = self.polar["flaps"]["cf/c"]
         SfS = self.polar["flaps"]["Sf/S"]
 
-        # TODO: Where does this equation come from?
+        # Equation 3.45-3.46 in McCormick (1994), page 109.
         delta_cd_flap = (
             lambda_f
             * (cfc) ** 1.38
@@ -194,7 +197,7 @@ class Drag(object):
             # TODO: Where does this equation come from?
             delta_cd_gear = (
                 self.aircraft["limits"]["MTOW"]
-                * 9.8065
+                * g0
                 / self.aircraft["wing"]["area"]
                 * 3.16e-5
                 * self.aircraft["limits"]["MTOW"] ** (-0.215)
@@ -206,10 +209,10 @@ class Drag(object):
 
         # --- calc new k ---
         if self.aircraft["engine"]["mount"] == "rear":
-            # TODO: Where does this equation come from?
+            # See Figure 27.38 in Obert (2009)
             delta_e_flap = 0.0046 * flap_angle
         else:
-            # TODO: Where does this equation come from?
+            # See Figure 27.39 in Obert (2009)
             delta_e_flap = 0.0026 * flap_angle
 
         ar = self.aircraft["wing"]["span"] ** 2 / self.aircraft["wing"]["area"]
