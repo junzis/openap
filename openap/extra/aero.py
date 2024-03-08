@@ -122,7 +122,8 @@ def vsound(h):
 
 
 def distance(lat1, lon1, lat2, lon2, h=0):
-    """Compute distance between two (or two series) of coordinates using Harversine formula.
+    """Compute distance between two (or two series) of coordinates using
+    Haversine formula.
 
     Args:
         lat1 (float or ndarray): Starting latitude (in degrees).
@@ -144,7 +145,8 @@ def distance(lat1, lon1, lat2, lon2, h=0):
     # haversine formula
     dlon = lon2 - lon1
     dlat = lat2 - lat1
-    a = np.sin(dlat / 2) ** 2 + np.cos(lat1) * np.cos(lat2) * np.sin(dlon / 2) ** 2
+    a = np.sin(dlat / 2) ** 2 + np.cos(lat1) * np.cos(lat2)\
+            * np.sin(dlon / 2) ** 2
     c = 2 * np.arcsin(np.sqrt(a))
     dist = c * (r_earth + h)  # meters, radius of earth
     return dist
@@ -168,7 +170,8 @@ def bearing(lat1, lon1, lat2, lon2):
     lat2 = np.radians(lat2)
     lon2 = np.radians(lon2)
     x = np.sin(lon2 - lon1) * np.cos(lat2)
-    y = np.cos(lat1) * np.sin(lat2) - np.sin(lat1) * np.cos(lat2) * np.cos(lon2 - lon1)
+    y = np.cos(lat1) * np.sin(lat2) - np.sin(lat1) * np.cos(lat2)\
+            * np.cos(lon2 - lon1)
     initial_bearing = np.arctan2(x, y)
     initial_bearing = np.degrees(initial_bearing)
     bearing = (initial_bearing + 360) % 360
@@ -348,7 +351,7 @@ def mach2cas(mach, h):
 
 
 def cas2mach(v_cas, h):
-    """Convert calibrated airspeed to mach number  at a given altitude.
+    """Convert calibrated airspeed to mach number at a given altitude.
 
     Args:
         v_cas (float or ndarray): Calibrated airspeed (m/s).
