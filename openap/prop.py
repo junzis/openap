@@ -55,7 +55,7 @@ def aircraft(ac, use_synonym=False, **kwargs):
             new_ac = syno.new.iloc[0]
             files = glob.glob(dir_aircraft + new_ac + ".yml")
         else:
-            raise RuntimeError(f"Aircraft {ac} not avaiable in OpenAP.")
+            raise ValueError(f"Aircraft {ac} not available in OpenAP.")
 
     f = files[0]
     acdict = yaml.safe_load(open(f))
