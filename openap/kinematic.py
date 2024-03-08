@@ -25,8 +25,8 @@ import glob
 import pandas as pd
 
 curr_path = os.path.dirname(os.path.realpath(__file__))
-dir_wrap = os.path.join(curr_path, "/data/wrap/")
-file_synonym = os.path.join(curr_path, "/data/wrap/_synonym.csv")
+dir_wrap = os.path.join(curr_path, "data/wrap/")
+file_synonym = os.path.join(curr_path, "data/wrap/_synonym.csv")
 
 wrap_synonym = pd.read_csv(file_synonym)
 

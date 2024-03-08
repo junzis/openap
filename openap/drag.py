@@ -13,8 +13,8 @@ from .extra import ndarrayconvert
 
 
 curr_path = os.path.dirname(os.path.realpath(__file__))
-dir_dragpolar = os.path.join(curr_path, "/data/dragpolar/")
-file_synonym = os.path.join(curr_path, "/data/dragpolar/_synonym.csv")
+dir_dragpolar = os.path.join(curr_path, "data/dragpolar/")
+file_synonym = os.path.join(curr_path, "data/dragpolar/_synonym.csv")
 
 polar_synonym = pd.read_csv(file_synonym)
 

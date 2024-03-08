@@ -10,9 +10,9 @@ from functools import lru_cache
 from openap.extra.aero import ft
 
 curr_path = os.path.dirname(os.path.realpath(__file__))
-dir_aircraft = os.path.join(curr_path, "/data/aircraft/")
-file_engine = os.path.join(curr_path, "/data/engine/engines.csv")
-file_synonym = os.path.join(curr_path, "/data/aircraft/_synonym.csv")
+dir_aircraft = os.path.join(curr_path, "data/aircraft/")
+file_engine = os.path.join(curr_path, "data/engine/engines.csv")
+file_synonym = os.path.join(curr_path, "data/aircraft/_synonym.csv")
 
 aircraft_synonym = pd.read_csv(file_synonym)
 

@@ -126,6 +126,7 @@ class Thrust(object):
         Z = 0.9106 * dP ** 3 - 1.7736 * dP ** 2 + 1.8697 * dP
         X = 0.1377 * dP ** 3 - 0.4374 * dP ** 2 + 1.3003 * dP
 
+
         # Equation 11 in Bartel and Young (2008)
         ratio = (
                 A
@@ -181,8 +182,7 @@ class Thrust(object):
         P10 = self.aero.pressure(10000 * self.aero.ft)
         Pcr = self.aero.pressure(self.cruise_alt * self.aero.ft)
 
-        # TODO: Which equation in REF 2?
-        # approximate thrust at top of climb (REF 2)
+        # approximate thrust at top of climb
         Fcr = self.eng_cruise_thrust * self.eng_number
         vcas_ref = self.aero.mach2cas(self.cruise_mach,
                         self.cruise_alt * self.aero.ft)

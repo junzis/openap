@@ -42,7 +42,7 @@ gamma1 = 0.2  # (gamma-1)/2 for air
 gamma2 = 3.5  # gamma/(gamma-1) for air
 beta = -0.0065  # [K/m] ISA temp gradient below tropopause
 r_earth = 6371000.0  # m, average earth radius
-a0 = scipy.constants.speed_of_sound  # m/s
+a0 = (gamma * R * T0) ** 0.5  # m/s
 
 
 def atmos(h):
@@ -56,7 +56,7 @@ def atmos(h):
             Air pressure (Pa), density (kg/m3), and temperature (K).
 
     """
-    T = np.maximum(T0 - beta * h, 216.65)
+    T = np.maximum(T0 + beta * h, 216.65)
     rhotrop = rho0 * (T / T0) ** 4.256848030018761
     dhstrat = np.maximum(0.0, h - 11000.0)
     rho = rhotrop * np.exp(-dhstrat / 6341.552161)
@@ -186,11 +186,11 @@ def h_isa(p):
 
     """
     # p >= 22630:
-    T = T0 * (p0 / p) ** ((- beta * R) / g0)
-    h = (T - T0) / (- beta)
+    T = T0 * (p0 / p) ** ((beta * R) / g0)
+    h = (T - T0) / beta
 
     # 5470 < p < 22630
-    T1 = T0  - beta * (11000)
+    T1 = T0  + beta * (11000)
     p1 = 22630
     h1 = -R * T1 / g0 * np.log(p / p1) + 11000
 
