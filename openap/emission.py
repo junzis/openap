@@ -37,9 +37,10 @@ class Emission(object):
         M = self.aero.tas2mach(tas * self.aero.kts, alt * self.aero.ft)
         beta = self.np.exp(0.2 * (M ** 2))
         theta = (self.aero.temperature(alt * self.aero.ft) / 288.15) / beta
-        delta = (1 - 0.0019812 * alt / 288.15) ** 5.255876 / self.np.power(beta, 3.5)
+        delta = (1 - 0.0019812 * alt / 288.15) ** 5.255876\
+                    / self.np.power(beta, 3.5)
         ratio = (theta ** 3.3) / (delta ** 1.02)
-
+        # TODO: Where does this equation come from?
         ff_sl = (ffac / self.n_eng) * theta ** 3.8 / delta * beta
 
         return ff_sl, ratio
@@ -55,6 +56,7 @@ class Emission(object):
             float: CO2 emission from all engines (unit: g/s).
 
         """
+        # TODO: Where does this equation come from?
         return ffac * 3149
 
     @ndarrayconvert
@@ -68,6 +70,7 @@ class Emission(object):
             float: H2O emission from all engines (unit: g/s).
 
         """
+        # TODO: Where does this equation come from?
         return ffac * 1230
 
     @ndarrayconvert
@@ -81,6 +84,7 @@ class Emission(object):
             float: Soot emission from all engines (unit: g/s).
 
         """
+        # TODO: Where does this equation come from?
         return ffac * 0.03
 
     @ndarrayconvert
@@ -94,6 +98,7 @@ class Emission(object):
             float: SOx emission from all engines (unit: g/s).
 
         """
+        # TODO: Where does this equation come from?
         return ffac * 0.84
 
     @ndarrayconvert
@@ -129,7 +134,10 @@ class Emission(object):
 
         # convert back to actual flight level
         omega = 10 ** (-3) * self.np.exp(-0.0001426 * (alt - 12900))
-        nox_fl = nox_sl * self.np.sqrt(1 / ratio) * self.np.exp(-19 * (omega - 0.00634))
+
+        # TODO: Where does this equation come from?
+        nox_fl = nox_sl * self.np.sqrt(1 / ratio)\
+                * self.np.exp(-19 * (omega - 0.00634))
 
         # convert g/(kg fuel) to g/s for all engines
         nox_rate = nox_fl * ffac
@@ -166,6 +174,7 @@ class Emission(object):
             ],
         )
 
+        # TODO: Where does this equation come from?
         # convert back to actual flight level
         co_fl = co_sl * ratio
 
@@ -203,7 +212,7 @@ class Emission(object):
                 self.engine["ei_hc_to"],
             ],
         )
-
+        # TODO: Where does this equation come from?
         # convert back to actual flight level
         hc_fl = hc_sl * ratio
 
