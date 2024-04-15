@@ -55,7 +55,7 @@ def aircraft(ac, use_synonym=False, **kwargs):
             new_ac = syno.new.iloc[0]
             files = glob.glob(dir_aircraft + new_ac + ".yml")
         else:
-            raise ValueError(f"Aircraft {ac} not available in OpenAP.")
+            raise ValueError(f"Aircraft {ac} not available.")
 
     f = files[0]
     acdict = yaml.safe_load(open(f))
@@ -98,8 +98,7 @@ def search_engine(eng):
     ENG = eng.strip().upper()
     engines = pd.read_csv(file_engine)
 
-    available_engines = engines.query("name.str.startswith(@ENG)",
-                                        engine="python")
+    available_engines = engines.query("name.str.startswith(@ENG)", engine="python")
 
     if available_engines.shape[0] == 0:
         print("Engine not found.")
@@ -140,12 +139,9 @@ def engine(eng):
         if np.isfinite(seleng["cruise_sfc"]):
             sfc_cr = seleng["cruise_sfc"]
             sfc_to = seleng["ff_to"] / (seleng["max_thrust"] / 1000)
-
-            # TODO: Why round to 8 decimals?
-            fuel_ch = np.round((sfc_cr - sfc_to) / (seleng["cruise_alt"] * ft),
-                                8)
+            fuel_ch = np.round((sfc_cr - sfc_to) / (seleng["cruise_alt"] * 0.3048), 8)
         else:
-            # TODO: Where does this value come from?
+            # see openap paper
             fuel_ch = 6.7e-7
 
         seleng["fuel_ch"] = fuel_ch

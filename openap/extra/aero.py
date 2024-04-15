@@ -21,28 +21,29 @@ Speed conversion at altitude h[m] in ISA:
     v_cas = mach2cas(mach,h)    # mach to v_cas conversion v_cas in m/s, h in [m]
     mach   = cas2mach(v_cas,h)  # v_cas to mach conversion v_cas in m/s, h in [m]
 """
+
 import numpy as np
 import scipy.constants
 
 """Aero and Geo Constants """
-kts = scipy.constants.knot # knot -> m/s
-ft = scipy.constants.foot  # ft -> m
-fpm = scipy.constants.foot / scipy.constants.minute  # ft/min -> m/s
-inch = scipy.constants.inch  # inch -> m
-sqft = ft ** 2  # 1 square foot in m^2
-nm = scipy.constants.nautical_mile # nautical mile -> m
-lbs = scipy.constants.lb  # pound -> kg
-g0 = scipy.constants.g  # m/s2, Sea level gravity constant
+kts = 0.514444  # knot -> m/s
+ft = 0.3048  # ft -> m
+fpm = 0.00508  # ft/min -> m/s
+inch = 0.0254  # inch -> m
+sqft = 0.09290304  # 1 square foot
+nm = 1852.0  # nautical mile -> m
+lbs = 0.453592  # pound -> kg
+g0 = 9.80665  # m/s2, Sea level gravity constant
 R = 287.05287  # m2/(s2 x K), gas constant, sea level ISA
+p0 = 101325.0  # Pa, air pressure, sea level ISA
+rho0 = 1.225  # kg/m3, air density, sea level ISA
 T0 = 288.15  # K, temperature, sea level ISA
-p0 = scipy.constants.atm  # Pa, air pressure, sea level ISA
-rho0 = p0 / (R * T0) # kg/m3, air density, sea level ISA
 gamma = 1.40  # cp/cv for air
 gamma1 = 0.2  # (gamma-1)/2 for air
 gamma2 = 3.5  # gamma/(gamma-1) for air
 beta = -0.0065  # [K/m] ISA temp gradient below tropopause
 r_earth = 6371000.0  # m, average earth radius
-a0 = (gamma * R * T0) ** 0.5  # m/s
+a0 = 340.293988  # m/s, sea level speed of sound ISA, sqrt(gamma*R*T0)
 
 
 def atmos(h):
@@ -145,8 +146,7 @@ def distance(lat1, lon1, lat2, lon2, h=0):
     # haversine formula
     dlon = lon2 - lon1
     dlat = lat2 - lat1
-    a = np.sin(dlat / 2) ** 2 + np.cos(lat1) * np.cos(lat2)\
-            * np.sin(dlon / 2) ** 2
+    a = np.sin(dlat / 2) ** 2 + np.cos(lat1) * np.cos(lat2) * np.sin(dlon / 2) ** 2
     c = 2 * np.arcsin(np.sqrt(a))
     dist = c * (r_earth + h)  # meters, radius of earth
     return dist
@@ -170,8 +170,7 @@ def bearing(lat1, lon1, lat2, lon2):
     lat2 = np.radians(lat2)
     lon2 = np.radians(lon2)
     x = np.sin(lon2 - lon1) * np.cos(lat2)
-    y = np.cos(lat1) * np.sin(lat2) - np.sin(lat1) * np.cos(lat2)\
-            * np.cos(lon2 - lon1)
+    y = np.cos(lat1) * np.sin(lat2) - np.sin(lat1) * np.cos(lat2) * np.cos(lon2 - lon1)
     initial_bearing = np.arctan2(x, y)
     initial_bearing = np.degrees(initial_bearing)
     bearing = (initial_bearing + 360) % 360
@@ -193,7 +192,7 @@ def h_isa(p):
     h = (T - T0) / beta
 
     # 5470 < p < 22630
-    T1 = T0  + beta * (11000)
+    T1 = T0 + beta * (11000)
     p1 = 22630
     h1 = -R * T1 / g0 * np.log(p / p1) + 11000
 

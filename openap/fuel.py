@@ -4,14 +4,14 @@ import importlib
 
 from openap import prop
 from openap.extra import ndarrayconvert
-from openap.extra.aero import ft, g0
+
 
 def func_fuel2(a, b):
     return lambda x: a * (x + b) ** 2
 
 
 def func_fuel3(c3, c2, c1):
-    return lambda x: c3 * x ** 3 + c2 * x ** 2 + c1 * x
+    return lambda x: c3 * x**3 + c2 * x**2 + c1 * x
 
 
 class FuelFlow(object):
@@ -87,11 +87,12 @@ class FuelFlow(object):
         ratio = acthr / maxthr
 
         if limit:
-            # TODO: Where does the 0.07 come from?
-            ratio = self.np.clip(ratio, 0.07, 1.0)
+            # assume minimum is 7% at idle
+            ratio = self.np.where(ratio < 0.07, 0.07, ratio)
+            ratio = self.np.where(ratio > 1, 1, ratio)
 
         ff_sl = self.polyfuel(ratio)
-        ff_corr_alt = self.engine["fuel_ch"] * (engthr / 1000) * (alt * ft)
+        ff_corr_alt = self.engine["fuel_ch"] * (engthr / 1000) * (alt * 0.3048)
         ff_eng = ff_sl + ff_corr_alt
 
         fuelflow = ff_eng * n_eng
@@ -141,9 +142,9 @@ class FuelFlow(object):
         """
         D = self.drag.clean(mass=mass, tas=tas, alt=alt, path_angle=path_angle)
 
-        gamma = self.np.radians(path_angle)
+        gamma = path_angle * 3.142 / 180  # radians
 
-        T = D + mass * g0 * self.np.sin(gamma)
+        T = D + mass * 9.81 * self.np.sin(gamma)
 
         if limit:
             T_max = self.thrust.climb(tas=tas, alt=alt, roc=0)

@@ -44,8 +44,7 @@ class Drag(object):
 
         self.wave_drag = wave_drag
         if self.wave_drag:
-            warnings.warn(("Performance warning: Wave drag model is"
-                            " experimental."))
+            warnings.warn("Warning: Wave drag is experimental.")
 
     def dragpolar(self):
         """Find and construct the drag polar model.
@@ -63,10 +62,9 @@ class Drag(object):
             if self.use_synonym and syno.shape[0] > 0:
                 ac = syno.new.iloc[0]
             else:
-                raise ValueError(
-                    f"Drag polar for {self.ac} not avaiable in OpenAP.")
+                raise ValueError(f"Drag polar for {self.ac} not avaiable.")
 
-        f = os.path.join(dir_dragpolar, ac + ".yml")
+        f = dir_dragpolar + ac + ".yml"
         dragpolar = yaml.safe_load(open(f))
         return dragpolar
 
@@ -74,16 +72,15 @@ class Drag(object):
     def _cl(self, mass, tas, alt, path_angle):
         v = tas * self.aero.kts
         h = alt * self.aero.ft
-
-        gamma = self.np.radians(path_angle)
+        gamma = path_angle * self.np.pi / 180
 
         S = self.aircraft["wing"]["area"]
 
         rho = self.aero.density(h)
-        qS = 0.5 * rho * v ** 2 * S
+        qS = 0.5 * rho * v**2 * S
         L = mass * self.aero.g0 * self.np.cos(gamma)
 
-        # TODO: Where does the 1e-3 come from?
+        # 1e-3: avoid zero division
         qS = self.np.maximum(qS, 1e-3)
         cl = L / qS
         return cl
@@ -92,17 +89,16 @@ class Drag(object):
     def _calc_drag(self, mass, tas, alt, cd0, k, path_angle):
         v = tas * self.aero.kts
         h = alt * self.aero.ft
-        gamma = self.np.radians(path_angle)
+        gamma = path_angle * self.np.pi / 180
 
         S = self.aircraft["wing"]["area"]
 
         rho = self.aero.density(h)
-        qS = 0.5 * rho * v ** 2 * S
+        qS = 0.5 * rho * v**2 * S
         L = mass * self.aero.g0 * self.np.cos(gamma)
-        # TODO: Where does the 1e-3 come from?
         qS = self.np.maximum(qS, 1e-3)
         cl = L / qS
-        cd = cd0 + k * cl ** 2
+        cd = cd0 + k * cl**2
         D = cd * qS
         return D
 
@@ -114,8 +110,7 @@ class Drag(object):
             mass (int or ndarray): Mass of the aircraft (unit: kg).
             tas (int or ndarray): True airspeed (unit: kt).
             alt (int or ndarray): Altitude (unit: ft).
-            path_angle (float or ndarray): Path angle (unit: degree).
-                                            Defaults to 0.
+            path_angle (float or ndarray): Path angle (unit: degree). Defaults to 0.
 
         Returns:
             int: Total drag (unit: N).
@@ -129,10 +124,10 @@ class Drag(object):
             mach = self.aero.tas2mach(tas * self.aero.kts, alt * self.aero.ft)
             cl = self._cl(mass, tas, alt, path_angle)
 
-            sweep = self.np.radians(self.aircraft["wing"]["sweep"])
+            sweep = self.aircraft["wing"]["sweep"] * self.np.pi / 180
             tc = self.aircraft["wing"]["t/c"]
 
-            # Default thickness to chord ratio is 0.11, based on 
+            # Default thickness to chord ratio is 0.11, based on
             # data from Obert (2009) (I think Figure 16.1)
             if tc is None:
                 tc = 0.11
@@ -142,14 +137,12 @@ class Drag(object):
             # Equation 17 and 18 in Gur et al. (2010)
             # Only for a conventional airfoil
             mach_crit = (
-                0.87 - 0.108 / cos_sweep - 0.1 * cl / (cos_sweep ** 2)\
-                - tc / cos_sweep
+                0.87 - 0.108 / cos_sweep - 0.1 * cl / (cos_sweep**2) - tc / cos_sweep
             ) / cos_sweep
 
-           
             # Equation 15 in Gur et al. (2010)
-            dmach = np.maximum(mach - mach_crit, 0.0)
-            dCdw = 20 * dmach ** 4
+            dmach = self.np.maximum(mach - mach_crit, 0.0)
+            dCdw = 20 * dmach**4
 
         else:
             dCdw = 0
@@ -160,8 +153,7 @@ class Drag(object):
         return D
 
     @ndarrayconvert
-    def nonclean(self, mass, tas, alt, flap_angle, path_angle=0,
-                    landing_gear=False):
+    def nonclean(self, mass, tas, alt, flap_angle, path_angle=0, landing_gear=False):
         """Compute drag at at non-clean configuration.
 
         Args:
@@ -169,8 +161,7 @@ class Drag(object):
             tas (int or ndarray): True airspeed (unit: kt).
             alt (int or ndarray): Altitude (unit: ft).
             flap_angle (int or ndarray): flap deflection angle (unit: degree).
-            path_angle (float or ndarray): Path angle (unit: degree).
-                                            Defaults to 0.
+            path_angle (float or ndarray): Path angle (unit: degree). Defaults to 0.
             landing_gear (bool): Is landing gear extended? Defaults to False.
 
         Returns:
@@ -190,7 +181,7 @@ class Drag(object):
             lambda_f
             * (cfc) ** 1.38
             * (SfS)
-            * self.np.sin(self.np.radians(flap_angle)) ** 2
+            * self.np.sin(flap_angle * self.np.pi / 180) ** 2
         )
 
         if landing_gear:

@@ -20,6 +20,7 @@ Examples:
         }
 
 """
+
 import os
 import glob
 import pandas as pd
@@ -51,17 +52,14 @@ class WRAP(object):
         ac_wrap_available = [s[-8:-4].lower() for s in wrap_files]
 
         if self.ac not in ac_wrap_available and not self.use_synonym:
-            raise ValueError((f"Kinematic model for {self.ac} not"
-                                " available in OpenAP."))
+            raise ValueError((f"Kinematic model for {self.ac} not available."))
 
         if self.ac not in ac_wrap_available and self.use_synonym:
             syno = wrap_synonym.query("orig==@self.ac")
             if syno.shape[0] > 0:
                 self.ac = syno.new.iloc[0]
             else:
-                raise ValueError(
-                    f"Kinematic model for {self.ac} not available in OpenAP."
-                )
+                raise ValueError(f"Kinematic model for {self.ac} not available.")
 
         self.df = pd.read_fwf(os.path.join(dir_wrap, self.ac + ".txt"))
 

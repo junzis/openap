@@ -43,8 +43,10 @@ class Thrust(object):
             eng_options = list(aircraft["engine"]["options"])
         if engine["name"] not in eng_options:
             raise ValueError(
-                (f"Engine {eng} and aircraft {ac} mismatch."
-                 f" Available engines for {ac} are {eng_options}")
+                (
+                    f"Engine {eng} and aircraft {ac} mismatch."
+                    f" Available engines for {ac} are {eng_options}"
+                )
             )
 
         self.cruise_alt = aircraft["cruise"]["height"] / self.aero.ft
@@ -66,7 +68,7 @@ class Thrust(object):
         Args:
             mratio (float or ndarray): Ratio of mach number to reference mach
                 number
-            
+
         Returns:
             float or ndarray: parameter 'd' in Equation 15 from Bartel
                 and Young (2008)
@@ -90,12 +92,11 @@ class Thrust(object):
         """
         Based on data from Table 4 in Bartel and Young (2008).
         """
-        m = -1.2043e-1 * vratio - 8.8889e-9 * roc ** 2\
-            + 2.4444e-5 * roc + 4.7379e-1
+        m = -1.2043e-1 * vratio - 8.8889e-9 * roc**2 + 2.4444e-5 * roc + 4.7379e-1
         return m
 
     @ndarrayconvert
-    def takeoff(self, tas, alt=0.0):
+    def takeoff(self, tas, alt=0):
         """Calculate thrust at take-off condition.
 
         Args:
@@ -112,7 +113,7 @@ class Thrust(object):
         # Engine bypass ratio
         eng_bpr = self.eng_bpr
 
-        # G0 is the "Gas generator function", defined as the ratio of 
+        # G0 is the "Gas generator function", defined as the ratio of
         # the kinetic energy to the flow of enthalpy into the jet core
         # This is a fit to Fig. 5 in Bartel and Young (2008)
         G0 = 0.0606 * self.eng_bpr + 0.6337
@@ -122,20 +123,15 @@ class Thrust(object):
 
         # Equations 12, 13 and 14 in Bartel and Young (2008)
         # Evaluate to 1 if dP = 1, which is the case for alt = 0 ft
-        A = -0.4327 * dP ** 2 + 1.3855 * dP + 0.0472
-        Z = 0.9106 * dP ** 3 - 1.7736 * dP ** 2 + 1.8697 * dP
-        X = 0.1377 * dP ** 3 - 0.4374 * dP ** 2 + 1.3003 * dP
-
+        A = -0.4327 * dP**2 + 1.3855 * dP + 0.0472
+        Z = 0.9106 * dP**3 - 1.7736 * dP**2 + 1.8697 * dP
+        X = 0.1377 * dP**3 - 0.4374 * dP**2 + 1.3003 * dP
 
         # Equation 11 in Bartel and Young (2008)
         ratio = (
-                A
-                - 0.377
-                * (1 + eng_bpr)
-                / self.np.sqrt((1 + 0.82 * eng_bpr) * G0)
-                * Z
-                * mach
-                + (0.23 + 0.19 * self.np.sqrt(eng_bpr)) * X * mach ** 2
+            A
+            - 0.377 * (1 + eng_bpr) / self.np.sqrt((1 + 0.82 * eng_bpr) * G0) * Z * mach
+            + (0.23 + 0.19 * self.np.sqrt(eng_bpr)) * X * mach**2
         )
 
         F = ratio * self.eng_max_thrust * self.eng_number
@@ -178,16 +174,13 @@ class Thrust(object):
 
         P = self.aero.pressure(h)
 
-        
         P10 = self.aero.pressure(10000 * self.aero.ft)
         Pcr = self.aero.pressure(self.cruise_alt * self.aero.ft)
 
         # approximate thrust at top of climb
         Fcr = self.eng_cruise_thrust * self.eng_number
-        vcas_ref = self.aero.mach2cas(self.cruise_mach,
-                        self.cruise_alt * self.aero.ft)
+        vcas_ref = self.aero.mach2cas(self.cruise_mach, self.cruise_alt * self.aero.ft)
 
-        
         # segment 3: alt > 30000:
         d = self._dfunc(mach / self.cruise_mach)
 
@@ -204,7 +197,7 @@ class Thrust(object):
 
         # Equation 17 in Bartel and Young (2008)
         ratio_seg2 = a * (P / Pcr) ** (-0.355 * (vcas / vcas_ref) + n)
-        
+
         # segment 1: alt <= 10000:
         # Equation 17 in Bartel and Young (2008)
         F10 = Fcr * a * (P10 / Pcr) ** (-0.355 * (vcas / vcas_ref) + n)
@@ -213,10 +206,9 @@ class Thrust(object):
         # Equation 19 in Bartel and Young (2008)
         ratio_seg1 = m * (P / Pcr) + (F10 / Fcr - m * (P10 / Pcr))
 
-        condlist = [alt > 30000,  (10000 < alt) & (alt <= 30000),
-                    (alt < 10000)]
-        choicelist = [ratio_seg3, ratio_seg2, ratio_seg1]
-        ratio = self.np.select(condlist, choicelist)
+        ratio = self.np.where(
+            alt > 30000, ratio_seg3, self.np.where(alt > 10000, ratio_seg2, ratio_seg1)
+        )
 
         F = ratio * Fcr
         return F
