@@ -9,6 +9,7 @@ Models for Modern Two-Shaft Turbofan Engines
 """
 
 import importlib
+
 from openap import prop
 from openap.extra import ndarrayconvert
 
@@ -31,23 +32,24 @@ class Thrust(object):
             self.aero = importlib.import_module("openap").aero
 
         aircraft = prop.aircraft(ac, **kwargs)
+        force_engine = kwargs.get("force_engine", False)
 
         if eng is None:
             eng = aircraft["engine"]["default"]
 
         engine = prop.engine(eng)
 
-        if type(aircraft["engine"]["options"]) == dict:
+        eng_options = aircraft["engine"]["options"]
+
+        if isinstance(eng_options, dict):
             eng_options = list(aircraft["engine"]["options"].values())
-        elif type(aircraft["engine"]["options"]) == list:
-            eng_options = list(aircraft["engine"]["options"])
-        if engine["name"] not in eng_options:
+
+        if (not force_engine) and (engine["name"] not in eng_options):
             raise ValueError(
                 (
-                    f"Engine {eng} and aircraft {ac} mismatch."
-                    f" Available engines for {ac} are {eng_options}"
+                    f"Engine {eng} and aircraft {ac} mismatch. "
+                    f"Available engines for {ac} are {eng_options}"
                 )
-            )
 
         self.cruise_alt = aircraft["cruise"]["height"] / self.aero.ft
         self.eng_bpr = engine["bpr"]

@@ -25,7 +25,7 @@ Install the latest stable release from pypi:
 pip install --upgrade openap
 ```
 
-Install the latest stable release on conda-froge:
+Install the latest stable release on conda-forge:
 
 ```sh
 conda install openap

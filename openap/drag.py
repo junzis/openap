@@ -1,16 +1,16 @@
 """OpenAP drag model."""
 
-import os
-import importlib
-import pandas as pd
 import glob
+import importlib
+import os
+import warnings
+
+import pandas as pd
 import yaml
-import math
 import warnings
 
 from . import prop
 from .extra import ndarrayconvert
-
 
 curr_path = os.path.dirname(os.path.realpath(__file__))
 dir_dragpolar = os.path.join(curr_path, "data/dragpolar/")
@@ -65,20 +65,20 @@ class Drag(object):
                 raise ValueError(f"Drag polar for {self.ac} not avaiable.")
 
         f = dir_dragpolar + ac + ".yml"
-        dragpolar = yaml.safe_load(open(f))
+        with open(f, "r") as file:
+            dragpolar = yaml.safe_load(file.read())
         return dragpolar
 
     @ndarrayconvert
-    def _cl(self, mass, tas, alt, path_angle):
+    def _cl(self, mass, tas, alt):
         v = tas * self.aero.kts
         h = alt * self.aero.ft
-        gamma = path_angle * self.np.pi / 180
 
         S = self.aircraft["wing"]["area"]
 
         rho = self.aero.density(h)
         qS = 0.5 * rho * v**2 * S
-        L = mass * self.aero.g0 * self.np.cos(gamma)
+        L = mass * self.aero.g0
 
         # 1e-3: avoid zero division
         qS = self.np.maximum(qS, 1e-3)
@@ -96,6 +96,8 @@ class Drag(object):
         rho = self.aero.density(h)
         qS = 0.5 * rho * v**2 * S
         L = mass * self.aero.g0 * self.np.cos(gamma)
+
+        # 1e-3: avoid zero division
         qS = self.np.maximum(qS, 1e-3)
         cl = L / qS
         cd = cd0 + k * cl**2
@@ -122,27 +124,28 @@ class Drag(object):
 
         if self.wave_drag:
             mach = self.aero.tas2mach(tas * self.aero.kts, alt * self.aero.ft)
-            cl = self._cl(mass, tas, alt, path_angle)
+            cl = self._cl(mass, tas, alt)
 
             sweep = self.aircraft["wing"]["sweep"] * self.np.pi / 180
             tc = self.aircraft["wing"]["t/c"]
 
-            # Default thickness to chord ratio is 0.11, based on
-            # data from Obert (2009) (I think Figure 16.1)
+            # Default thickness to chord ratio, based on Obert (2009)
             if tc is None:
-                tc = 0.11
+                tc = 0.12
 
             cos_sweep = self.np.cos(sweep)
 
-            # Equation 17 and 18 in Gur et al. (2010)
-            # Only for a conventional airfoil
+            kappa = 0.95  # assume supercritical airfoils
+
+            # Equation 17 and 18 in Gur et al. (2010) - for conventional airfoil
             mach_crit = (
-                0.87 - 0.108 / cos_sweep - 0.1 * cl / (cos_sweep**2) - tc / cos_sweep
-            ) / cos_sweep
+                kappa / cos_sweep - tc / cos_sweep**2 - 0.1 * cl / cos_sweep**3 - 0.108
+            )
 
             # Equation 15 in Gur et al. (2010)
             dmach = self.np.maximum(mach - mach_crit, 0.0)
             dCdw = 20 * dmach**4
+
 
         else:
             dCdw = 0
