@@ -28,82 +28,89 @@ deg = 180 / 3.14159  # radians -> degrees
 rad = 3.14159 / 180  # degrees -> radians
 
 
-def atmos(h):
+def atmos(h, dT=0):
     """Compute press, density and temperature at a given altitude.
 
     Args:
         h (SX or MX): Altitude (in meters).
+        dT (SX or MX): Temperature shift from ISA (in K).  Defaults to 0.
 
     Returns:
         (SX, SX, SX) or (MX, MX, MX):
             Air pressure (Pa), density (kg/m3), and temperature (K).
 
     """
-    # T = np.maximum(288.15 - 0.0065 * h, 216.65)
-    # rhotrop = 1.225 * (T / 288.15) ** 4.256848030018761
+    # dT = np.maximum(-15, np.minimum(dT, 15))
+    # T0_shift = T0 + dT
+    # T = np.maximum(T0_shift + beta * h, 216.65 + dT)
+    # rhotrop = rho0 * (T / T0_shift) ** 4.256848030018761
     # dhstrat = np.maximum(0.0, h - 11000.0)
     # rho = rhotrop * np.exp(-dhstrat / 6341.552161)
 
     # use exponential model to avoid discontinuity at tropopause
-    T = 85.46369268 * np.exp(-0.00017235 * h) + 213.31449979
+    T = 85.46369268 * np.exp(-0.00017235 * h) + 213.31449979 + dT
     rho = 1.31788377 * np.exp(-0.00011107 * h) - 0.03933069
     p = rho * R * T
     return p, rho, T
 
 
-def temperature(h):
+def temperature(h, dT=0):
     """Compute air temperature at a given altitude.
 
     Args:
         h (SX or MX): Altitude (in meters).
+        dT (SX or MX): Temperature shift from ISA (in K).  Defaults to 0.
 
     Returns:
         SX or MX: Air temperature (K).
 
     """
-    p, r, T = atmos(h)
+    p, r, T = atmos(h, dT)
     return T
 
 
-def pressure(h):
+def pressure(h, dT=0):
     """Compute air pressure at a given altitude.
 
     Args:
         h (SX or MX): Altitude (in meters).
+        dT (SX or MX): Temperature shift from ISA (in K).  Defaults to 0.
 
     Returns:
         SX or MX: Air pressure (Pa).
 
     """
-    p, r, T = atmos(h)
+    p, r, T = atmos(h, dT)
     return p
 
 
-def density(h):
+def density(h, dT=0):
     """Compute air density at a given altitude.
 
     Args:
         h (SX or MX): Altitude (in meters).
+        dT (SX or MX): Temperature shift from ISA (in K).  Defaults to 0.
 
     Returns:
         SX or MX: Air density (kg/m3).
 
     """
-    p, r, T = atmos(h)
+    p, r, T = atmos(h, dT)
     return r
 
 
-def vsound(h):
+def vsound(h, dT=0):
     """Compute speed of sound at a given altitude.
 
     Args:
         h (SX or MX): Altitude (in meters).
+        dT (SX or MX): Temperature shift from ISA (in K).  Defaults to 0.
 
     Returns:
         SX or MX: speed of sound (m/s).
 
     """
-    T = temperature(h)
+    T = temperature(h, dT)
     a = np.sqrt(gamma * R * T)
     return a
 
@@ -162,22 +169,24 @@ def bearing(lat1, lon1, lat2, lon2):
     return bearing
 
 
-def h_isa(p):
+def h_isa(p, dT=0):
     """Compute ISA altitude for a given pressure.
 
     Args:
         p (SX or MX): Pressure (in Pa).
+        dT (SX or MX): Temperature shift from ISA (in K).  Defaults to 0.
 
     Returns:
         SX or MX: altitude (m).
 
     """
     # p >= 22630:
-    T = T0 * (p0 / p) ** ((-0.0065 * R) / g0)
-    h = (T - T0) / -0.0065
+    T0_shift = T0 + dT
+    T = T0_shift * (p0 / p) ** ((-0.0065 * R) / g0)
+    h = (T - T0_shift) / -0.0065
 
     # 5470 < p < 22630
-    T1 = T0 - 0.0065 * (11000)
+    T1 = T0_shift - 0.0065 * (11000)
     p1 = 22630
     h1 = -R * T1 / g0 * np.log(p / p1) + 11000
 
@@ -220,150 +229,160 @@ def latlon(lat1, lon1, d, brg, h=0):
     return lat2, lon2
 
 
-def tas2mach(v_tas, h):
+def tas2mach(v_tas, h, dT=0):
     """Convert true airspeed to mach number at a given altitude.
 
     Args:
         v_tas (SX or MX): True airspeed (m/s).
         h (SX or MX): Altitude (m).
+        dT (SX or MX): Temperature shift from ISA (in K).  Defaults to 0.
 
     Returns:
         SX or MX: mach number.
 
     """
-    a = vsound(h)
+    a = vsound(h, dT)
     mach = v_tas / a
     return mach
 
 
-def mach2tas(mach, h):
+def mach2tas(mach, h, dT=0):
     """Convert mach number to true airspeed at a given altitude.
 
     Args:
         mach (SX or MX): Mach number.
         h (SX or MX): Altitude (m).
+        dT (SX or MX): Temperature shift from ISA (in K).  Defaults to 0.
 
     Returns:
         SX or MX: True airspeed (m/s).
 
     """
-    a = vsound(h)
+    a = vsound(h, dT)
     v_tas = mach * a
     return v_tas
 
 
-def eas2tas(v_eas, h):
+def eas2tas(v_eas, h, dT=0):
     """Convert equivalent airspeed to true airspeed at a given altitude.
 
     Args:
         v_eas (SX or MX): Equivalent airspeed (m/s).
         h (SX or MX): Altitude (m).
+        dT (SX or MX): Temperature shift from ISA (in K).  Defaults to 0.
 
     Returns:
         SX or MX: True airspeed (m/s).
 
     """
-    rho = density(h)
+    rho = density(h, dT)
     v_tas = v_eas * np.sqrt(rho0 / rho)
     return v_tas
 
 
-def tas2eas(v_tas, h):
+def tas2eas(v_tas, h, dT=0):
     """Convert true airspeed to equivalent airspeed at a given altitude.
 
     Args:
         v_tas (SX or MX): True airspeed (m/s).
         h (SX or MX): Altitude (m).
+        dT (SX or MX): Temperature shift from ISA (in K).  Defaults to 0.
 
     Returns:
         SX or MX: Equivalent airspeed (m/s).
 
     """
-    rho = density(h)
+    rho = density(h, dT)
     v_eas = v_tas * np.sqrt(rho / rho0)
     return v_eas
 
 
-def cas2tas(v_cas, h):
+def cas2tas(v_cas, h, dT=0):
     """Convert calibrated airspeed to true airspeed at a given altitude.
 
     Args:
         v_cas (SX or MX): Equivalent airspeed (m/s).
         h (SX or MX): Altitude (m).
+        dT (SX or MX): Temperature shift from ISA (in K).  Defaults to 0.
 
     Returns:
         SX or MX: True airspeed (m/s).
 
     """
-    p, rho, T = atmos(h)
+    p, rho, T = atmos(h, dT)
     qdyn = p0 * ((1.0 + rho0 * v_cas * v_cas / (7.0 * p0)) ** 3.5 - 1.0)
     v_tas = np.sqrt(7.0 * p / rho * ((1.0 + qdyn / p) ** (2.0 / 7.0) - 1.0))
     return v_tas
 
 
-def tas2cas(v_tas, h):
+def tas2cas(v_tas, h, dT=0):
     """Convert true airspeed to calibrated airspeed at a given altitude.
 
     Args:
         v_tas (SX or MX): True airspeed (m/s).
         h (SX or MX): Altitude (m).
+        dT (SX or MX): Temperature shift from ISA (in K).  Defaults to 0.
 
     Returns:
         SX or MX: Calibrated airspeed (m/s).
 
     """
-    p, rho, T = atmos(h)
+    p, rho, T = atmos(h, dT)
     qdyn = p * ((1.0 + rho * v_tas * v_tas / (7.0 * p)) ** 3.5 - 1.0)
     v_cas = np.sqrt(7.0 * p0 / rho0 * ((qdyn / p0 + 1.0) ** (2.0 / 7.0) - 1.0))
     return v_cas
 
 
-def mach2cas(mach, h):
+def mach2cas(mach, h, dT=0):
     """Convert mach number to calibrated airspeed at a given altitude.
 
     Args:
         mach (SX or MX): Mach number.
         h (SX or MX): Altitude (m).
+        dT (SX or MX): Temperature shift from ISA (in K).  Defaults to 0.
 
     Returns:
         SX or MX: Calibrated airspeed (m/s).
 
     """
-    v_tas = mach2tas(mach, h)
-    v_cas = tas2cas(v_tas, h)
+    v_tas = mach2tas(mach, h, dT)
+    v_cas = tas2cas(v_tas, h, dT)
     return v_cas
 
 
-def cas2mach(v_cas, h):
+def cas2mach(v_cas, h, dT=0):
     """Convert calibrated airspeed to mach number  at a given altitude.
 
     Args:
         v_cas (SX or MX): Calibrated airspeed (m/s).
         h (SX or MX): Altitude (m).
+        dT (SX or MX): Temperature shift from ISA (in K).  Defaults to 0.
 
     Returns:
         SX or MX: Mach number.
 
     """
-    v_tas = cas2tas(v_cas, h)
-    mach = tas2mach(v_tas, h)
+    v_tas = cas2tas(v_cas, h, dT)
+    mach = tas2mach(v_tas, h, dT)
     return mach
 
 
-def crossover_alt(v_cas, mach):
+def crossover_alt(v_cas, mach, dT=0):
     """Convert the crossover altitude given constant CAS and Mach.
 
     Args:
         v_cas (SX or MX): Calibrated airspeed (m/s).
         mach (SX or MX): Mach number.
+        dT (SX or MX): Temperature shift from ISA (in K).  Defaults to 0.
 
     Returns:
         SX or MX: Altitude (m).
 
     """
+    T0_shift = T0 + dT
     mach = 1e-4 if mach < 1e-4 else mach
     delta = ((0.2 * (v_cas / a0) ** 2 + 1) ** 3.5 - 1) / (
         (0.2 * mach**2 + 1) ** 3.5 - 1
     )
-    h = T0 / beta * (delta ** (-1 * R * beta / g0) - 1)
+    h = T0_shift / beta * (delta ** (-1 * R * beta / g0) - 1)
     return h
