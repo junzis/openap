@@ -8,13 +8,13 @@ Models for Modern Two-Shaft Turbofan Engines
 - C. Svoboda, Turbofan engine database as a preliminary design (cruise thrust)
 """
 
-import importlib
-
 from openap import prop
 from openap.extra import ndarrayconvert
 
+from .base import ThrustBase
 
-class Thrust(object):
+
+class Thrust(ThrustBase):
     """Simplified two-shaft turbofan model."""
 
     def __init__(self, ac, eng=None, **kwargs):
@@ -25,11 +25,7 @@ class Thrust(object):
             eng (string): Engine type (for example: CFM56-5A3).
 
         """
-        if not hasattr(self, "np"):
-            self.np = importlib.import_module("numpy")
-
-        if not hasattr(self, "aero"):
-            self.aero = importlib.import_module("openap").aero
+        super().__init__(ac, eng, **kwargs)
 
         aircraft = prop.aircraft(ac, **kwargs)
         force_engine = kwargs.get("force_engine", False)
@@ -133,8 +129,12 @@ class Thrust(object):
         # Equation 11 in Bartel and Young (2008)
         ratio = (
             A
-            - 0.377 * (1 + eng_bpr) / self.np.sqrt((1 + 0.82 * eng_bpr) * G0) * Z * mach
-            + (0.23 + 0.19 * self.np.sqrt(eng_bpr)) * X * mach**2
+            - 0.377
+            * (1 + eng_bpr)
+            / self.sci.sqrt((1 + 0.82 * eng_bpr) * G0)
+            * Z
+            * mach
+            + (0.23 + 0.19 * self.sci.sqrt(eng_bpr)) * X * mach**2
         )
 
         F = ratio * self.eng_max_thrust * self.eng_number
@@ -167,10 +167,10 @@ class Thrust(object):
         Returns:
             float or ndarray: Total thrust (unit: N).
         """
-        roc = self.np.abs(roc)
+        roc = self.sci.abs(roc)
 
         h = alt * self.aero.ft
-        tas = self.np.maximum(10, tas)
+        tas = self.sci.maximum(10, tas)
 
         mach = self.aero.tas2mach(tas * self.aero.kts, h)
         vcas = self.aero.tas2cas(tas * self.aero.kts, h)
@@ -191,7 +191,7 @@ class Thrust(object):
         b = (mach / self.cruise_mach) ** (-0.11)
 
         # Equation 15 in Bartel and Young (2008)
-        ratio_seg3 = d * self.np.log(P / Pcr) + b
+        ratio_seg3 = d * self.sci.log(P / Pcr) + b
 
         # segment 2: 10000 < alt <= 30000:
         # Equation 18 in Bartel and Young (2008)
@@ -209,8 +209,8 @@ class Thrust(object):
         # Equation 19 in Bartel and Young (2008)
         ratio_seg1 = m * (P / Pcr) + (F10 / Fcr - m * (P10 / Pcr))
 
-        ratio = self.np.where(
-            alt > 30000, ratio_seg3, self.np.where(alt > 10000, ratio_seg2, ratio_seg1)
+        ratio = self.sci.where(
+            alt > 30000, ratio_seg3, self.sci.where(alt > 10000, ratio_seg2, ratio_seg1)
         )
 
         F = ratio * Fcr

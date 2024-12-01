@@ -5,20 +5,16 @@ import importlib
 import os
 import warnings
 
-import pandas as pd
 import yaml
 
+import pandas as pd
+
 from . import prop
+from .base import DragBase
 from .extra import ndarrayconvert
 
-curr_path = os.path.dirname(os.path.realpath(__file__))
-dir_dragpolar = os.path.join(curr_path, "data/dragpolar/")
-file_synonym = os.path.join(curr_path, "data/dragpolar/_synonym.csv")
 
-polar_synonym = pd.read_csv(file_synonym)
-
-
-class Drag(object):
+class Drag(DragBase):
     """Compute the drag of an aircraft."""
 
     def __init__(self, ac, wave_drag=False, **kwargs):
@@ -29,28 +25,31 @@ class Drag(object):
             wave_drag (bool): enable Wave drag model (experimental).
 
         """
-        if not hasattr(self, "np"):
-            self.np = importlib.import_module("numpy")
-
-        if not hasattr(self, "aero"):
-            self.aero = importlib.import_module("openap").aero
+        super().__init__(ac, **kwargs)
 
         self.use_synonym = kwargs.get("use_synonym", False)
 
         self.ac = ac.lower()
         self.aircraft = prop.aircraft(ac, **kwargs)
-        self.polar = self.dragpolar()
+        self.polar = self.load_drag_model()
 
         self.wave_drag = wave_drag
         if self.wave_drag:
             warnings.warn("Warning: Wave drag is experimental.")
 
-    def dragpolar(self):
+    def load_drag_model(self):
         """Find and construct the drag polar model.
 
         Returns:
             dict: drag polar model parameters.
         """
+
+        # Load drag polar data
+        curr_path = os.path.dirname(os.path.realpath(__file__))
+        dir_dragpolar = os.path.join(curr_path, "data/dragpolar/")
+        file_synonym = os.path.join(curr_path, "data/dragpolar/_synonym.csv")
+        polar_synonym = pd.read_csv(file_synonym)
+
         polar_files = glob.glob(dir_dragpolar + "*.yml")
         ac_polar_available = [s[-8:-4].lower() for s in polar_files]
 
@@ -69,37 +68,23 @@ class Drag(object):
         return dragpolar
 
     @ndarrayconvert
-    def _cl(self, mass, tas, alt):
+    def _cl(self, mass, tas, alt, vs=0):
         v = tas * self.aero.kts
         h = alt * self.aero.ft
-
+        vs = vs * self.aero.fpm
+        gamma = self.sci.arctan2(vs, v)
         S = self.aircraft["wing"]["area"]
-
         rho = self.aero.density(h)
         qS = 0.5 * rho * v**2 * S
-        L = mass * self.aero.g0
-
-        # 1e-3: avoid zero division
-        qS = self.np.maximum(qS, 1e-3)
+        L = mass * self.aero.g0 * self.sci.cos(gamma)
+        qS = self.sci.maximum(qS, 1e-3)  # avoid zero division
         cl = L / qS
-        return cl
+
+        return cl, qS
 
     @ndarrayconvert
     def _calc_drag(self, mass, tas, alt, cd0, k, vs):
-        v = tas * self.aero.kts
-        h = alt * self.aero.ft
-
-        gamma = self.np.arctan2(vs * self.aero.fpm, tas * self.aero.kts)
-
-        S = self.aircraft["wing"]["area"]
-
-        rho = self.aero.density(h)
-        qS = 0.5 * rho * v**2 * S
-        L = mass * self.aero.g0 * self.np.cos(gamma)
-
-        # 1e-3: avoid zero division
-        qS = self.np.maximum(qS, 1e-3)
-        cl = L / qS
+        cl, qS = self._cl(mass, tas, alt, vs)
         cd = cd0 + k * cl**2
         D = cd * qS
         return D
@@ -124,16 +109,16 @@ class Drag(object):
 
         if self.wave_drag:
             mach = self.aero.tas2mach(tas * self.aero.kts, alt * self.aero.ft)
-            cl = self._cl(mass, tas, alt)
+            cl, qS = self._cl(mass, tas, alt)
 
-            sweep = self.aircraft["wing"]["sweep"] * self.np.pi / 180
+            sweep = self.aircraft["wing"]["sweep"] * self.sci.pi / 180
             tc = self.aircraft["wing"]["t/c"]
 
             # Default thickness to chord ratio, based on Obert (2009)
             if tc is None:
                 tc = 0.12
 
-            cos_sweep = self.np.cos(sweep)
+            cos_sweep = self.sci.cos(sweep)
 
             kappa = 0.95  # assume supercritical airfoils
 
@@ -143,7 +128,7 @@ class Drag(object):
             )
 
             # Equation 15 in Gur et al. (2010)
-            dmach = self.np.maximum(mach - mach_crit, 0.0)
+            dmach = self.sci.maximum(mach - mach_crit, 0.0)
             dCdw = 20 * dmach**4
 
         else:
@@ -183,7 +168,7 @@ class Drag(object):
             lambda_f
             * (cfc) ** 1.38
             * (SfS)
-            * self.np.sin(flap_angle * self.np.pi / 180) ** 2
+            * self.sci.sin(flap_angle * self.sci.pi / 180) ** 2
         )
 
         if landing_gear:
@@ -211,7 +196,7 @@ class Drag(object):
             delta_e_flap = 0.0026 * flap_angle
 
         ar = self.aircraft["wing"]["span"] ** 2 / self.aircraft["wing"]["area"]
-        k_total = 1 / (1 / k + self.np.pi * ar * delta_e_flap)
+        k_total = 1 / (1 / k + self.sci.pi * ar * delta_e_flap)
 
         D = self._calc_drag(mass, tas, alt, cd0_total, k_total, vs)
         return D

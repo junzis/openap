@@ -1,27 +1,25 @@
-"""OpenAP FuelFlow model."""
+""" "OpenAP FuelFlow model."""
 
 import glob
 import importlib
 import os
 import pathlib
 
-import pandas as pd
 import yaml
-from openap import aero, prop
+
+import pandas as pd
+from openap import prop
 from openap.extra import ndarrayconvert
+from openap.extra.aero import fpm, kts
 
-curr_path = os.path.dirname(os.path.realpath(__file__))
-dir_fuelmodel = os.path.join(curr_path, "data/fuel/")
-file_synonym = os.path.join(curr_path, "data/fuel/_synonym.csv")
-
-fuel_synonym = pd.read_csv(file_synonym)
+from .base import FuelFlowBase
 
 
 def func_fuel(coef):
     return lambda x: -coef * (x - 1) ** 2 + coef
 
 
-class FuelFlow(object):
+class FuelFlow(FuelFlowBase):
     """Fuel flow model based on ICAO emission databank."""
 
     def __init__(self, ac, eng=None, **kwargs):
@@ -34,8 +32,7 @@ class FuelFlow(object):
                 by in the aircraft database.
 
         """
-        if not hasattr(self, "np"):
-            self.np = importlib.import_module("numpy")
+        super().__init__(ac, eng, **kwargs)
 
         if not hasattr(self, "Thrust"):
             self.Thrust = importlib.import_module("openap.thrust").Thrust
@@ -60,15 +57,16 @@ class FuelFlow(object):
         self.drag = self.Drag(ac, **kwargs)
         self.wrap = self.WRAP(ac, **kwargs)
 
-        self.params = self.fuel_params()
+        self.params = self._load_fuel_params()
         self.polyfuel = func_fuel(self.params["fuel_coef"])
 
-    def fuel_params(self):
-        """Obtain the fuel model parameters.
+    def _load_fuel_params(self) -> dict:
+        curr_path = os.path.dirname(os.path.realpath(__file__))
+        dir_fuelmodel = os.path.join(curr_path, "data/fuel/")
+        file_synonym = os.path.join(curr_path, "data/fuel/_synonym.csv")
 
-        Returns:
-            dict: fuel model parameters.
-        """
+        fuel_synonym = pd.read_csv(file_synonym)
+
         polar_files = glob.glob(dir_fuelmodel + "*.yml")
         ac_polar_available = [pathlib.Path(s).stem for s in polar_files]
 
@@ -104,9 +102,12 @@ class FuelFlow(object):
 
         ratio = acthr / (max_eng_thrust * n_eng)
 
+        # always limit the lowest ratio to 0.07 without creating a discontinuity
+        ratio = self.sci.log(1 + self.sci.exp(20 * (ratio - 0.07))) / 20 + 0.07
+
+        # upper limit the ratio to 1
         if limit:
-            ratio = self.np.where(ratio < 0, 0, ratio)
-            ratio = self.np.where(ratio > 1, 1, ratio)
+            ratio = self.sci.where(ratio > 1, 1, ratio)
 
         fuelflow = self.polyfuel(ratio)
 
@@ -156,28 +157,28 @@ class FuelFlow(object):
         """
         D = self.drag.clean(mass=mass, tas=tas, alt=alt, vs=vs)
 
-        gamma = self.np.arctan2(vs * aero.fpm, tas * aero.kts)
+        gamma = self.sci.arctan2(vs * fpm, tas * kts)
 
         if limit:
-            # limit gamma to -10 to 10 degrees (0.175 radians)
-            gamma = self.np.where(gamma < -0.175, -0.175, gamma)
-            gamma = self.np.where(gamma > 0.175, 0.175, gamma)
+            # limit gamma to -20 to 20 degrees (0.175 radians)
+            gamma = self.sci.where(gamma < -0.175, -0.175, gamma)
+            gamma = self.sci.where(gamma > 0.175, 0.175, gamma)
 
             # limit acc to 5 m/s^2
-            acc = self.np.where(acc < -5, -5, acc)
-            acc = self.np.where(acc > 5, 5, acc)
+            acc = self.sci.where(acc < -5, -5, acc)
+            acc = self.sci.where(acc > 5, 5, acc)
 
-        T = D + mass * 9.81 * self.np.sin(gamma) + mass * acc
+        T = D + mass * 9.81 * self.sci.sin(gamma) + mass * acc
 
         if limit:
             T_max = self.thrust.climb(tas=tas, alt=alt, roc=0)
             T_idle = self.thrust.descent_idle(tas=tas, alt=alt)
 
             # below idle thrust
-            T = self.np.where(T < T_idle, T_idle, T)
+            T = self.sci.where(T < T_idle, T_idle, T)
 
             # outside performance boundary (with margin of 20%)
-            T = self.np.where(T > 1.2 * T_max, 1.2 * T_max, T)
+            T = self.sci.where(T > 1.2 * T_max, 1.2 * T_max, T)
 
         fuelflow = self.at_thrust(T, alt, limit=limit)
 
@@ -204,7 +205,7 @@ class FuelFlow(object):
         ]
         plt.scatter(x, y, color="k")
 
-        xx = self.np.linspace(0, 1, 50)
+        xx = self.sci.linspace(0, 1, 50)
         yy = self.polyfuel(xx)
         plt.plot(xx, yy, "--", color="gray")
 

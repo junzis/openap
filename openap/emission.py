@@ -20,7 +20,7 @@ class Emission(object):
 
         """
         if not hasattr(self, "np"):
-            self.np = importlib.import_module("numpy")
+            self.sci = importlib.import_module("numpy")
 
         if not hasattr(self, "aero"):
             self.aero = importlib.import_module("openap").aero
@@ -36,9 +36,9 @@ class Emission(object):
     def _fl2sl(self, ffac, tas, alt):
         """Convert to sea-level equivalent"""
         M = self.aero.tas2mach(tas * self.aero.kts, alt * self.aero.ft)
-        beta = self.np.exp(0.2 * (M**2))
+        beta = self.sci.exp(0.2 * (M**2))
         theta = (self.aero.temperature(alt * self.aero.ft) / 288.15) / beta
-        delta = (1 - 0.0019812 * alt / 288.15) ** 5.255876 / self.np.power(beta, 3.5)
+        delta = (1 - 0.0019812 * alt / 288.15) ** 5.255876 / self.sci.power(beta, 3.5)
         ratio = (theta**3.3) / (delta**1.02)
         # TODO: Where does this equation come from?
         ff_sl = (ffac / self.n_eng) * theta**3.8 / delta * beta
@@ -116,7 +116,7 @@ class Emission(object):
         """
         ff_sl, ratio = self._fl2sl(ffac, tas, alt)
 
-        nox_sl = self.np.interp(
+        nox_sl = self.sci.interp(
             ff_sl,
             [
                 self.engine["ff_idl"],
@@ -133,10 +133,12 @@ class Emission(object):
         )
 
         # convert back to actual flight level
-        omega = 10 ** (-3) * self.np.exp(-0.0001426 * (alt - 12900))
+        omega = 10 ** (-3) * self.sci.exp(-0.0001426 * (alt - 12900))
 
         # TODO: source
-        nox_fl = nox_sl * self.np.sqrt(1 / ratio) * self.np.exp(-19 * (omega - 0.00634))
+        nox_fl = (
+            nox_sl * self.sci.sqrt(1 / ratio) * self.sci.exp(-19 * (omega - 0.00634))
+        )
 
         # convert g/(kg fuel) to g/s for all engines
         nox_rate = nox_fl * ffac
@@ -157,7 +159,7 @@ class Emission(object):
         """
         ff_sl, ratio = self._fl2sl(ffac, tas, alt)
 
-        co_sl = self.np.interp(
+        co_sl = self.sci.interp(
             ff_sl,
             [
                 self.engine["ff_idl"],
@@ -196,7 +198,7 @@ class Emission(object):
         """
         ff_sl, ratio = self._fl2sl(ffac, tas, alt)
 
-        hc_sl = self.np.interp(
+        hc_sl = self.sci.interp(
             ff_sl,
             [
                 self.engine["ff_idl"],

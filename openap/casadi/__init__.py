@@ -1,6 +1,6 @@
 from .. import *
-from . import numpy_override as np
 from . import aero_override as aero
+from . import numpy_override as sci
 
 
 class RemoveDecoratorMeta(type):
@@ -12,7 +12,7 @@ class RemoveDecoratorMeta(type):
                 if hasattr(getattr(b, elt), "orig_func"):
                     attr_dict[elt] = getattr(b, elt).orig_func
 
-        attr_dict["np"] = np
+        attr_dict["sci"] = sci
         attr_dict["aero"] = aero
         return super().__new__(cls, name, base, attr_dict)
 
