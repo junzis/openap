@@ -2,8 +2,8 @@
 from glob import glob
 from xml.etree import ElementTree
 
-from . import drag, fuel, thrust
-from .extra import ndarrayconvert
+from .. import base
+from ..extra import ndarrayconvert
 
 
 # %%
@@ -29,7 +29,7 @@ def load_bada4(ac: str, path: str) -> ElementTree:
 
 
 # %%
-class Drag(drag.DragBase):
+class Drag(base.DragBase):
     """Compute the drag of an aircraft with BADA4 models."""
 
     def __init__(self, ac, bada_path, **kwargs):
@@ -143,7 +143,7 @@ class Drag(drag.DragBase):
         return D
 
 
-class Thrust(thrust.ThrustBase):
+class Thrust(base.ThrustBase):
     """Compute the thrust of an aircraft with BADA4 models."""
 
     def __init__(self, ac, bada_path, **kwargs):
@@ -221,7 +221,7 @@ class Thrust(thrust.ThrustBase):
 
 
 # %%
-class FuelFlow(fuel.FuelFlowBase):
+class FuelFlow(base.FuelFlowBase):
     """Compute the fuel flow of an aircraft with BADA4 models."""
 
     def __init__(self, ac, bada_path, **kwargs):

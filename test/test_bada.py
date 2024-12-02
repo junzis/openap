@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import openap
 import pandas as pd
-from openap import bada4
+from openap.addon import bada4
 
 bada_path = "../../../../data/bada_4.2/tables"
 
