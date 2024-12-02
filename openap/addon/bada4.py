@@ -12,8 +12,8 @@ from ..extra import ndarrayconvert
 def load_bada4(ac: str, path: str) -> ElementTree:
     """Find and construct the drag polar model.
     Args:
-        ac (string): ICAO aircraft type (for example: A320 or A320-231).
-        bada_path (string): path to BADA4 models.
+        ac (str): aircraft type (for example: A320 or A320-231).
+        bada_path (str): path to BADA4 models.
 
     Returns:
         xml.etree.ElementTree: BADA4 model XML.
@@ -36,7 +36,7 @@ class Drag(base.DragBase):
     Compute the drag of an aircraft using BADA4 models.
 
     Attributes:
-        ac (str): ICAO aircraft type (e.g., A320).
+        ac (str): aircraft type (e.g.: A320 or A320-231).
         scalar (float): Scalar value for drag coefficient calculation.
         d_ (ndarray): Array of drag coefficient parameters.
         mach_max (float): Maximum Mach number.
@@ -44,15 +44,16 @@ class Drag(base.DragBase):
 
     Methods:
         _cd_base(cl, mach):
-            Compute the base drag coefficient (CD) for given lift coefficient (CL) and Mach number.
+            Compute the base drag coefficient (CD) for givenlift coefficient (CL)
+            and Mach number.
 
         _cd(cl, mach):
-            Compute the drag coefficient (CD) for given lift coefficient (CL) and Mach number,
-            considering critical Mach number effects.
+            Compute the drag coefficient (CD) for given lift coefficient (CL)
+            and Mach number, considering critical Mach number effects.
 
         _cl(mass, tas, alt, vs=0):
-            Compute the lift coefficient (CL) for given aircraft mass, true airspeed (TAS),
-            altitude, and vertical speed.
+            Compute the lift coefficient (CL) for given aircraft mass,
+            true airspeed (TAS), altitude, and vertical speed.
 
         clean(mass, tas, alt, vs=0):
             Compute the total drag (N) for the aircraft in clean configuration.
@@ -62,8 +63,8 @@ class Drag(base.DragBase):
         """Initialize Drag object.
 
         Args:
-            ac (string): ICAO aircraft type (for example: A320).
-            path (string): path to BADA4 models.
+            ac (str): aircraft type (for example: A320).
+            path (str): path to BADA4 models.
 
         """
         super().__init__(ac, **kwargs)
@@ -142,7 +143,7 @@ class Drag(base.DragBase):
             mass (float | ndarray): Mass of the aircraft (kg).
             tas (float | ndarray): True airspeed (kt).
             alt (float | ndarray): Altitude (ft).
-            vs (float): Vertical rate (feet/min). Defaults to 0.
+            vs (float): Vertical rate (feet/min). Default: 0.
 
         Returns:
             float | ndarray: Total drag (N).
@@ -163,10 +164,11 @@ class Thrust(base.ThrustBase):
     """
     Thrust class for computing the thrust of an aircraft using BADA4 models.
 
-    This class provides methods to compute the thrust coefficient and thrust force during different phases of flight such as climb, cruise, and takeoff.
+    This class provides methods to compute the thrust coefficient and thrust force
+    during different phases of flight such as climb, cruise, and takeoff.
 
     Attributes:
-        ac (str): ICAO aircraft type (e.g., A320).
+        ac (str): aircraft type (e.g.: A320 or A320-231).
         a_ (list): List of coefficients for thrust computation.
         b_ (dict): Dictionary of flat rating coefficients for different ratings.
         c_ (dict): Dictionary of temperature rating coefficients for different ratings.
@@ -187,8 +189,8 @@ class Thrust(base.ThrustBase):
         """Initialize Thrust object.
 
         Args:
-            ac (string): ICAO aircraft type (for example: A320).
-            path (string): path to BADA4 models.
+            ac (str): aircraft type (for example: A320).
+            path (str): path to BADA4 models.
 
         """
         super().__init__(ac, **kwargs)
@@ -266,7 +268,7 @@ class Thrust(base.ThrustBase):
             mass (float | ndarray): The mass of the aircraft (kg).
             tas (float | ndarray): True airspeed (kts).
             alt (float | ndarray): Altitude (ft).
-            dT (float | ndarray, optional): ISA temperature deviation (K). Defaults to 0.
+            dT (float | ndarray, optional): ISA temperature deviation (K). Default: 0.
         Returns:
             float | ndarray: The thrust force during the climb phase in Newtons.
         """
@@ -288,7 +290,7 @@ class Thrust(base.ThrustBase):
             mass (float | ndarray): The mass of the aircraft (kg).
             tas (float | ndarray): True airspeed (kts).
             alt (float | ndarray): Altitude (ft).
-            dT (float | ndarray, optional): ISA temperature deviation (K). Defaults to 0.
+            dT (float | ndarray, optional): ISA temperature deviation (K). Default: 0.
         Returns:
             float | ndarray: The thrust force during the climb phase in Newtons.
         """
@@ -309,8 +311,8 @@ class Thrust(base.ThrustBase):
         Parameters:
             mass (float | ndarray): The mass of the aircraft (kg).
             tas (float | ndarray): True airspeed (kts).
-            alt (float | ndarray): Altitude (ft). Defaults to 0.
-            dT (float | ndarray, optional): ISA temperature deviation (K). Defaults to 0.
+            alt (float | ndarray): Altitude (ft). Default: 0.
+            dT (float | ndarray, optional): ISA temperature deviation (K). Default: 0.
         Returns:
             float | ndarray: The thrust force during the climb phase in Newtons.
         """
@@ -323,7 +325,7 @@ class FuelFlow(base.FuelFlowBase):
     FuelFlow class to compute the fuel flow of an aircraft using BADA4 models.
 
     Attributes:
-        ac (str): ICAO aircraft type (e.g., A320).
+        ac (str): aircraft type (e.g.: A320 or A320-231).
         mass_ref (float): Reference mass (kg).
         f_ (list): List of coefficients for fuel flow computation.
         fi_ (list): List of coefficients for idle rating.
@@ -342,8 +344,8 @@ class FuelFlow(base.FuelFlowBase):
         """Initialize FuelFlow object.
 
         Args:
-            ac (string): ICAO aircraft type (for example: A320).
-            path (string): path to BADA4 models.
+            ac (str): aircraft type (for example: A320).
+            path (str): path to BADA4 models.
 
         """
         super().__init__(ac, **kwargs)
@@ -372,7 +374,7 @@ class FuelFlow(base.FuelFlowBase):
 
     @ndarrayconvert
     def idle(self, mass, tas, alt, **kwargs) -> float | ndarray:
-        """Compute the fuel flow with idle rating.
+        """Compute the fuel flow at idle conditions.
 
         Args:
             mass (float | ndarray): Aircraft mass (kg).
@@ -402,7 +404,7 @@ class FuelFlow(base.FuelFlowBase):
 
     @ndarrayconvert
     def enroute(self, mass, tas, alt, vs=0, **kwargs) -> float | ndarray:
-        """Compute the fuel flow at not-idle.
+        """Compute the fuel flow at not-idle conditions.
 
         Args:
             mass (float | ndarray): Aircraft mass (kg).
