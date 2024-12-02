@@ -47,13 +47,16 @@ class ThrustBase(object):
 
         self.ac = ac.upper()
 
-    def takeoff(self, tas, alt=0):
+    def takeoff(self, tas, alt):
         raise NotImplementedError
 
     def climb(self, tas, alt):
         raise NotImplementedError
 
     def cruise(self, tas, alt, roc):
+        raise NotImplementedError
+
+    def idle(self, tas, alt, roc):
         raise NotImplementedError
 
 
