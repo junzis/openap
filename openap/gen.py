@@ -35,7 +35,7 @@ from .kinematic import WRAP
 class FlightGenerator:
     """Generate trajectory using WRAP model."""
 
-    def __init__(self, ac: str, random_seed: int = 42) -> None:
+    def __init__(self, ac: str, random_seed: int = 42, use_synonym: bool = False) -> None:
         """Intitialize the generator.
 
         Args:
@@ -46,9 +46,9 @@ class FlightGenerator:
         super(FlightGenerator, self).__init__()
 
         self.ac = ac
-        self.acdict = prop.aircraft(self.ac)
+        self.acdict = prop.aircraft(self.ac, use_synonym)
 
-        self.wrap = WRAP(self.ac)
+        self.wrap = WRAP(self.ac, use_synonym=use_synonym)
 
         # for noise generation
         self.sigma_v = 0
