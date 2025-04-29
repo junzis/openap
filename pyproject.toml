@@ -2,7 +2,7 @@
 name = "openap"
 version = "2.2"
 description = "Open Aircraft Performance Model (OpenAP) in Python"
-authors = [{ name = "Junzi Sun", email = "j.sun-1@tudelft.nl" }]
+authors = [{ name = "Junzi Sun", email = "git@junzis.com" }]
 license = { text = "GNU LGPL v3" }
 readme = "README.md"
 classifiers = [
