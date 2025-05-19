@@ -9,14 +9,14 @@ from ..extra import ndarrayconvert
 
 
 # %%
-def load_bada4(ac: str, path: str) -> ElementTree:
+def load_bada4(ac: str, path: str) -> ElementTree.ElementTree:
     """Find and construct the drag polar model.
     Args:
         ac (str): aircraft type (for example: A320 or A320-231).
         bada_path (str): path to BADA4 models.
 
     Returns:
-        xml.etree.ElementTree: BADA4 model XML.
+        xml.etree.ElementTree.ElementTree: BADA4 model XML.
     """
 
     ac_options = glob(f"{path}/{ac.upper()}*")

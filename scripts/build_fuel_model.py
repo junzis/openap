@@ -204,6 +204,8 @@ for typecode in acropole_typecodes:
         ax1.plot(x, func(x, *popt), "r-", label=f"fit: {popt}")
         ax1.legend()
         ax1.set_xlim(0, 0.7)
+        ax1.set_xlabel("Thrust ratio")
+        ax1.set_ylabel("Fuel flow")
 
         ax2.scatter(df1.thrust_ratio, df1.fuel_flow, s=5, alpha=0.02, c="tab:green")
         ax2.scatter(df2.thrust_ratio, df2.fuel_flow, s=5, alpha=0.02, c="tab:orange")
@@ -212,6 +214,8 @@ for typecode in acropole_typecodes:
         ax2.scatter(df5.thrust_ratio, df5.fuel_flow, s=5, alpha=0.02, c="gray")
         ax2.plot(x, func(x, *popt), "r-")
         ax2.set_xlim(0, 0.7)
+        ax2.set_xlabel("Thrust ratio")
+        ax2.set_ylabel("Fuel flow")
 
         plt.suptitle(typecode)
         plt.tight_layout()
@@ -284,6 +288,8 @@ print("default", popt)
 
 x = np.linspace(0, 1, 100)
 plt.plot(x, func(x, *popt), "b-")
+plt.xlabel("Thrust ratio")
+plt.ylabel("Fuel flow")
 
 
 plt.legend(ncol=3)
