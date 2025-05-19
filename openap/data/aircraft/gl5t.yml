@@ -1,0 +1,89 @@
+aircraft: Bombardier BD-700 Global 5000
+
+icao: GL5T
+iata: null
+
+mtow: 41957
+mlw: 35700
+oew: null
+mfc: null
+vmo: null
+mmo: null
+ceiling: 51000
+
+icao_wtc: medium
+eu_wtc: lower medium
+faa_wtc: medium
+parking_area_m2: 984
+
+pax:
+  max: 19
+  low: 8
+  high: null
+
+fuselage:
+  length: 29.5
+  height: 7.7
+  width: null
+
+wing:
+  area: null
+  span: 28.65
+  mac: null
+  sweep: null
+  t/c: null
+
+flaps:
+  type: null
+  area: null
+  bf/b: null
+  lambda_f: null
+  cf/c: null
+  Sf/S: null
+
+engine:
+  type: turbofan
+  mount: rear fuselage
+  number: 2
+  default: Rolls-Royce BR710A2-20 turbofan
+  options:
+  - Rolls-Royce BR710A2-20 turbofan
+
+drag:
+  cd0: null
+  k: null
+  e: null
+  gears: null
+
+kinematic:
+  takeoff:
+    v2: 150
+    distance_m: 1689
+  climb_to_fl50:
+    ias: 300
+    vs: 3000
+  climb_to_fl150:
+    ias: 300
+    vs: 3000
+  climb_to_fl240:
+    ias: 300
+    vs: 2500
+  mach_climb:
+    mach: 0.84
+    vs: 2000
+  cruise:
+    mach: 0.85
+    tas: 485
+    range_nm: 5200
+  descent_to_fl240:
+    mach: 0.85
+    vs: 1500
+  descent_to_fl100:
+    ias: 250
+    vs: 2300
+  approach:
+    ias: 210
+    vs: 1600
+  landing:
+    ias: 122
+    distance_m: 814

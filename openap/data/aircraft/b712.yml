@@ -1,0 +1,90 @@
+aircraft: Boeing 717-200
+
+icao: B712
+iata: "717"
+
+mtow: 54885
+mlw: 45400
+oew: null
+mfc: null
+vmo: null
+mmo: null
+ceiling: 37000
+
+icao_wtc: medium
+eu_wtc: lower medium
+faa_wtc: medium
+parking_area_m2: 1238
+
+pax:
+  max: 106
+  low: null
+  high: null
+
+fuselage:
+  length: 37.8
+  height: 8.9
+  width: null
+
+wing:
+  area: null
+  span: 28.5
+  mac: null
+  sweep: null
+  t/c: null
+
+flaps:
+  type: null
+  area: null
+  bf/b: null
+  lambda_f: null
+  cf/c: null
+  Sf/S: null
+
+engine:
+  type: turbofan
+  mount: both sides of rear fuselage
+  number: 2
+  default: BR700-715A1-30
+  options:
+    - BR700-715A1-30
+    - BR700-715C1-30
+
+drag:
+  cd0: null
+  k: null
+  e: null
+  gears: null
+
+kinematic:
+  takeoff:
+    v2: 130
+    distance_m: 2100
+  climb_to_fl50:
+    ias: 165
+    vs: 3000
+  climb_to_fl150:
+    ias: 270
+    vs: 3000
+  climb_to_fl240:
+    ias: 270
+    vs: 3000
+  mach_climb:
+    mach: 0.72
+    vs: 1500
+  cruise:
+    mach: 0.76
+    tas: 435
+    range_nm: 2060
+  descent_to_fl240:
+    mach: 0.72
+    vs: 800
+  descent_to_fl100:
+    ias: 290
+    vs: 3500
+  approach:
+    ias: 210
+    vs: 1500
+  landing:
+    ias: 139
+    distance_m: 1600

@@ -1,0 +1,90 @@
+aircraft: Boeing F-15 Eagle
+
+icao: F15
+iata: null
+
+mtow: 36740
+mlw: null
+oew: null
+mfc: null
+vmo: null
+mmo: null
+ceiling: 50000
+
+icao_wtc: medium
+eu_wtc: lower medium
+faa_wtc: null
+parking_area_m2: 337
+
+pax:
+  max: null
+  low: null
+  high: null
+
+fuselage:
+  length: 19.4
+  height: 5.6
+  width: null
+
+wing:
+  area: null
+  span: 13
+  mac: null
+  sweep: null
+  t/c: null
+
+flaps:
+  type: null
+  area: null
+  bf/b: null
+  lambda_f: null
+  cf/c: null
+  Sf/S: null
+
+engine:
+  type: turbofan
+  mount: in fuselage
+  number: 2
+  default: 2 x 65.3 kN P&W F100-PW-200 (2 x 107.7 kN with afterburner) turbofans
+  options:
+  - 2 x 65.3 kN P&W F100-PW-200 (2 x 107.7 kN with afterburner) turbofans
+  - 2 x 79.2 kN P&W F100-PW-229 (2 x 129.4 kN with afterburner) turbofans
+
+drag:
+  cd0: null
+  k: null
+  e: null
+  gears: null
+
+kinematic:
+  takeoff:
+    v2: 145
+    distance_m: 300
+  climb_to_fl50:
+    ias: 175
+    vs: 50000
+  climb_to_fl150:
+    ias: 300
+    vs: 30000
+  climb_to_fl240:
+    ias: 300
+    vs: 20000
+  mach_climb:
+    mach: 0.8
+    vs: 10000
+  cruise:
+    mach: 0.86
+    tas: 500
+    range_nm: 2400
+  descent_to_fl240:
+    mach: 0.85
+    vs: 20000
+  descent_to_fl100:
+    ias: 350
+    vs: 10000
+  approach:
+    ias: 250
+    vs: 1500
+  landing:
+    ias: 125
+    distance_m: 500

@@ -1,0 +1,91 @@
+aircraft: Mooney M-20C Ranger
+
+icao: M20P
+iata: null
+
+mtow: 1500.0
+mlw: 1500.0
+oew: null
+mfc: null
+vmo: null
+mmo: null
+ceiling: 25000
+
+icao_wtc: light
+eu_wtc: light
+faa_wtc: light
+parking_area_m2: 136.0
+
+pax:
+  max: 4
+  low: null
+  high: null
+
+fuselage:
+  length: 8.15
+  height: 2.5
+  width: null
+
+wing:
+  area: null
+  span: 11.1
+  mac: null
+  sweep: null
+  t/c: null
+
+flaps:
+  type: APC A
+  area: null
+  bf/b: null
+  lambda_f: null
+  cf/c: null
+  Sf/S: null
+
+engine:
+  type: piston
+  mount: nose mounted
+  number: 1
+  default: 1 x 180 HP Lycoming O-360-A1D piston engine with 2 blade propeller
+  options:
+  - 1 x 180 HP Lycoming O-360-A1D piston engine with 2 blade propeller
+  - 1 x 200 HP Lycoming IO-360-A1A piston engine with 2 blade propeller
+  - 1 x 280 HP Continental IO-550G piston engine with 2 blade propeller
+
+drag:
+  cd0: null
+  k: null
+  e: null
+  gears: null
+
+kinematic:
+  takeoff:
+    v2: 70
+    distance_m: 450
+  climb_to_fl50:
+    ias: 100
+    vs: 1240
+  climb_to_fl150:
+    ias: 150
+    vs: 1000
+  climb_to_fl240:
+    ias: 150
+    vs: 500
+  mach_climb:
+    mach: null
+    vs: null
+  cruise:
+    mach: null
+    tas: 237
+    range_nm: 1445
+  descent_to_fl240:
+    mach: null
+    vs: null
+  descent_to_fl100:
+    ias: 150
+    vs: 500
+  approach:
+    ias: 150
+    vs: 500
+  landing:
+    ias: 60
+    distance_m: 250

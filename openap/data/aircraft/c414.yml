@@ -1,0 +1,90 @@
+aircraft: Cessna Chancellor 414
+
+icao: C414
+iata: null
+
+mtow: 3100.0
+mlw: 3100.0
+oew: null
+mfc: null
+vmo: null
+mmo: null
+ceiling: 31000
+
+icao_wtc: light
+eu_wtc: light
+faa_wtc: light
+parking_area_m2: 208.0
+
+pax:
+  max: 7
+  low: null
+  high: null
+
+fuselage:
+  length: 10.3
+  height: 3.6
+  width: null
+
+wing:
+  area: null
+  span: 12.5
+  mac: null
+  sweep: null
+  t/c: null
+
+flaps:
+  type: null
+  area: null
+  bf/b: null
+  lambda_f: null
+  cf/c: null
+  Sf/S: null
+
+engine:
+  type: piston
+  mount: front wing leading mounted
+  number: 2
+  default: 310 HP Continental TSIO-520-NB turbocharged piston engine with 3 blade
+    propeller
+  options:
+  - 310 HP Continental TSIO-520-NB turbocharged piston engine with 3 blade propeller
+
+drag:
+  cd0: null
+  k: null
+  e: null
+  gears: null
+
+kinematic:
+  takeoff:
+    v2: 100
+    distance_m: 520
+  climb_to_fl50:
+    ias: 130
+    vs: 1200
+  climb_to_fl150:
+    ias: 150
+    vs: 1000
+  climb_to_fl240:
+    ias: 150
+    vs: 800
+  mach_climb:
+    mach: null
+    vs: null
+  cruise:
+    mach: null
+    tas: 230
+    range_nm: 1100
+  descent_to_fl240:
+    mach: null
+    vs: null
+  descent_to_fl100:
+    ias: 200
+    vs: 1000
+  approach:
+    ias: 180
+    vs: 1000
+  landing:
+    ias: 110
+    distance_m: 720

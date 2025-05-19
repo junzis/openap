@@ -1,0 +1,89 @@
+aircraft: Cirrus SR-20
+
+icao: SR20
+iata: null
+
+mtow: 1361
+mlw: 1300
+oew: null
+mfc: null
+vmo: null
+mmo: null
+ceiling: 17500
+
+icao_wtc: light
+eu_wtc: light
+faa_wtc: light
+parking_area_m2: 139
+
+pax:
+  max: 4
+  low: 1
+  high: 3
+
+fuselage:
+  length: 7.92
+  height: 2.7
+  width: null
+
+wing:
+  area: null
+  span: 11.68
+  mac: null
+  sweep: null
+  t/c: null
+
+flaps:
+  type: null
+  area: null
+  bf/b: null
+  lambda_f: null
+  cf/c: null
+  Sf/S: null
+
+engine:
+  type: piston
+  mount: nose mounted
+  number: 1
+  default: Continental IO-360-ES, 200 hp (149 kW)
+  options:
+  - Continental IO-360-ES, 200 hp (149 kW)
+
+drag:
+  cd0: null
+  k: null
+  e: null
+  gears: null
+
+kinematic:
+  takeoff:
+    v2: null
+    distance_m: 451
+  climb_to_fl50:
+    ias: 85
+    vs: 830
+  climb_to_fl150:
+    ias: 80
+    vs: 500
+  climb_to_fl240:
+    ias: 80
+    vs: 0
+  mach_climb:
+    mach: null
+    vs: null
+  cruise:
+    mach: null
+    tas: 155
+    range_nm: 785
+  descent_to_fl240:
+    mach: null
+    vs: null
+  descent_to_fl100:
+    ias: 140
+    vs: 1000
+  approach:
+    ias: 90
+    vs: 1000
+  landing:
+    ias: 65
+    distance_m: 260

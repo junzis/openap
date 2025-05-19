@@ -1,0 +1,89 @@
+aircraft: Beech Super King Air 350
+
+icao: B350
+iata: null
+
+mtow: 6800
+mlw: 6800
+oew: null
+mfc: null
+vmo: null
+mmo: null
+ceiling: 35000
+
+icao_wtc: light/medium
+eu_wtc: light
+faa_wtc: null
+parking_area_m2: 326
+
+pax:
+  max: 13
+  low: 8
+  high: null
+
+fuselage:
+  length: 14.23416
+  height: 4.4
+  width: null
+
+wing:
+  area: null
+  span: 17.7
+  mac: null
+  sweep: null
+  t/c: null
+
+flaps:
+  type: null
+  area: null
+  bf/b: null
+  lambda_f: null
+  cf/c: null
+  Sf/S: null
+
+engine:
+  type: turboprop
+  mount: front wing leading mounted
+  number: 2
+  default: PT6A-60A
+  options:
+    - PT6A-60A
+
+drag:
+  cd0: null
+  k: null
+  e: null
+  gears: null
+
+kinematic:
+  takeoff:
+    v2: 120
+    distance_m: 1000
+  climb_to_fl50:
+    ias: 150
+    vs: 2000
+  climb_to_fl150:
+    ias: 230
+    vs: 1500
+  climb_to_fl240:
+    ias: 230
+    vs: 1000
+  mach_climb:
+    mach: null
+    vs: null
+  cruise:
+    mach: 0.47
+    tas: 300
+    range_nm: 1800
+  descent_to_fl240:
+    mach: null
+    vs: null
+  descent_to_fl100:
+    ias: 280
+    vs: 1500
+  approach:
+    ias: 250
+    vs: 1500
+  landing:
+    ias: 110
+    distance_m: 820

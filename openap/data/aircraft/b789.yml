@@ -1,12 +1,20 @@
-aircraft: Boeing 787-9
+aircraft: Boeing 787-9 Dreamliner
+
+icao: B789
+iata: "789"
 
 mtow: 254000
 mlw: 193000
 oew: 128000
 mfc: 126400
 vmo: 515
-mmo: 0.90
-ceiling: 13100
+mmo: 0.9
+ceiling: 43000
+
+icao_wtc: heavy
+eu_wtc: upper heavy
+faa_wtc: heavy
+parking_area_m2: 4064
 
 pax:
   max: 420
@@ -29,14 +37,9 @@ flaps:
   type: single-slotted
   area: null
   bf/b: null
-  lambda_f: 0.900
-  cf/c: 0.150
-  Sf/S: 0.150
-
-cruise:
-  height: 11000
-  mach: 0.85
-  range: 14000
+  lambda_f: 0.9
+  cf/c: 0.15
+  Sf/S: 0.15
 
 engine:
   type: turbofan
@@ -55,3 +58,36 @@ drag:
   k: 0.042
   e: 0.783
   gears: 0.014
+
+kinematic:
+  takeoff:
+    v2: 165
+    distance_m: 2800
+  climb_to_fl50:
+    ias: 190
+    vs: 2700
+  climb_to_fl150:
+    ias: 290
+    vs: 2000
+  climb_to_fl240:
+    ias: 290
+    vs: 1500
+  mach_climb:
+    mach: 0.84
+    vs: 1000
+  cruise:
+    mach: 0.85
+    tas: 490
+    range_nm: 7565
+  descent_to_fl240:
+    mach: 0.85
+    vs: 2500
+  descent_to_fl100:
+    ias: 300
+    vs: 2500
+  approach:
+    ias: 240
+    vs: 1500
+  landing:
+    ias: 150
+    distance_m: 1520

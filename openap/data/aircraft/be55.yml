@@ -1,0 +1,89 @@
+aircraft: Beech Baron 55
+
+icao: BE55
+iata: null
+
+mtow: 2300
+mlw: 2300
+oew: null
+mfc: null
+vmo: null
+mmo: null
+ceiling: 20000
+
+icao_wtc: light
+eu_wtc: light
+faa_wtc: null
+parking_area_m2: 147
+
+pax:
+  max: 4
+  low: 3
+  high: 4
+
+fuselage:
+  length: 8.5344
+  height: 2.92608
+  width: null
+
+wing:
+  area: null
+  span: 11.52144
+  mac: null
+  sweep: null
+  t/c: null
+
+flaps:
+  type: null
+  area: null
+  bf/b: null
+  lambda_f: null
+  cf/c: null
+  Sf/S: null
+
+engine:
+  type: piston
+  mount: front wing leading mounted
+  number: 2
+  default: 260 HP Continental IO-470-L piston engine with two blade propellers
+  options:
+  - 260 HP Continental IO-470-L piston engine with two blade propellers
+
+drag:
+  cd0: null
+  k: null
+  e: null
+  gears: null
+
+kinematic:
+  takeoff:
+    v2: 95
+    distance_m: 450
+  climb_to_fl50:
+    ias: 125
+    vs: 1500
+  climb_to_fl150:
+    ias: 140
+    vs: 800
+  climb_to_fl240:
+    ias: 140
+    vs: 800
+  mach_climb:
+    mach: null
+    vs: null
+  cruise:
+    mach: null
+    tas: 180
+    range_nm: 900
+  descent_to_fl240:
+    mach: null
+    vs: null
+  descent_to_fl100:
+    ias: 180
+    vs: 800
+  approach:
+    ias: 160
+    vs: 500
+  landing:
+    ias: 95
+    distance_m: 450

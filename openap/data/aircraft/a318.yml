@@ -1,12 +1,20 @@
 aircraft: Airbus A318
 
-mtow: 68000
+icao: A318
+iata: 318 / 32S
+
+mtow: 59000
 mlw: 57500
 oew: 39500
 mfc: 24210
 vmo: 350
 mmo: 0.82
-ceiling: 12500
+ceiling: 39000
+
+icao_wtc: medium
+eu_wtc: upper medium
+faa_wtc: medium
+parking_area_m2: null
 
 pax:
   max: 136
@@ -14,13 +22,13 @@ pax:
   high: 117
 
 fuselage:
-  length: 31.44
+  length: 31.45
   height: 4.14
   width: 3.95
 
 wing:
   area: 122.4
-  span: 34.10
+  span: 34.1
   mac: 4.1935
   sweep: 25
   t/c: null
@@ -28,15 +36,10 @@ wing:
 flaps:
   type: single-slotted
   area: 21.1
-  bf/b: 0.780
-  lambda_f: 0.900 #a319
-  cf/c: 0.176 #a319
-  Sf/S: 0.170 #a319
-
-cruise:
-  height: 11000
-  mach: 0.78
-  range: 2800
+  bf/b: 0.78
+  lambda_f: 0.9
+  cf/c: 0.176
+  Sf/S: 0.17
 
 engine:
   type: turbofan
@@ -50,11 +53,40 @@ engine:
     A318-122: PW6124A
 
 drag:
-  cd0: 0.020 #a319
-  k: 0.039 #a319
-  e: 0.783 #a319
-  gears: 0.017 #a319
+  cd0: 0.02
+  k: 0.039
+  e: 0.783
+  gears: 0.017
 
-fuel:
-  engine: CFM56-5B9/3
-  fuel_coef: 2.03114004
+kinematic:
+  takeoff:
+    v2: 135
+    distance_m: 1400
+  climb_to_fl50:
+    ias: 165
+    vs: 3000
+  climb_to_fl150:
+    ias: 290
+    vs: 2000
+  climb_to_fl240:
+    ias: 290
+    vs: 2000
+  mach_climb:
+    mach: 0.76
+    vs: 1000
+  cruise:
+    mach: 0.79
+    tas: 460
+    range_nm: 1500
+  descent_to_fl240:
+    mach: 0.76
+    vs: 800
+  descent_to_fl100:
+    ias: 290
+    vs: 3500
+  approach:
+    ias: 250
+    vs: 1500
+  landing:
+    ias: 125
+    distance_m: 1300

@@ -1,0 +1,89 @@
+aircraft: Piper PA-32R Lance/ Saratoga SP
+
+icao: P32R
+iata: null
+
+mtow: 1640
+mlw: 1600
+oew: null
+mfc: null
+vmo: null
+mmo: null
+ceiling: 20000
+
+icao_wtc: light
+eu_wtc: light
+faa_wtc: light
+parking_area_m2: 140
+
+pax:
+  max: 6
+  low: null
+  high: null
+
+fuselage:
+  length: 8.6
+  height: 2.6
+  width: null
+
+wing:
+  area: null
+  span: 11
+  mac: null
+  sweep: null
+  t/c: null
+
+flaps:
+  type: null
+  area: null
+  bf/b: null
+  lambda_f: null
+  cf/c: null
+  Sf/S: null
+
+engine:
+  type: piston
+  mount: nose mounted
+  number: 1
+  default: 300 HP Lycoming IO-540-K1G5 piston engine with 2 or 3 blade propeller
+  options:
+  - 300 HP Lycoming IO-540-K1G5 piston engine with 2 or 3 blade propeller
+
+drag:
+  cd0: null
+  k: null
+  e: null
+  gears: null
+
+kinematic:
+  takeoff:
+    v2: 75
+    distance_m: 500
+  climb_to_fl50:
+    ias: 105
+    vs: 1000
+  climb_to_fl150:
+    ias: 130
+    vs: 600
+  climb_to_fl240:
+    ias: 130
+    vs: 0
+  mach_climb:
+    mach: null
+    vs: null
+  cruise:
+    mach: null
+    tas: 160
+    range_nm: 800
+  descent_to_fl240:
+    mach: null
+    vs: null
+  descent_to_fl100:
+    ias: 160
+    vs: 500
+  approach:
+    ias: 160
+    vs: 500
+  landing:
+    ias: 75
+    distance_m: 550

@@ -1,0 +1,89 @@
+aircraft: Cessna Skylane 182
+
+icao: C182
+iata: null
+
+mtow: 1270
+mlw: 1300
+oew: null
+mfc: null
+vmo: null
+mmo: null
+ceiling: 18000
+
+icao_wtc: light
+eu_wtc: light
+faa_wtc: light
+parking_area_m2: 145
+
+pax:
+  max: 4
+  low: null
+  high: null
+
+fuselage:
+  length: 8.6
+  height: 2.8
+  width: null
+
+wing:
+  area: null
+  span: 11
+  mac: null
+  sweep: null
+  t/c: null
+
+flaps:
+  type: null
+  area: null
+  bf/b: null
+  lambda_f: null
+  cf/c: null
+  Sf/S: null
+
+engine:
+  type: piston
+  mount: nose mounted
+  number: 1
+  default: 230 Hp Lycoming IO-540-AB1A5 piston engine with 2 blade propeller
+  options:
+  - 230 Hp Lycoming IO-540-AB1A5 piston engine with 2 blade propeller
+
+drag:
+  cd0: null
+  k: null
+  e: null
+  gears: null
+
+kinematic:
+  takeoff:
+    v2: 65
+    distance_m: 200
+  climb_to_fl50:
+    ias: 80
+    vs: 500
+  climb_to_fl150:
+    ias: 85
+    vs: 250
+  climb_to_fl240:
+    ias: 85
+    vs: 250
+  mach_climb:
+    mach: null
+    vs: null
+  cruise:
+    mach: null
+    tas: 140
+    range_nm: 550
+  descent_to_fl240:
+    mach: null
+    vs: null
+  descent_to_fl100:
+    ias: 140
+    vs: 500
+  approach:
+    ias: 110
+    vs: 500
+  landing:
+    ias: 65
+    distance_m: 411

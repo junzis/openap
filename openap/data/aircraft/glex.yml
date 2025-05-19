@@ -1,0 +1,89 @@
+aircraft: Bombardier BD-700 Global Express
+
+icao: GLEX
+iata: CCX
+
+mtow: 45100.0
+mlw: 35700.0
+oew: null
+mfc: null
+vmo: null
+mmo: null
+ceiling: 51000
+
+icao_wtc: medium
+eu_wtc: lower medium
+faa_wtc: medium
+parking_area_m2: 1009.0
+
+pax:
+  max: 18
+  low: 8
+  high: null
+
+fuselage:
+  length: 30.3
+  height: 7.6
+  width: null
+
+wing:
+  area: null
+  span: 28.6
+  mac: null
+  sweep: null
+  t/c: null
+
+flaps:
+  type: null
+  area: null
+  bf/b: null
+  lambda_f: null
+  cf/c: null
+  Sf/S: null
+
+engine:
+  type: turbofan
+  mount: rear fuselage
+  number: 2
+  default: Rolls-Royce BR710-48-C2 turbofan
+  options:
+  - Rolls-Royce BR710-48-C2 turbofan
+
+drag:
+  cd0: null
+  k: null
+  e: null
+  gears: null
+
+kinematic:
+  takeoff:
+    v2: 120
+    distance_m: 1870
+  climb_to_fl50:
+    ias: 150
+    vs: 4000
+  climb_to_fl150:
+    ias: 300
+    vs: 3000
+  climb_to_fl240:
+    ias: 300
+    vs: 3000
+  mach_climb:
+    mach: 0.75
+    vs: 1500
+  cruise:
+    mach: 0.85
+    tas: 490
+    range_nm: 6300
+  descent_to_fl240:
+    mach: 0.83
+    vs: 1500
+  descent_to_fl100:
+    ias: 300
+    vs: 2000
+  approach:
+    ias: 250
+    vs: 1500
+  landing:
+    ias: 125
+    distance_m: 814

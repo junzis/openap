@@ -1,12 +1,20 @@
 aircraft: Airbus A320
 
-mtow: 78000
+icao: A320
+iata: 320 / 32S
+
+mtow: 73900
 mlw: 66000
 oew: 42600
 mfc: 24210
 vmo: 350
 mmo: 0.82
-ceiling: 12500
+ceiling: 39000
+
+icao_wtc: medium
+eu_wtc: upper medium
+faa_wtc: medium
+parking_area_m2: 1519
 
 pax:
   max: 180
@@ -20,7 +28,7 @@ fuselage:
 
 wing:
   area: 124
-  span: 35.8
+  span: 34.1
   mac: 4.1935
   sweep: 25
   t/c: null
@@ -28,15 +36,10 @@ wing:
 flaps:
   type: single-slotted
   area: 21.1
-  bf/b: 0.780
-  lambda_f: 0.900
+  bf/b: 0.78
+  lambda_f: 0.9
   cf/c: 0.176
-  Sf/S: 0.170
-
-cruise:
-  height: 11000
-  mach: 0.78
-  range: 5000
+  Sf/S: 0.17
 
 engine:
   type: turbofan
@@ -60,6 +63,35 @@ drag:
   e: 0.799
   gears: 0.017
 
-fuel:
-  engine: CFM56-5B4/P
-  fuel_coef: 2.65942225
+kinematic:
+  takeoff:
+    v2: 145
+    distance_m: 2190
+  climb_to_fl50:
+    ias: 175
+    vs: 2500
+  climb_to_fl150:
+    ias: 290
+    vs: 2000
+  climb_to_fl240:
+    ias: 290
+    vs: 1400
+  mach_climb:
+    mach: 0.78
+    vs: 1000
+  cruise:
+    mach: 0.79
+    tas: 450
+    range_nm: 2700
+  descent_to_fl240:
+    mach: 0.78
+    vs: 1000
+  descent_to_fl100:
+    ias: 290
+    vs: 3500
+  approach:
+    ias: 250
+    vs: 1500
+  landing:
+    ias: 137
+    distance_m: 1440

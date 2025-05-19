@@ -1,0 +1,90 @@
+aircraft: Boeing 767-200
+
+icao: B762
+iata: 767/762/76F/76X
+
+mtow: 179170
+mlw: 117900
+oew: null
+mfc: null
+vmo: null
+mmo: null
+ceiling: 45000
+
+icao_wtc: heavy
+eu_wtc: lower heavy
+faa_wtc: heavy
+parking_area_m2: 2533
+
+pax:
+  max: 255
+  low: 181
+  high: 224
+
+fuselage:
+  length: 48.5
+  height: 15.9
+  width: null
+
+wing:
+  area: null
+  span: 47.6
+  mac: null
+  sweep: null
+  t/c: null
+
+flaps:
+  type: null
+  area: null
+  bf/b: null
+  lambda_f: null
+  cf/c: null
+  Sf/S: null
+
+engine:
+  type: turbofan
+  mount: underwing
+  number: 2
+  default: PW4062
+  options:
+    - PW4062
+    - CF6-80C2B7F
+
+drag:
+  cd0: null
+  k: null
+  e: null
+  gears: null
+
+kinematic:
+  takeoff:
+    v2: 160
+    distance_m: 2700
+  climb_to_fl50:
+    ias: 190
+    vs: 2000
+  climb_to_fl150:
+    ias: 290
+    vs: 2500
+  climb_to_fl240:
+    ias: 290
+    vs: 1400
+  mach_climb:
+    mach: 0.78
+    vs: 1500
+  cruise:
+    mach: 0.8
+    tas: 470
+    range_nm: 6600
+  descent_to_fl240:
+    mach: 0.78
+    vs: 2000
+  descent_to_fl100:
+    ias: 290
+    vs: 1600
+  approach:
+    ias: 250
+    vs: 1500
+  landing:
+    ias: 135
+    distance_m: 1500

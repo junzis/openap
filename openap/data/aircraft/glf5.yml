@@ -1,0 +1,89 @@
+aircraft: Gulfstream V
+
+icao: GLF5
+iata: GRJ
+
+mtow: 41136
+mlw: 34200
+oew: null
+mfc: null
+vmo: null
+mmo: null
+ceiling: 51000
+
+icao_wtc: medium
+eu_wtc: lower medium
+faa_wtc: medium
+parking_area_m2: 975
+
+pax:
+  max: 19
+  low: 8
+  high: null
+
+fuselage:
+  length: 29.4
+  height: 7.9
+  width: null
+
+wing:
+  area: null
+  span: 28.5
+  mac: null
+  sweep: null
+  t/c: null
+
+flaps:
+  type: null
+  area: null
+  bf/b: null
+  lambda_f: null
+  cf/c: null
+  Sf/S: null
+
+engine:
+  type: turbofan
+  mount: rear fuselage
+  number: 2
+  default: Rolls-Royce BR710A1-10
+  options:
+  - Rolls-Royce BR710A1-10
+
+drag:
+  cd0: null
+  k: null
+  e: null
+  gears: null
+
+kinematic:
+  takeoff:
+    v2: 145
+    distance_m: 1570
+  climb_to_fl50:
+    ias: 175
+    vs: 4000
+  climb_to_fl150:
+    ias: 300
+    vs: 3000
+  climb_to_fl240:
+    ias: 300
+    vs: 2500
+  mach_climb:
+    mach: 0.75
+    vs: 2000
+  cruise:
+    mach: 0.85
+    tas: 480
+    range_nm: 5800
+  descent_to_fl240:
+    mach: 0.75
+    vs: 1000
+  descent_to_fl100:
+    ias: 290
+    vs: 2500
+  approach:
+    ias: 250
+    vs: 1500
+  landing:
+    ias: 140
+    distance_m: 884

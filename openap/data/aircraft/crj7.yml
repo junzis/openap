@@ -1,0 +1,89 @@
+aircraft: canadair CRJ-700
+
+icao: CRJ7
+iata: CRJ
+
+mtow: 34000.0
+mlw: 30400.0
+oew: null
+mfc: null
+vmo: null
+mmo: null
+ceiling: 41000
+
+icao_wtc: medium
+eu_wtc: lower medium
+faa_wtc: null
+parking_area_m2: 894.0
+
+pax:
+  max: 70
+  low: null
+  high: null
+
+fuselage:
+  length: 32.49168
+  height: 7.55904
+  width: null
+
+wing:
+  area: null
+  span: 23.25624
+  mac: null
+  sweep: null
+  t/c: null
+
+flaps:
+  type: null
+  area: null
+  bf/b: null
+  lambda_f: null
+  cf/c: null
+  Sf/S: null
+
+engine:
+  type: turbofan
+  mount: rear fuselage
+  number: 2
+  default: GE CF34 - 8C1 turbofan 56.4 or 61.3 kN
+  options:
+  - GE CF34 - 8C1 turbofan 56.4 or 61.3 kN
+
+drag:
+  cd0: null
+  k: null
+  e: null
+  gears: null
+
+kinematic:
+  takeoff:
+    v2: 135
+    distance_m: 1600
+  climb_to_fl50:
+    ias: 165
+    vs: 3000
+  climb_to_fl150:
+    ias: 290
+    vs: 2500
+  climb_to_fl240:
+    ias: 290
+    vs: 2500
+  mach_climb:
+    mach: 0.72
+    vs: 1500
+  cruise:
+    mach: 0.77
+    tas: 442
+    range_nm: 1687
+  descent_to_fl240:
+    mach: 0.72
+    vs: 1000
+  descent_to_fl100:
+    ias: 290
+    vs: 3500
+  approach:
+    ias: 250
+    vs: 1500
+  landing:
+    ias: 135
+    distance_m: 1478

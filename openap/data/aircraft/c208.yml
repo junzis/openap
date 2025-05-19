@@ -1,0 +1,90 @@
+aircraft: Cessna 208 Caravan 1
+
+icao: C208
+iata: null
+
+mtow: 3629
+mlw: 3500
+oew: null
+mfc: null
+vmo: null
+mmo: null
+ceiling: 26000
+
+icao_wtc: light
+eu_wtc: light
+faa_wtc: light
+parking_area_m2: 246
+
+pax:
+  max: 14
+  low: 9
+  high: null
+
+fuselage:
+  length: 11.5
+  height: 4.3
+  width: null
+
+wing:
+  area: null
+  span: 15.9
+  mac: null
+  sweep: null
+  t/c: null
+
+flaps:
+  type: null
+  area: null
+  bf/b: null
+  lambda_f: null
+  cf/c: null
+  Sf/S: null
+
+engine:
+  type: turboprop
+  mount: nose mounted
+  number: 1
+  default: 1 x 600 SHP PWC PT6A-114 turboprop with 3 blade propeller
+  options:
+  - 1 x 600 SHP PWC PT6A-114 turboprop with 3 blade propeller
+  - 1 x 675 SHP PWC PT6A-114A turboprop with 3 blade propeller
+
+drag:
+  cd0: null
+  k: null
+  e: null
+  gears: null
+
+kinematic:
+  takeoff:
+    v2: 85
+    distance_m: 500
+  climb_to_fl50:
+    ias: 115
+    vs: 800
+  climb_to_fl150:
+    ias: 130
+    vs: 500
+  climb_to_fl240:
+    ias: 130
+    vs: 500
+  mach_climb:
+    mach: null
+    vs: null
+  cruise:
+    mach: null
+    tas: 160
+    range_nm: 1000
+  descent_to_fl240:
+    mach: null
+    vs: null
+  descent_to_fl100:
+    ias: 160
+    vs: 500
+  approach:
+    ias: 120
+    vs: 500
+  landing:
+    ias: 75
+    distance_m: 450

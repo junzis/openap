@@ -1,0 +1,89 @@
+aircraft: Beech 200 Super King
+
+icao: BE20
+iata: BE2
+
+mtow: 5700.0
+mlw: 5700.0
+oew: null
+mfc: null
+vmo: null
+mmo: null
+ceiling: 35000
+
+icao_wtc: light/medium
+eu_wtc: light
+faa_wtc: small+
+parking_area_m2: 292.0
+
+pax:
+  max: 13
+  low: null
+  high: null
+
+fuselage:
+  length: 13.4
+  height: 4.5
+  width: null
+
+wing:
+  area: null
+  span: 16.6
+  mac: null
+  sweep: null
+  t/c: null
+
+flaps:
+  type: null
+  area: null
+  bf/b: null
+  lambda_f: null
+  cf/c: null
+  Sf/S: null
+
+engine:
+  type: turboprop
+  mount: front wing leading mounted
+  number: 2
+  default: 2 x 850 SHP P&W PT6A-42 turboprops with 3 blade propellers
+  options:
+  - 2 x 850 SHP P&W PT6A-42 turboprops with 3 blade propellers
+
+drag:
+  cd0: null
+  k: null
+  e: null
+  gears: null
+
+kinematic:
+  takeoff:
+    v2: 115
+    distance_m: 570
+  climb_to_fl50:
+    ias: 145
+    vs: 2000
+  climb_to_fl150:
+    ias: 230
+    vs: 1000
+  climb_to_fl240:
+    ias: 230
+    vs: 1000
+  mach_climb:
+    mach: null
+    vs: null
+  cruise:
+    mach: 0.48
+    tas: 260
+    range_nm: 1600
+  descent_to_fl240:
+    mach: null
+    vs: null
+  descent_to_fl100:
+    ias: 250
+    vs: 1500
+  approach:
+    ias: 180
+    vs: 1500
+  landing:
+    ias: 100
+    distance_m: 540

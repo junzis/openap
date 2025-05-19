@@ -1,0 +1,91 @@
+aircraft: Boeing 787-10 Dreamliner
+
+icao: B78X
+iata: "781"
+
+mtow: 254011
+mlw: 201800
+oew: null
+mfc: null
+vmo: null
+mmo: null
+ceiling: 41000
+
+icao_wtc: heavy
+eu_wtc: upper heavy
+faa_wtc: heavy
+parking_area_m2: 4412
+
+pax:
+  max: 440
+  low: 336
+  high: 440
+
+fuselage:
+  length: 68.3
+  height: 16.9
+  width: null
+
+wing:
+  area: null
+  span: 60.12
+  mac: null
+  sweep: null
+  t/c: null
+
+flaps:
+  type: null
+  area: null
+  bf/b: null
+  lambda_f: null
+  cf/c: null
+  Sf/S: null
+
+engine:
+  type: turbofan
+  mount: underwing
+  number: 2
+  default: GEnx-1B75
+  options:
+    - GEnx-1B75
+    - GEnx-1B74
+    - Trent 1000-J2
+
+drag:
+  cd0: null
+  k: null
+  e: null
+  gears: null
+
+kinematic:
+  takeoff:
+    v2: 180
+    distance_m: 2800
+  climb_to_fl50:
+    ias: 190
+    vs: 2700
+  climb_to_fl150:
+    ias: 290
+    vs: 2000
+  climb_to_fl240:
+    ias: 290
+    vs: 1500
+  mach_climb:
+    mach: 0.84
+    vs: 1000
+  cruise:
+    mach: 0.86
+    tas: 488
+    range_nm: 6430
+  descent_to_fl240:
+    mach: 0.85
+    vs: 2500
+  descent_to_fl100:
+    ias: 300
+    vs: 2500
+  approach:
+    ias: 240
+    vs: 1500
+  landing:
+    ias: 150
+    distance_m: 1520

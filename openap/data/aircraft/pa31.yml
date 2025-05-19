@@ -1,0 +1,92 @@
+aircraft: Piper Navajo PA-31
+
+icao: PA31
+iata: null
+
+mtow: 3200
+mlw: 2900
+oew: null
+mfc: null
+vmo: null
+mmo: null
+ceiling: 24000
+
+icao_wtc: light
+eu_wtc: light
+faa_wtc: light
+parking_area_m2: 177
+
+pax:
+  max: 9
+  low: 1
+  high: 5
+
+fuselage:
+  length: 10.6
+  height: 4
+  width: null
+
+wing:
+  area: null
+  span: 12.4
+  mac: null
+  sweep: null
+  t/c: null
+
+flaps:
+  type: null
+  area: null
+  bf/b: null
+  lambda_f: null
+  cf/c: null
+  Sf/S: null
+
+engine:
+  type: piston
+  mount: front wing leading mounted
+  number: 2
+  default:
+    2 x 350 HP Lycoming TIO-540-J2BD turbocharged piston engines with 3 blade
+    propellers
+  options:
+    - 2 x 350 HP Lycoming TIO-540-J2BD turbocharged piston engines with 3 blade propellers
+    - 2 x 310 HP Lycoming TIO-540-A turbocharged piston engines with 3 blade propellers
+
+drag:
+  cd0: null
+  k: null
+  e: null
+  gears: null
+
+kinematic:
+  takeoff:
+    v2: 90
+    distance_m: 400
+  climb_to_fl50:
+    ias: 120
+    vs: 1200
+  climb_to_fl150:
+    ias: 140
+    vs: 800
+  climb_to_fl240:
+    ias: 140
+    vs: 500
+  mach_climb:
+    mach: null
+    vs: null
+  cruise:
+    mach: null
+    tas: 210
+    range_nm: 890
+  descent_to_fl240:
+    mach: null
+    vs: null
+  descent_to_fl100:
+    ias: 200
+    vs: 800
+  approach:
+    ias: 190
+    vs: 500
+  landing:
+    ias: 90
+    distance_m: 575

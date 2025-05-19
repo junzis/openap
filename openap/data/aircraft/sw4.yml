@@ -1,0 +1,89 @@
+aircraft: Swearingen SA-227AT Merlin 4
+
+icao: SW4
+iata: null
+
+mtow: 7300.0
+mlw: 7100.0
+oew: null
+mfc: null
+vmo: null
+mmo: null
+ceiling: 25000
+
+icao_wtc: light/medium
+eu_wtc: light
+faa_wtc: null
+parking_area_m2: 401.0
+
+pax:
+  max: 19
+  low: null
+  high: null
+
+fuselage:
+  length: 18.10512
+  height: 5.08
+  width: null
+
+wing:
+  area: null
+  span: 17.3736
+  mac: null
+  sweep: null
+  t/c: null
+
+flaps:
+  type: null
+  area: null
+  bf/b: null
+  lambda_f: null
+  cf/c: null
+  Sf/S: null
+
+engine:
+  type: turboprop
+  mount: front wing leading mounted
+  number: 2
+  default: Garrett TPE331-12
+  options:
+  - Garrett TPE331-12
+
+drag:
+  cd0: null
+  k: null
+  e: null
+  gears: null
+
+kinematic:
+  takeoff:
+    v2: null
+    distance_m: null
+  climb_to_fl50:
+    ias: 140
+    vs: 1500
+  climb_to_fl150:
+    ias: 180
+    vs: 1000
+  climb_to_fl240:
+    ias: 180
+    vs: 800
+  mach_climb:
+    mach: null
+    vs: null
+  cruise:
+    mach: null
+    tas: 270
+    range_nm: 575
+  descent_to_fl240:
+    mach: null
+    vs: 1000
+  descent_to_fl100:
+    ias: 200
+    vs: 1000
+  approach:
+    ias: 140
+    vs: 1000
+  landing:
+    ias: 115
+    distance_m: null

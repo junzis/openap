@@ -1,4 +1,7 @@
-aircraft: Embraer E175 (LR)
+aircraft: Embraer E175 long wing
+
+icao: E75L
+iata: E7W
 
 mtow: 38790
 mlw: 34000
@@ -6,7 +9,12 @@ oew: 21890
 mfc: 11625
 vmo: 320
 mmo: 0.82
-ceiling: 12500
+ceiling: 41000
+
+icao_wtc: medium
+eu_wtc: lower medium
+faa_wtc: medium
+parking_area_m2: 1152.0
 
 pax:
   max: 88
@@ -33,11 +41,6 @@ flaps:
   cf/c: 0.150
   Sf/S: 0.150
 
-cruise:
-  height: 11000
-  mach: 0.75
-  range: 3300
-
 engine:
   type: turbofan
   mount: wing
@@ -53,6 +56,35 @@ drag:
   e: 0.809
   gears: 0.017
 
-fuel:
-  engine: CF34-8E5
-  fuel_coef: 1.54520615
+kinematic:
+  takeoff:
+    v2: 138
+    distance_m: 2244
+  climb_to_fl50:
+    ias: 190
+    vs: 3400
+  climb_to_fl150:
+    ias: 300
+    vs: 2800
+  climb_to_fl240:
+    ias: 300
+    vs: 2200
+  mach_climb:
+    mach: 0.75
+    vs: 1600
+  cruise:
+    mach: 0.78
+    tas: 460
+    range_nm: 2200
+  descent_to_fl240:
+    mach: 0.76
+    vs: 2300
+  descent_to_fl100:
+    ias: 300
+    vs: 2600
+  approach:
+    ias: 250
+    vs: 2000
+  landing:
+    ias: 130
+    distance_m: 1261

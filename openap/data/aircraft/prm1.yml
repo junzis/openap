@@ -1,0 +1,89 @@
+aircraft: Raytheon Premier 1/390 Premier 1
+
+icao: PRM1
+iata: null
+
+mtow: 5700.0
+mlw: 5300.0
+oew: null
+mfc: null
+vmo: null
+mmo: null
+ceiling: 41000
+
+icao_wtc: light
+eu_wtc: light
+faa_wtc: light
+parking_area_m2: 258.0
+
+pax:
+  max: 6
+  low: null
+  high: null
+
+fuselage:
+  length: 14.0208
+  height: 4.66344
+  width: null
+
+wing:
+  area: null
+  span: 13.5636
+  mac: null
+  sweep: null
+  t/c: null
+
+flaps:
+  type: null
+  area: null
+  bf/b: null
+  lambda_f: null
+  cf/c: null
+  Sf/S: null
+
+engine:
+  type: turbofan
+  mount: both sides of rear fuselage
+  number: 2
+  default: Williams / Rolls-Royce FJ44-2A
+  options:
+  - Williams / Rolls-Royce FJ44-2A
+
+drag:
+  cd0: null
+  k: null
+  e: null
+  gears: null
+
+kinematic:
+  takeoff:
+    v2: 120
+    distance_m: 1156
+  climb_to_fl50:
+    ias: 130
+    vs: 2000
+  climb_to_fl150:
+    ias: 220
+    vs: 1500
+  climb_to_fl240:
+    ias: 220
+    vs: 1000
+  mach_climb:
+    mach: 0.78
+    vs: 1500
+  cruise:
+    mach: 0.78
+    tas: 440
+    range_nm: 1360
+  descent_to_fl240:
+    mach: 0.78
+    vs: 1700
+  descent_to_fl100:
+    ias: 250
+    vs: 2300
+  approach:
+    ias: 170
+    vs: 1500
+  landing:
+    ias: 95
+    distance_m: 968

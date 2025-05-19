@@ -1,0 +1,89 @@
+aircraft: Raytheon/Beech Beechjet 400/T-1 Jayhawk
+
+icao: BE40
+iata: null
+
+mtow: 7300
+mlw: 7100
+oew: null
+mfc: null
+vmo: null
+mmo: null
+ceiling: 45000
+
+icao_wtc: medium
+eu_wtc: light
+faa_wtc: medium
+parking_area_m2: 265
+
+pax:
+  max: 8
+  low: 6
+  high: null
+
+fuselage:
+  length: 14.75232
+  height: 4.23672
+  width: null
+
+wing:
+  area: null
+  span: 13.2588
+  mac: null
+  sweep: null
+  t/c: null
+
+flaps:
+  type: null
+  area: null
+  bf/b: null
+  lambda_f: null
+  cf/c: null
+  Sf/S: null
+
+engine:
+  type: turbofan
+  mount: both sides of rear fuselage
+  number: 2
+  default: P&W JT15D-5
+  options:
+  - P&W JT15D-5
+
+drag:
+  cd0: null
+  k: null
+  e: null
+  gears: null
+
+kinematic:
+  takeoff:
+    v2: 130
+    distance_m: 1200
+  climb_to_fl50:
+    ias: 160
+    vs: 3000
+  climb_to_fl150:
+    ias: 290
+    vs: 2500
+  climb_to_fl240:
+    ias: 290
+    vs: 2000
+  mach_climb:
+    mach: 0.74
+    vs: 1000
+  cruise:
+    mach: 0.8
+    tas: 420
+    range_nm: 1500
+  descent_to_fl240:
+    mach: 0.72
+    vs: 1000
+  descent_to_fl100:
+    ias: 290
+    vs: 2000
+  approach:
+    ias: 200
+    vs: 1500
+  landing:
+    ias: 120
+    distance_m: 1100

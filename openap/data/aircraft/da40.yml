@@ -1,0 +1,93 @@
+aircraft: Diamond Star DA40
+
+icao: DA40
+iata: null
+
+mtow: 1300.0
+mlw: 1100.0
+oew: null
+mfc: null
+vmo: null
+mmo: null
+ceiling: 16000
+
+icao_wtc: light
+eu_wtc: light
+faa_wtc: light
+parking_area_m2: 143.0
+
+pax:
+  max: 4
+  low: null
+  high: null
+
+fuselage:
+  length: 8.06
+  height: 1.97
+  width: null
+
+wing:
+  area: null
+  span: 11.63
+  mac: null
+  sweep: null
+  t/c: null
+
+flaps:
+  type: null
+  area: null
+  bf/b: null
+  lambda_f: null
+  cf/c: null
+  Sf/S: null
+
+engine:
+  type: piston
+  mount: nose mounted
+  number: 1
+  default: Fixed pitch Textron Lycoming O-360-A4M (180HP)F
+  options:
+  - Fixed pitch Textron Lycoming O-360-A4M (180HP)F
+  - constants speed propellor Textron Lycoming IO-360 M1A
+  - constant speed FADEC controlled Thielert "Centurion" 135 hp (101 kW) diesel engine
+  - Austro Engine AE 300 turbocharged common-rail injected 2.0 liter diesel engine
+    with 168 HP and EECU single lever control system
+
+drag:
+  cd0: null
+  k: null
+  e: null
+  gears: null
+
+kinematic:
+  takeoff:
+    v2: 73
+    distance_m: 305
+  climb_to_fl50:
+    ias: 130
+    vs: 700
+  climb_to_fl150:
+    ias: 130
+    vs: 500
+  climb_to_fl240:
+    ias: 130
+    vs: 0
+  mach_climb:
+    mach: 0.0
+    vs: 0
+  cruise:
+    mach: 0.0
+    tas: 130
+    range_nm: 830
+  descent_to_fl240:
+    mach: 150.0
+    vs: 800
+  descent_to_fl100:
+    ias: 150
+    vs: 800
+  approach:
+    ias: 120
+    vs: 550
+  landing:
+    ias: 80
+    distance_m: 700

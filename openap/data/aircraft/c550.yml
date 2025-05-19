@@ -1,26 +1,34 @@
-aircraft: Cessna Citation II
+aircraft: Cessna Citation II/Bravo
 
-mtow: 6849
+icao: C550
+iata: CNJ
+
+mtow: 6850
 mlw: 6804
 oew: 3655
 mfc: 2204
 vmo: 270
 mmo: 0.7
-ceiling: 13100
+ceiling: 43000
+
+icao_wtc: light
+eu_wtc: light
+faa_wtc: light
+parking_area_m2: 300
 
 pax:
   max: 10
-  low: 5
+  low: 6
   high: 10
 
 fuselage:
-  length: 14.39
-  height: 1.46
+  length: 14.41704
+  height: 4.6
   width: 1.46
 
 wing:
   area: 31.83
-  span: 15.90
+  span: 15.9
   mac: 2.05
   sweep: 0
   t/c: 0.13
@@ -29,14 +37,9 @@ flaps:
   type: single-slotted
   area: null
   bf/b: null
-  lambda_f: 1.700
-  cf/c: 0.150
-  Sf/S: 0.150
-
-cruise:
-  height: 11000
-  mach: 0.67
-  range: 3500
+  lambda_f: 1.7
+  cf/c: 0.15
+  Sf/S: 0.15
 
 engine:
   type: turbofan
@@ -50,4 +53,37 @@ drag:
   cd0: 0.028
   k: 0.049
   e: 0.818
-  gears: 0.020
+  gears: 0.02
+
+kinematic:
+  takeoff:
+    v2: 115
+    distance_m: 1000
+  climb_to_fl50:
+    ias: 145
+    vs: 2000
+  climb_to_fl150:
+    ias: 240
+    vs: 2000
+  climb_to_fl240:
+    ias: 240
+    vs: 1500
+  mach_climb:
+    mach: 0.6
+    vs: 1000
+  cruise:
+    mach: 0.63
+    tas: 360
+    range_nm: 1900
+  descent_to_fl240:
+    mach: 0.67
+    vs: 1000
+  descent_to_fl100:
+    ias: 250
+    vs: 3000
+  approach:
+    ias: 220
+    vs: 1500
+  landing:
+    ias: 110
+    distance_m: 915

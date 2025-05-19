@@ -1,0 +1,89 @@
+aircraft: Cessna Conquest
+
+icao: C441
+iata: CNC
+
+mtow: 4470
+mlw: 4200
+oew: null
+mfc: null
+vmo: null
+mmo: null
+ceiling: 31000
+
+icao_wtc: light
+eu_wtc: light
+faa_wtc: light
+parking_area_m2: 243
+
+pax:
+  max: 9
+  low: null
+  high: null
+
+fuselage:
+  length: 11.9
+  height: 4
+  width: null
+
+wing:
+  area: null
+  span: 15
+  mac: null
+  sweep: null
+  t/c: null
+
+flaps:
+  type: null
+  area: null
+  bf/b: null
+  lambda_f: null
+  cf/c: null
+  Sf/S: null
+
+engine:
+  type: turboprop
+  mount: wing leading mounted
+  number: 2
+  default: Garrett TPE331-8-401S/402S turboprops
+  options:
+  - Garrett TPE331-8-401S/402S turboprops
+
+drag:
+  cd0: null
+  k: null
+  e: null
+  gears: null
+
+kinematic:
+  takeoff:
+    v2: 105
+    distance_m: 550
+  climb_to_fl50:
+    ias: 135
+    vs: 2000
+  climb_to_fl150:
+    ias: 200
+    vs: 1000
+  climb_to_fl240:
+    ias: 200
+    vs: 1000
+  mach_climb:
+    mach: null
+    vs: null
+  cruise:
+    mach: null
+    tas: 280
+    range_nm: 1200
+  descent_to_fl240:
+    mach: null
+    vs: null
+  descent_to_fl100:
+    ias: 240
+    vs: 1500
+  approach:
+    ias: 240
+    vs: 1500
+  landing:
+    ias: 100
+    distance_m: 350

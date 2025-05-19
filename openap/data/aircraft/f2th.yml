@@ -1,0 +1,89 @@
+aircraft: Dassault Falcon 2000
+
+icao: F2TH
+iata: DF2
+
+mtow: 19200.0
+mlw: 17800.0
+oew: null
+mfc: null
+vmo: null
+mmo: null
+ceiling: 47000
+
+icao_wtc: medium
+eu_wtc: lower medium
+faa_wtc: medium
+parking_area_m2: 487.0
+
+pax:
+  max: 19
+  low: 9
+  high: 19
+
+fuselage:
+  length: 20.20824
+  height: 7.07136
+  width: null
+
+wing:
+  area: null
+  span: 19.32432
+  mac: null
+  sweep: null
+  t/c: null
+
+flaps:
+  type: null
+  area: null
+  bf/b: null
+  lambda_f: null
+  cf/c: null
+  Sf/S: null
+
+engine:
+  type: turbofan
+  mount: both sides of rear fuselage
+  number: 2
+  default: GE CFE738-1-1B turbofan
+  options:
+  - GE CFE738-1-1B turbofan
+
+drag:
+  cd0: null
+  k: null
+  e: null
+  gears: null
+
+kinematic:
+  takeoff:
+    v2: 120
+    distance_m: 1600
+  climb_to_fl50:
+    ias: 150
+    vs: 3000
+  climb_to_fl150:
+    ias: 260
+    vs: 2000
+  climb_to_fl240:
+    ias: 260
+    vs: 2000
+  mach_climb:
+    mach: 0.76
+    vs: 1500
+  cruise:
+    mach: 0.82
+    tas: 470
+    range_nm: 3000
+  descent_to_fl240:
+    mach: 0.72
+    vs: 1000
+  descent_to_fl100:
+    ias: 290
+    vs: 4000
+  approach:
+    ias: 250
+    vs: 1500
+  landing:
+    ias: 110
+    distance_m: 1600

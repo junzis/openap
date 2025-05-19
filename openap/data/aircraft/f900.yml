@@ -1,0 +1,90 @@
+aircraft: Dassault Falcon 900
+
+icao: F900
+iata: null
+
+mtow: 22200.0
+mlw: 20200.0
+oew: null
+mfc: null
+vmo: null
+mmo: null
+ceiling: 51000
+
+icao_wtc: medium
+eu_wtc: lower medium
+faa_wtc: medium
+parking_area_m2: 487.0
+
+pax:
+  max: 18
+  low: 8
+  high: null
+
+fuselage:
+  length: 20.2
+  height: 7.6
+  width: null
+
+wing:
+  area: null
+  span: 19.3
+  mac: null
+  sweep: null
+  t/c: null
+
+flaps:
+  type: null
+  area: null
+  bf/b: null
+  lambda_f: null
+  cf/c: null
+  Sf/S: null
+
+engine:
+  type: turbofan
+  mount: both sides of rear fuselage and fin-integrated
+  number: 3
+  default: Garrett TFE731-5AR-1C
+  options:
+  - Garrett TFE731-5AR-1C
+  - Alliend Signal TFE731-5BR
+
+drag:
+  cd0: null
+  k: null
+  e: null
+  gears: null
+
+kinematic:
+  takeoff:
+    v2: 125
+    distance_m: 1500
+  climb_to_fl50:
+    ias: 155
+    vs: 3000
+  climb_to_fl150:
+    ias: 290
+    vs: 2500
+  climb_to_fl240:
+    ias: 290
+    vs: 2500
+  mach_climb:
+    mach: 0.72
+    vs: 1500
+  cruise:
+    mach: 0.85
+    tas: 510
+    range_nm: 4500
+  descent_to_fl240:
+    mach: 0.72
+    vs: 1000
+  descent_to_fl100:
+    ias: 290
+    vs: 4000
+  approach:
+    ias: 250
+    vs: 1500
+  landing:
+    ias: 110
+    distance_m: 700

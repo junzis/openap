@@ -1,0 +1,90 @@
+aircraft: Beech Bonanza 36
+
+icao: BE36
+iata: null
+
+mtow: 1650
+mlw: 1700
+oew: null
+mfc: null
+vmo: null
+mmo: null
+ceiling: 18000
+
+icao_wtc: light
+eu_wtc: light
+faa_wtc: light
+parking_area_m2: 131
+
+pax:
+  max: 7
+  low: null
+  high: null
+
+fuselage:
+  length: 8.1
+  height: 2.6
+  width: null
+
+wing:
+  area: null
+  span: 8.4
+  mac: null
+  sweep: null
+  t/c: null
+
+flaps:
+  type: null
+  area: null
+  bf/b: null
+  lambda_f: null
+  cf/c: null
+  Sf/S: null
+
+engine:
+  type: piston
+  mount: nose mounted
+  number: 1
+  default: 300 HP Continental IO-550-B piston
+  options:
+  - 300 HP Continental IO-550-B piston
+  - 300 HP Continental TIO-520-UB turbocharged piston
+
+drag:
+  cd0: null
+  k: null
+  e: null
+  gears: null
+
+kinematic:
+  takeoff:
+    v2: 75
+    distance_m: 350
+  climb_to_fl50:
+    ias: 95
+    vs: 500
+  climb_to_fl150:
+    ias: 95
+    vs: 500
+  climb_to_fl240:
+    ias: 95
+    vs: 500
+  mach_climb:
+    mach: null
+    vs: null
+  cruise:
+    mach: null
+    tas: 160
+    range_nm: 850
+  descent_to_fl240:
+    mach: null
+    vs: null
+  descent_to_fl100:
+    ias: 160
+    vs: 500
+  approach:
+    ias: 120
+    vs: 500
+  landing:
+    ias: 70
+    distance_m: 450

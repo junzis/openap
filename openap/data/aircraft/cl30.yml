@@ -1,0 +1,89 @@
+aircraft: Bombardier (Canadair) Challenger 300
+
+icao: CL30
+iata: null
+
+mtow: 17622
+mlw: 15300
+oew: null
+mfc: null
+vmo: null
+mmo: null
+ceiling: 45000
+
+icao_wtc: medium
+eu_wtc: lower medium
+faa_wtc: medium
+parking_area_m2: 506
+
+pax:
+  max: 10
+  low: 8
+  high: null
+
+fuselage:
+  length: 20.9
+  height: 6.1
+  width: null
+
+wing:
+  area: null
+  span: 18.4
+  mac: null
+  sweep: null
+  t/c: null
+
+flaps:
+  type: null
+  area: null
+  bf/b: null
+  lambda_f: null
+  cf/c: null
+  Sf/S: null
+
+engine:
+  type: turbofan
+  mount: both sides of rear fuselage
+  number: 2
+  default: Honeywell HTF7000 turbofan
+  options:
+  - Honeywell HTF7000 turbofan
+
+drag:
+  cd0: null
+  k: null
+  e: null
+  gears: null
+
+kinematic:
+  takeoff:
+    v2: 140
+    distance_m: 1466
+  climb_to_fl50:
+    ias: 160
+    vs: 4500
+  climb_to_fl150:
+    ias: 260
+    vs: 2500
+  climb_to_fl240:
+    ias: 260
+    vs: 2200
+  mach_climb:
+    mach: 0.79
+    vs: 2500
+  cruise:
+    mach: 0.81
+    tas: 470
+    range_nm: 3065
+  descent_to_fl240:
+    mach: 0.8
+    vs: 1500
+  descent_to_fl100:
+    ias: 250
+    vs: 2500
+  approach:
+    ias: 200
+    vs: 1500
+  landing:
+    ias: 125
+    distance_m: 792

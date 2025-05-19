@@ -1,12 +1,20 @@
-aircraft: Boeing 777-200/200ER
+aircraft: Boeing 777-200
 
-mtow: 297000
-mlw: 213000
+icao: B772
+iata: 777/772
+
+mtow: 297600
+mlw: 213200
 oew: 138000
 mfc: 171000
 vmo: 330
 mmo: 0.89
-ceiling: 13100
+ceiling: 43000
+
+icao_wtc: heavy
+eu_wtc: upper heavy
+faa_wtc: heavy
+parking_area_m2: 4175
 
 pax:
   max: 440
@@ -15,8 +23,8 @@ pax:
 
 fuselage:
   length: 63.73
-  height: 6.20
-  width: 6.20
+  height: 6.2
+  width: 6.2
 
 wing:
   area: 427.8
@@ -29,30 +37,61 @@ flaps:
   type: double-slotted
   area: 67.13
   bf/b: 0.758
-  lambda_f: 0.900
+  lambda_f: 0.9
   cf/c: 0.166
   Sf/S: 0.157
-
-cruise:
-  height: 11000
-  mach: 0.84
-  range: 9600
 
 engine:
   type: turbofan
   mount: wing
   number: 2
-  default: PW4090
+  default: PW4084
   options:
-    - GE90-77B
+    - PW4074
+    - GE90-75B
+    - Trent 875
     - PW4077
+    - GE90-76B
     - Trent 877
-    - GE90-94B
-    - PW4090
-    - Trent 895
+    - PW4084
+    - GE90-85B
+    - Trent 884
 
 drag:
   cd0: 0.024
   k: 0.047
   e: 0.783
   gears: 0.014
+
+kinematic:
+  takeoff:
+    v2: 170
+    distance_m: 2900
+  climb_to_fl50:
+    ias: 200
+    vs: 3000
+  climb_to_fl150:
+    ias: 300
+    vs: 2500
+  climb_to_fl240:
+    ias: 300
+    vs: 2000
+  mach_climb:
+    mach: 0.83
+    vs: 1500
+  cruise:
+    mach: 0.84
+    tas: 480
+    range_nm: 5210
+  descent_to_fl240:
+    mach: 0.75
+    vs: 800
+  descent_to_fl100:
+    ias: 300
+    vs: 3000
+  approach:
+    ias: 250
+    vs: 1500
+  landing:
+    ias: 140
+    distance_m: 1700

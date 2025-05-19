@@ -1,0 +1,90 @@
+aircraft: Beech 58 Baron
+
+icao: BE58
+iata: null
+
+mtow: 2500
+mlw: 2400
+oew: null
+mfc: null
+vmo: null
+mmo: null
+ceiling: 20000
+
+icao_wtc: light
+eu_wtc: light
+faa_wtc: light
+parking_area_m2: 155
+
+pax:
+  max: 5
+  low: 4
+  high: null
+
+fuselage:
+  length: 9.08304
+  height: 2.98704
+  width: null
+
+wing:
+  area: null
+  span: 11.52144
+  mac: null
+  sweep: null
+  t/c: null
+
+flaps:
+  type: null
+  area: null
+  bf/b: null
+  lambda_f: null
+  cf/c: null
+  Sf/S: null
+
+engine:
+  type: piston
+  mount: front wing leading mounted
+  number: 2
+  default: 2 x 300 HP Continental IO 550-C piston engines
+  options:
+  - 2 x 300 HP Continental IO 550-C piston engines
+  - 2 x 325 HP Continental TSIO 520-W3 turbocharged piston engines
+
+drag:
+  cd0: null
+  k: null
+  e: null
+  gears: null
+
+kinematic:
+  takeoff:
+    v2: 100
+    distance_m: 700
+  climb_to_fl50:
+    ias: 130
+    vs: 1500
+  climb_to_fl150:
+    ias: 130
+    vs: 500
+  climb_to_fl240:
+    ias: 130
+    vs: 800
+  mach_climb:
+    mach: null
+    vs: null
+  cruise:
+    mach: null
+    tas: 175
+    range_nm: 1000
+  descent_to_fl240:
+    mach: null
+    vs: null
+  descent_to_fl100:
+    ias: 160
+    vs: 800
+  approach:
+    ias: 140
+    vs: 500
+  landing:
+    ias: 95
+    distance_m: 600

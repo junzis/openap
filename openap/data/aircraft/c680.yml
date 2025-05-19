@@ -1,0 +1,89 @@
+aircraft: Cessna Citation Sovereign
+
+icao: C680
+iata: null
+
+mtow: 13743
+mlw: 12300
+oew: null
+mfc: null
+vmo: null
+mmo: null
+ceiling: 47000
+
+icao_wtc: medium
+eu_wtc: light
+faa_wtc: medium
+parking_area_m2: 465
+
+pax:
+  max: 12
+  low: null
+  high: null
+
+fuselage:
+  length: 19.37
+  height: 6.2
+  width: null
+
+wing:
+  area: null
+  span: 19.24
+  mac: null
+  sweep: null
+  t/c: null
+
+flaps:
+  type: null
+  area: null
+  bf/b: null
+  lambda_f: null
+  cf/c: null
+  Sf/S: null
+
+engine:
+  type: turbofan
+  mount: both sides of rear fuselage
+  number: 2
+  default: Pratt & Whitney PW306C 25.3kN
+  options:
+  - Pratt & Whitney PW306C 25.3kN
+
+drag:
+  cd0: null
+  k: null
+  e: null
+  gears: null
+
+kinematic:
+  takeoff:
+    v2: 145
+    distance_m: 1200
+  climb_to_fl50:
+    ias: 240
+    vs: 2500
+  climb_to_fl150:
+    ias: 400
+    vs: 3500
+  climb_to_fl240:
+    ias: 400
+    vs: 3500
+  mach_climb:
+    mach: 0.76
+    vs: 3500
+  cruise:
+    mach: 0.79
+    tas: 460
+    range_nm: 2800
+  descent_to_fl240:
+    mach: 0.76
+    vs: 3500
+  descent_to_fl100:
+    ias: 400
+    vs: 3500
+  approach:
+    ias: 230
+    vs: 3500
+  landing:
+    ias: 125
+    distance_m: 1200

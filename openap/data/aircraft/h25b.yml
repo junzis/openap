@@ -1,0 +1,88 @@
+aircraft: BAe HS 125/700-800/Hawker 800
+
+icao: H25B
+iata: null
+
+mtow: 12700.0
+mlw: 10600.0
+oew: null
+mfc: null
+vmo: null
+mmo: null
+ceiling: null
+
+icao_wtc: medium
+eu_wtc: null
+faa_wtc: null
+parking_area_m2: 320.0
+
+pax:
+  max: null
+  low: null
+  high: null
+
+fuselage:
+  length: 15.605760000000002
+  height: 5.5168800000000005
+  width: null
+
+wing:
+  area: null
+  span: 15.66672
+  mac: null
+  sweep: null
+  t/c: null
+
+flaps:
+  type: null
+  area: null
+  bf/b: null
+  lambda_f: null
+  cf/c: null
+  Sf/S: null
+
+engine:
+  type: turbofan
+  mount: null
+  number: 2
+  default: null
+  options: null
+
+drag:
+  cd0: null
+  k: null
+  e: null
+  gears: null
+
+kinematic:
+  takeoff:
+    v2: null
+    distance_m: null
+  climb_to_fl50:
+    ias: null
+    vs: null
+  climb_to_fl150:
+    ias: null
+    vs: null
+  climb_to_fl240:
+    ias: null
+    vs: null
+  mach_climb:
+    mach: null
+    vs: null
+  cruise:
+    mach: null
+    tas: null
+    range_nm: null
+  descent_to_fl240:
+    mach: null
+    vs: null
+  descent_to_fl100:
+    ias: null
+    vs: null
+  approach:
+    ias: 137.0
+    vs: null
+  landing:
+    ias: null
+    distance_m: null

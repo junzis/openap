@@ -1,0 +1,91 @@
+aircraft: Boeing 757-300
+
+icao: B753
+iata: "753"
+
+mtow: 123600
+mlw: 101600
+oew: null
+mfc: null
+vmo: null
+mmo: null
+ceiling: 41000
+
+icao_wtc: medium
+eu_wtc: lower heavy
+faa_wtc: medium
+parking_area_m2: 2300
+
+pax:
+  max: 280
+  low: 243
+  high: null
+
+fuselage:
+  length: 54.5
+  height: 13.6
+  width: null
+
+wing:
+  area: null
+  span: 38.1
+  mac: null
+  sweep: null
+  t/c: null
+
+flaps:
+  type: null
+  area: null
+  bf/b: null
+  lambda_f: null
+  cf/c: null
+  Sf/S: null
+
+engine:
+  type: turbofan
+  mount: underwing
+  number: 2
+  default: PW2040
+  options:
+    - PW2037
+    - PW2040
+    - RB211-535E4B
+
+drag:
+  cd0: null
+  k: null
+  e: null
+  gears: null
+
+kinematic:
+  takeoff:
+    v2: 145
+    distance_m: 2600
+  climb_to_fl50:
+    ias: 175
+    vs: 3000
+  climb_to_fl150:
+    ias: 270
+    vs: 3000
+  climb_to_fl240:
+    ias: 270
+    vs: 2500
+  mach_climb:
+    mach: 0.8
+    vs: 1000
+  cruise:
+    mach: 0.8
+    tas: 490
+    range_nm: 3395
+  descent_to_fl240:
+    mach: 0.8
+    vs: 1000
+  descent_to_fl100:
+    ias: 270
+    vs: 3500
+  approach:
+    ias: 230
+    vs: 1500
+  landing:
+    ias: 143
+    distance_m: 1800

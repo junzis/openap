@@ -1,0 +1,89 @@
+aircraft: Piper Malibu Meridian
+
+icao: P46T
+iata: null
+
+mtow: 2300.0
+mlw: 2200.0
+oew: null
+mfc: null
+vmo: null
+mmo: null
+ceiling: 30000
+
+icao_wtc: light
+eu_wtc: light
+faa_wtc: light
+parking_area_m2: 170.0
+
+pax:
+  max: 6
+  low: null
+  high: null
+
+fuselage:
+  length: 9.02208
+  height: 3.44424
+  width: null
+
+wing:
+  area: null
+  span: 13.1064
+  mac: null
+  sweep: null
+  t/c: null
+
+flaps:
+  type: null
+  area: null
+  bf/b: null
+  lambda_f: null
+  cf/c: null
+  Sf/S: null
+
+engine:
+  type: turboprop
+  mount: nose mounted
+  number: 1
+  default: P&W PT6A-42A turboprop with Hartzell 3 blade constant speed propeller
+  options:
+  - P&W PT6A-42A turboprop with Hartzell 3 blade constant speed propeller
+
+drag:
+  cd0: null
+  k: null
+  e: null
+  gears: null
+
+kinematic:
+  takeoff:
+    v2: 80
+    distance_m: 460
+  climb_to_fl50:
+    ias: 110
+    vs: 1400
+  climb_to_fl150:
+    ias: 170
+    vs: 1000
+  climb_to_fl240:
+    ias: 170
+    vs: 800
+  mach_climb:
+    mach: null
+    vs: null
+  cruise:
+    mach: 0.41
+    tas: 220
+    range_nm: 1000
+  descent_to_fl240:
+    mach: null
+    vs: null
+  descent_to_fl100:
+    ias: 230
+    vs: 1500
+  approach:
+    ias: 200
+    vs: 1500
+  landing:
+    ias: 75
+    distance_m: 450

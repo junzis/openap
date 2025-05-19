@@ -1,0 +1,90 @@
+aircraft: Piper Seminole
+
+icao: PA44
+iata: null
+
+mtow: 1720
+mlw: 1700
+oew: null
+mfc: null
+vmo: null
+mmo: null
+ceiling: 18000
+
+icao_wtc: light
+eu_wtc: light
+faa_wtc: light
+parking_area_m2: 147
+
+pax:
+  max: 4
+  low: null
+  high: null
+
+fuselage:
+  length: 8.4
+  height: 2.6
+  width: null
+
+wing:
+  area: null
+  span: 11.8
+  mac: null
+  sweep: null
+  t/c: null
+
+flaps:
+  type: null
+  area: null
+  bf/b: null
+  lambda_f: null
+  cf/c: null
+  Sf/S: null
+
+engine:
+  type: piston
+  mount: front wing leading mounted
+  number: 2
+  default: 2 x 180 HP Lycoming O-360-E1AD piston engines with 2 or 3 blade propellers
+  options:
+  - 2 x 180 HP Lycoming O-360-E1AD piston engines with 2 or 3 blade propellers
+  - 2 x 180 HP Lycoming TO-360-E1A6D turbocharged piston engines with 2 blade propellers
+
+drag:
+  cd0: null
+  k: null
+  e: null
+  gears: null
+
+kinematic:
+  takeoff:
+    v2: 75
+    distance_m: 300
+  climb_to_fl50:
+    ias: 110
+    vs: 1300
+  climb_to_fl150:
+    ias: 120
+    vs: 800
+  climb_to_fl240:
+    ias: 120
+    vs: 800
+  mach_climb:
+    mach: null
+    vs: null
+  cruise:
+    mach: null
+    tas: 160
+    range_nm: 800
+  descent_to_fl240:
+    mach: null
+    vs: null
+  descent_to_fl100:
+    ias: 160
+    vs: 800
+  approach:
+    ias: 160
+    vs: 500
+  landing:
+    ias: 80
+    distance_m: 400

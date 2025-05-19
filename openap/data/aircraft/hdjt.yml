@@ -1,0 +1,89 @@
+aircraft: HONDA HA-420 HondaJet
+
+icao: HDJT
+iata: HHJ
+
+mtow: 4519
+mlw: 4500
+oew: null
+mfc: null
+vmo: null
+mmo: null
+ceiling: 43000
+
+icao_wtc: light
+eu_wtc: light
+faa_wtc: light
+parking_area_m2: 214
+
+pax:
+  max: 4
+  low: null
+  high: null
+
+fuselage:
+  length: 12.71
+  height: 4.03
+  width: null
+
+wing:
+  area: null
+  span: 12.15
+  mac: null
+  sweep: null
+  t/c: null
+
+flaps:
+  type: null
+  area: null
+  bf/b: null
+  lambda_f: null
+  cf/c: null
+  Sf/S: null
+
+engine:
+  type: turbofan
+  mount: over wing mounted
+  number: 2
+  default: GE Honda HF-120 turbofan
+  options:
+  - GE Honda HF-120 turbofan
+
+drag:
+  cd0: null
+  k: null
+  e: null
+  gears: null
+
+kinematic:
+  takeoff:
+    v2: 120
+    distance_m: 1128
+  climb_to_fl50:
+    ias: 160
+    vs: 3500
+  climb_to_fl150:
+    ias: 210
+    vs: 3000
+  climb_to_fl240:
+    ias: 210
+    vs: 2500
+  mach_climb:
+    mach: 0.57
+    vs: 1500
+  cruise:
+    mach: 0.72
+    tas: 410
+    range_nm: 1547
+  descent_to_fl240:
+    mach: 0.72
+    vs: 2000
+  descent_to_fl100:
+    ias: 270
+    vs: 2000
+  approach:
+    ias: 160
+    vs: 1500
+  landing:
+    ias: 112
+    distance_m: 829

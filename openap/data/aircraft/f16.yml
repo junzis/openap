@@ -1,0 +1,90 @@
+aircraft: Lockheed F-16 Fighting Falcon
+
+icao: F16
+iata: null
+
+mtow: 19200
+mlw: null
+oew: null
+mfc: null
+vmo: null
+mmo: null
+ceiling: 50000
+
+icao_wtc: medium
+eu_wtc: light
+faa_wtc: medium
+parking_area_m2: 216
+
+pax:
+  max: null
+  low: null
+  high: null
+
+fuselage:
+  length: 15
+  height: 5.1
+  width: null
+
+wing:
+  area: null
+  span: 10
+  mac: null
+  sweep: null
+  t/c: null
+
+flaps:
+  type: null
+  area: null
+  bf/b: null
+  lambda_f: null
+  cf/c: null
+  Sf/S: null
+
+engine:
+  type: turbofan
+  mount: in fuselage
+  number: 1
+  default: 1 x 65.3 kN P&W F100-PW-100 (1 x 106.0 kN with afterburner) turbofan
+  options:
+  - 1 x 65.3 kN P&W F100-PW-100 (1 x 106.0 kN with afterburner) turbofan
+  - 1 x 122.8 kN GE F110-GE-100 afterburning turbofan
+
+drag:
+  cd0: null
+  k: null
+  e: null
+  gears: null
+
+kinematic:
+  takeoff:
+    v2: 145
+    distance_m: 1000
+  climb_to_fl50:
+    ias: 175
+    vs: 55000
+  climb_to_fl150:
+    ias: 300
+    vs: 40000
+  climb_to_fl240:
+    ias: 300
+    vs: 30000
+  mach_climb:
+    mach: 0.8
+    vs: 10000
+  cruise:
+    mach: 0.86
+    tas: 480
+    range_nm: 2000
+  descent_to_fl240:
+    mach: 0.85
+    vs: 10000
+  descent_to_fl100:
+    ias: 350
+    vs: 10000
+  approach:
+    ias: 250
+    vs: 1500
+  landing:
+    ias: 150
+    distance_m: 800

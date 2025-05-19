@@ -1,0 +1,90 @@
+aircraft: Embraer ERJ 135/140/Legacy
+
+icao: E135
+iata: null
+
+mtow: 19990
+mlw: 18700
+oew: null
+mfc: null
+vmo: null
+mmo: null
+ceiling: 37000
+
+icao_wtc: medium
+eu_wtc: lower medium
+faa_wtc: null
+parking_area_m2: 693
+
+pax:
+  max: 35
+  low: null
+  high: null
+
+fuselage:
+  length: 26.3
+  height: 6.7
+  width: null
+
+wing:
+  area: null
+  span: 20.2
+  mac: null
+  sweep: null
+  t/c: null
+
+flaps:
+  type: null
+  area: null
+  bf/b: null
+  lambda_f: null
+  cf/c: null
+  Sf/S: null
+
+engine:
+  type: turbofan
+  mount: both sides of rear fuselage
+  number: 2
+  default: Allison AE-3007A3 turbofan
+  options:
+  - Allison AE-3007A3 turbofan
+  - Allison AE-3007A4 turbofan
+
+drag:
+  cd0: null
+  k: null
+  e: null
+  gears: null
+
+kinematic:
+  takeoff:
+    v2: 125
+    distance_m: 1400
+  climb_to_fl50:
+    ias: 160
+    vs: 3500
+  climb_to_fl150:
+    ias: 300
+    vs: 1500
+  climb_to_fl240:
+    ias: 300
+    vs: 1000
+  mach_climb:
+    mach: 0.56
+    vs: 1500
+  cruise:
+    mach: 0.76
+    tas: 320
+    range_nm: 1200
+  descent_to_fl240:
+    mach: 0.76
+    vs: 1500
+  descent_to_fl100:
+    ias: 250
+    vs: 1500
+  approach:
+    ias: 210
+    vs: 1500
+  landing:
+    ias: 130
+    distance_m: 1000

@@ -1,0 +1,90 @@
+aircraft: Beech 1900/C-12J
+
+icao: B190
+iata: BE1/BEH/BES
+
+mtow: 7690
+mlw: 7300
+oew: null
+mfc: null
+vmo: null
+mmo: null
+ceiling: 25000
+
+icao_wtc: medium
+eu_wtc: light
+faa_wtc: medium
+parking_area_m2: 396
+
+pax:
+  max: 18
+  low: null
+  high: null
+
+fuselage:
+  length: 17.6
+  height: 4.7
+  width: null
+
+wing:
+  area: null
+  span: 17.7
+  mac: null
+  sweep: null
+  t/c: null
+
+flaps:
+  type: null
+  area: null
+  bf/b: null
+  lambda_f: null
+  cf/c: null
+  Sf/S: null
+
+engine:
+  type: turboprop
+  mount: front wing leading mounted
+  number: 2
+  default: PT6A-65B
+  options:
+    - PT6A-65B
+    - PT6A-67D
+
+drag:
+  cd0: null
+  k: null
+  e: null
+  gears: null
+
+kinematic:
+  takeoff:
+    v2: 110
+    distance_m: 1150
+  climb_to_fl50:
+    ias: 145
+    vs: 2500
+  climb_to_fl150:
+    ias: 210
+    vs: 1200
+  climb_to_fl240:
+    ias: 210
+    vs: 1200
+  mach_climb:
+    mach: null
+    vs: null
+  cruise:
+    mach: null
+    tas: 270
+    range_nm: 1500
+  descent_to_fl240:
+    mach: null
+    vs: null
+  descent_to_fl100:
+    ias: 250
+    vs: 1500
+  approach:
+    ias: 250
+    vs: 1500
+  landing:
+    ias: 120
+    distance_m: 825

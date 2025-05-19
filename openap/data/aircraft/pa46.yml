@@ -1,0 +1,93 @@
+aircraft: Piper Malibu
+
+icao: PA46
+iata: null
+
+mtow: 2000.0
+mlw: 1800.0
+oew: null
+mfc: null
+vmo: null
+mmo: null
+ceiling: 25000
+
+icao_wtc: light
+eu_wtc: light
+faa_wtc: light
+parking_area_m2: 167.0
+
+pax:
+  max: 6
+  low: null
+  high: null
+
+fuselage:
+  length: 8.7
+  height: 3.5
+  width: null
+
+wing:
+  area: null
+  span: 13.1
+  mac: null
+  sweep: null
+  t/c: null
+
+flaps:
+  type: null
+  area: null
+  bf/b: null
+  lambda_f: null
+  cf/c: null
+  Sf/S: null
+
+engine:
+  type: piston
+  mount: nose mounted
+  number: 1
+  default: '310P: 1 x 310 HP Continental TSIO-520-BE turbocharged piston engine with
+    2 blade propeller'
+  options:
+  - '310P: 1 x 310 HP Continental TSIO-520-BE turbocharged piston engine with 2 blade
+    propeller'
+  - '350P: 1 x 350 HP Lycoming TIO-540-AE2A turbocharged piston engine with 2 blade
+    propeller'
+
+drag:
+  cd0: null
+  k: null
+  e: null
+  gears: null
+
+kinematic:
+  takeoff:
+    v2: 80
+    distance_m: 450
+  climb_to_fl50:
+    ias: 110
+    vs: 1600
+  climb_to_fl150:
+    ias: 170
+    vs: 1000
+  climb_to_fl240:
+    ias: 170
+    vs: 600
+  mach_climb:
+    mach: null
+    vs: null
+  cruise:
+    mach: 0.41
+    tas: 200
+    range_nm: 1000
+  descent_to_fl240:
+    mach: null
+    vs: null
+  descent_to_fl100:
+    ias: 200
+    vs: 800
+  approach:
+    ias: 160
+    vs: 500
+  landing:
+    ias: 75
+    distance_m: 450

@@ -1,0 +1,89 @@
+aircraft: Cessna Excel/XLS
+
+icao: C56X
+iata: CNJ
+
+mtow: 9200.0
+mlw: 8500.0
+oew: null
+mfc: null
+vmo: null
+mmo: null
+ceiling: 45000
+
+icao_wtc: medium
+eu_wtc: light
+faa_wtc: medium
+parking_area_m2: 350.0
+
+pax:
+  max: 9
+  low: null
+  high: null
+
+fuselage:
+  length: 15.8
+  height: 5.2
+  width: null
+
+wing:
+  area: null
+  span: 17.0
+  mac: null
+  sweep: null
+  t/c: null
+
+flaps:
+  type: null
+  area: null
+  bf/b: null
+  lambda_f: null
+  cf/c: null
+  Sf/S: null
+
+engine:
+  type: turbofan
+  mount: rear fuselage
+  number: 2
+  default: P&W PW545A turbofan
+  options:
+  - P&W PW545A turbofan
+
+drag:
+  cd0: null
+  k: null
+  e: null
+  gears: null
+
+kinematic:
+  takeoff:
+    v2: 115
+    distance_m: 1055
+  climb_to_fl50:
+    ias: 145
+    vs: 2500
+  climb_to_fl150:
+    ias: 270
+    vs: 3000
+  climb_to_fl240:
+    ias: 270
+    vs: 2200
+  mach_climb:
+    mach: 0.65
+    vs: 1000
+  cruise:
+    mach: 0.73
+    tas: 430
+    range_nm: 2000
+  descent_to_fl240:
+    mach: 0.7
+    vs: 1000
+  descent_to_fl100:
+    ias: 270
+    vs: 3000
+  approach:
+    ias: 210
+    vs: 1000
+  landing:
+    ias: 117
+    distance_m: 890

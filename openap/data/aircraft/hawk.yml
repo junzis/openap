@@ -1,0 +1,93 @@
+aircraft: BAe T-45 Goshawk
+
+icao: HAWK
+iata: null
+
+mtow: 5100
+mlw: 4600
+oew: null
+mfc: null
+vmo: null
+mmo: null
+ceiling: 50000
+
+icao_wtc: medium
+eu_wtc: light
+faa_wtc: medium
+parking_area_m2: 168
+
+pax:
+  max: null
+  low: null
+  high: null
+
+fuselage:
+  length: 11.9
+  height: 4
+  width: null
+
+wing:
+  area: null
+  span: 9.4
+  mac: null
+  sweep: null
+  t/c: null
+
+flaps:
+  type: null
+  area: null
+  bf/b: null
+  lambda_f: null
+  cf/c: null
+  Sf/S: null
+
+engine:
+  type: turbofan
+  mount: in fuselage
+  number: 1
+  default: "1 x 26kN Turbom\xE9ca F405-RR-401 turbofan"
+  options:
+  - "1 x 23.6kN R-R Turbom\xE9ca RT172-06-11 Adour 151 turbofan"
+  - 1 x 25.4kN R-R Adour 861 turbofan
+  - 1 x 26.6kN R-R Adour 900 turbofan
+  - 1 x 26.0kN R-R Pegasus MK 105 turbofan
+  - "1 x 26kN Turbom\xE9ca F405-RR-401 turbofan"
+
+drag:
+  cd0: null
+  k: null
+  e: null
+  gears: null
+
+kinematic:
+  takeoff:
+    v2: 115
+    distance_m: 700
+  climb_to_fl50:
+    ias: 145
+    vs: 9300
+  climb_to_fl150:
+    ias: 300
+    vs: 7000
+  climb_to_fl240:
+    ias: 300
+    vs: 5000
+  mach_climb:
+    mach: 0.72
+    vs: 3000
+  cruise:
+    mach: 0.75
+    tas: 420
+    range_nm: 1300
+  descent_to_fl240:
+    mach: 0.76
+    vs: 8000
+  descent_to_fl100:
+    ias: 350
+    vs: 7000
+  approach:
+    ias: 250
+    vs: 1500
+  landing:
+    ias: 125
+    distance_m: 600

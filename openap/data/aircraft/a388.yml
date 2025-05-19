@@ -1,12 +1,20 @@
 aircraft: Airbus A380-800
 
+icao: A388
+iata: 380 / 38F
+
 mtow: 560000
 mlw: 386000
 oew: 277000
 mfc: 320000
 vmo: 340
 mmo: 0.89
-ceiling: 13100
+ceiling: 43000
+
+icao_wtc: super
+eu_wtc: super heavy
+faa_wtc: super
+parking_area_m2: 6148
 
 pax:
   max: 853
@@ -29,14 +37,9 @@ flaps:
   type: single-slotted
   area: null
   bf/b: null
-  lambda_f: 0.900
-  cf/c: 0.150
-  Sf/S: 0.150
-
-cruise:
-  height: 12800
-  mach: 0.85
-  range: 14800
+  lambda_f: 0.9
+  cf/c: 0.15
+  Sf/S: 0.15
 
 engine:
   type: turbofan
@@ -50,6 +53,39 @@ engine:
 
 drag:
   cd0: 0.016
-  k: 0.050
+  k: 0.05
   e: 0.855
   gears: 0.012
+
+kinematic:
+  takeoff:
+    v2: 150
+    distance_m: 2970
+  climb_to_fl50:
+    ias: 190
+    vs: 1500
+  climb_to_fl150:
+    ias: 320
+    vs: 2500
+  climb_to_fl240:
+    ias: 320
+    vs: 1300
+  mach_climb:
+    mach: 0.83
+    vs: 1000
+  cruise:
+    mach: 0.85
+    tas: 520
+    range_nm: 8000
+  descent_to_fl240:
+    mach: 0.83
+    vs: 1000
+  descent_to_fl100:
+    ias: 300
+    vs: 2000
+  approach:
+    ias: 250
+    vs: 1000
+  landing:
+    ias: 140
+    distance_m: 2010

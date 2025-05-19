@@ -1,12 +1,20 @@
 aircraft: Boeing 737-700
 
-mtow: 70000
-mlw: 58600
+icao: B737
+iata: 737/73G/73W
+
+mtow: 70100
+mlw: 66000
 oew: 37600
 mfc: 26000
 vmo: 340
 mmo: 0.82
-ceiling: 12500
+ceiling: 41000
+
+icao_wtc: medium
+eu_wtc: upper medium
+faa_wtc: medium
+parking_area_m2: 1313
 
 pax:
   max: 149
@@ -28,15 +36,10 @@ wing:
 flaps:
   type: double-slotted
   area: null
-  bf/b: 0.60
-  lambda_f: 0.900
-  cf/c: 0.150
-  Sf/S: 0.150
-
-cruise:
-  height: 11000
-  mach: 0.78
-  range: 4600
+  bf/b: 0.6
+  lambda_f: 0.9
+  cf/c: 0.15
+  Sf/S: 0.15
 
 engine:
   type: turbofan
@@ -53,9 +56,38 @@ engine:
 drag:
   cd0: 0.022
   k: 0.043
-  e: 0.780
+  e: 0.78
   gears: 0.016
 
-fuel:
-  engine: CFM56-7B26
-  fuel_coef: 2.69348207
+kinematic:
+  takeoff:
+    v2: 150
+    distance_m: 1800
+  climb_to_fl50:
+    ias: 165
+    vs: 3000
+  climb_to_fl150:
+    ias: 280
+    vs: 2500
+  climb_to_fl240:
+    ias: 280
+    vs: 2500
+  mach_climb:
+    mach: 0.74
+    vs: 1500
+  cruise:
+    mach: 0.78
+    tas: 460
+    range_nm: 2500
+  descent_to_fl240:
+    mach: 0.76
+    vs: 800
+  descent_to_fl100:
+    ias: 280
+    vs: 3500
+  approach:
+    ias: 250
+    vs: 1500
+  landing:
+    ias: 137
+    distance_m: 1400

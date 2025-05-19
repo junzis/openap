@@ -1,0 +1,89 @@
+aircraft: Cessna Citation M2
+
+icao: C25M
+iata: CNJ
+
+mtow: 4853
+mlw: 4500
+oew: null
+mfc: null
+vmo: null
+mmo: null
+ceiling: 41000
+
+icao_wtc: light
+eu_wtc: light
+faa_wtc: light
+parking_area_m2: 253
+
+pax:
+  max: 7
+  low: 4
+  high: 7
+
+fuselage:
+  length: 12.98
+  height: 4.2
+  width: null
+
+wing:
+  area: null
+  span: 14.39
+  mac: null
+  sweep: null
+  t/c: null
+
+flaps:
+  type: null
+  area: null
+  bf/b: null
+  lambda_f: null
+  cf/c: null
+  Sf/S: null
+
+engine:
+  type: turbofan
+  mount: both sides of rear fuselage
+  number: 2
+  default: Williams FJ44-1AP-21
+  options:
+  - Williams FJ44-1AP-21
+
+drag:
+  cd0: null
+  k: null
+  e: null
+  gears: null
+
+kinematic:
+  takeoff:
+    v2: 111
+    distance_m: 991
+  climb_to_fl50:
+    ias: 200
+    vs: 3700
+  climb_to_fl150:
+    ias: 220
+    vs: 3000
+  climb_to_fl240:
+    ias: 220
+    vs: 2500
+  mach_climb:
+    mach: 0.55
+    vs: 1500
+  cruise:
+    mach: 0.69
+    tas: 400
+    range_nm: 1300
+  descent_to_fl240:
+    mach: 0.68
+    vs: 2000
+  descent_to_fl100:
+    ias: 260
+    vs: 2000
+  approach:
+    ias: 200
+    vs: 1500
+  landing:
+    ias: 105
+    distance_m: 789

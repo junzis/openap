@@ -1,12 +1,20 @@
 aircraft: Boeing 777-300ER
 
+icao: B77W
+iata: null
+
 mtow: 351500
 mlw: 251300
 oew: 167800
 mfc: 181300
 vmo: 330
 mmo: 0.89
-ceiling: 13100
+ceiling: 43000
+
+icao_wtc: heavy
+eu_wtc: upper heavy
+faa_wtc: heavy
+parking_area_m2: 5115
 
 pax:
   max: 550
@@ -15,8 +23,8 @@ pax:
 
 fuselage:
   length: 73.86
-  height: 6.20
-  width: 6.20
+  height: 6.2
+  width: 6.2
 
 wing:
   area: 436.8
@@ -29,14 +37,9 @@ flaps:
   type: double-slotted
   area: 67.13
   bf/b: 0.758
-  lambda_f: 0.900
+  lambda_f: 0.9
   cf/c: 0.156
   Sf/S: 0.154
-
-cruise:
-  height: 11000
-  mach: 0.84
-  range: 14700
 
 engine:
   type: turbofan
@@ -51,3 +54,36 @@ drag:
   k: 0.043
   e: 0.765
   gears: 0.016
+
+kinematic:
+  takeoff:
+    v2: 168
+    distance_m: 3000
+  climb_to_fl50:
+    ias: 200
+    vs: 3000
+  climb_to_fl150:
+    ias: 300
+    vs: 2500
+  climb_to_fl240:
+    ias: 300
+    vs: 2000
+  mach_climb:
+    mach: 0.83
+    vs: 1500
+  cruise:
+    mach: 0.84
+    tas: 490
+    range_nm: 7930
+  descent_to_fl240:
+    mach: 0.84
+    vs: 1000
+  descent_to_fl100:
+    ias: 300
+    vs: 3000
+  approach:
+    ias: 240
+    vs: 1500
+  landing:
+    ias: 149
+    distance_m: 1800

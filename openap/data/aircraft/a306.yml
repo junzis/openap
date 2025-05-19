@@ -1,0 +1,92 @@
+aircraft: Airbus A300-600
+
+icao: A306
+iata: AB6
+
+mtow: 171700
+mlw: 138000
+oew: null
+mfc: null
+vmo: null
+mmo: null
+ceiling: 37000
+
+icao_wtc: heavy
+eu_wtc: lower heavy
+faa_wtc: heavy
+parking_area_m2: 2663
+
+pax:
+  max: 298
+  low: 266
+  high: null
+
+fuselage:
+  length: 54.1
+  height: 16.54
+  width: null
+
+wing:
+  area: null
+  span: 44.84
+  mac: null
+  sweep: null
+  t/c: null
+
+flaps:
+  type: null
+  area: null
+  bf/b: null
+  lambda_f: null
+  cf/c: null
+  Sf/S: null
+
+engine:
+  type: turbofan
+  mount: underwing
+  number: 2
+  default: CF6-80C2A5
+  options:
+    - CF6-80C2A3
+    - CF6-80C2A5
+    - CF6-80C2A5F
+    - PW4158
+
+drag:
+  cd0: null
+  k: null
+  e: null
+  gears: null
+
+kinematic:
+  takeoff:
+    v2: 160
+    distance_m: 2240
+  climb_to_fl50:
+    ias: 190
+    vs: 3000
+  climb_to_fl150:
+    ias: 290
+    vs: 3200
+  climb_to_fl240:
+    ias: 290
+    vs: 2500
+  mach_climb:
+    mach: 0.78
+    vs: 800
+  cruise:
+    mach: 0.79
+    tas: 470
+    range_nm: 4150
+  descent_to_fl240:
+    mach: 0.78
+    vs: 1000
+  descent_to_fl100:
+    ias: 290
+    vs: 2000
+  approach:
+    ias: 240
+    vs: 1500
+  landing:
+    ias: 139
+    distance_m: 1532

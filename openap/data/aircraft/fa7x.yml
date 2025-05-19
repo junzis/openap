@@ -1,0 +1,89 @@
+aircraft: Dassault Falcon 7X
+
+icao: FA7X
+iata: DFL
+
+mtow: 31800.0
+mlw: 28300.0
+oew: null
+mfc: null
+vmo: null
+mmo: null
+ceiling: 51000
+
+icao_wtc: medium
+eu_wtc: lower medium
+faa_wtc: large
+parking_area_m2: 723.0
+
+pax:
+  max: 19
+  low: 8
+  high: 12
+
+fuselage:
+  length: 23.19528
+  height: 7.83336
+  width: null
+
+wing:
+  area: null
+  span: 26.2128
+  mac: null
+  sweep: null
+  t/c: null
+
+flaps:
+  type: null
+  area: null
+  bf/b: null
+  lambda_f: null
+  cf/c: null
+  Sf/S: null
+
+engine:
+  type: turbofan
+  mount: both sides of rear fuselage and fin-integrated
+  number: 3
+  default: Pratt & Whitney Canada PW307A
+  options:
+  - Pratt & Whitney Canada PW307A
+
+drag:
+  cd0: null
+  k: null
+  e: null
+  gears: null
+
+kinematic:
+  takeoff:
+    v2: 115
+    distance_m: 123
+  climb_to_fl50:
+    ias: 160
+    vs: 3500
+  climb_to_fl150:
+    ias: 280
+    vs: 2800
+  climb_to_fl240:
+    ias: 280
+    vs: 2500
+  mach_climb:
+    mach: 0.85
+    vs: 2500
+  cruise:
+    mach: 0.9
+    tas: 580
+    range_nm: 5950
+  descent_to_fl240:
+    mach: 0.9
+    vs: 1000
+  descent_to_fl100:
+    ias: 240
+    vs: 2200
+  approach:
+    ias: 200
+    vs: 1500
+  landing:
+    ias: 104
+    distance_m: 631

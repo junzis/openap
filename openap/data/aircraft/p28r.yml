@@ -1,0 +1,90 @@
+aircraft: Cherokee Arrow
+
+icao: P28R
+iata: null
+
+mtow: 1130
+mlw: 1300
+oew: null
+mfc: null
+vmo: null
+mmo: null
+ceiling: 12000
+
+icao_wtc: light
+eu_wtc: light
+faa_wtc: light
+parking_area_m2: 125
+
+pax:
+  max: 4
+  low: null
+  high: null
+
+fuselage:
+  length: 7.4
+  height: 2.4
+  width: null
+
+wing:
+  area: null
+  span: 9.1
+  mac: null
+  sweep: null
+  t/c: null
+
+flaps:
+  type: null
+  area: null
+  bf/b: null
+  lambda_f: null
+  cf/c: null
+  Sf/S: null
+
+engine:
+  type: piston
+  mount: nose mounted
+  number: 1
+  default: 1 x 180 HP Lycoming IO-360-B1E piston engine with two blade propeller
+  options:
+    - 1 x 180 HP Lycoming IO-360-B1E piston engine with two blade propeller
+    - 1 x 200 HP Lycoming IO-360-C1C piston engine with three blade propeller
+
+drag:
+  cd0: null
+  k: null
+  e: null
+  gears: null
+
+kinematic:
+  takeoff:
+    v2: 70
+    distance_m: 300
+  climb_to_fl50:
+    ias: 100
+    vs: 1000
+  climb_to_fl150:
+    ias: 0
+    vs: null
+  climb_to_fl240:
+    ias: 0
+    vs: null
+  mach_climb:
+    mach: null
+    vs: null
+  cruise:
+    mach: null
+    tas: 140
+    range_nm: 700
+  descent_to_fl240:
+    mach: null
+    vs: null
+  descent_to_fl100:
+    ias: 140
+    vs: 500
+  approach:
+    ias: 120
+    vs: 500
+  landing:
+    ias: 70
+    distance_m: 300

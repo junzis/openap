@@ -1,0 +1,89 @@
+aircraft: Canadair Challenger 600/601/604
+
+icao: CL60
+iata: null
+
+mtow: 21600.0
+mlw: 17200.0
+oew: null
+mfc: null
+vmo: null
+mmo: null
+ceiling: 41000
+
+icao_wtc: medium
+eu_wtc: lower medium
+faa_wtc: medium
+parking_area_m2: 507.0
+
+pax:
+  max: 19
+  low: null
+  high: null
+
+fuselage:
+  length: 20.84832
+  height: 6.30936
+  width: null
+
+wing:
+  area: null
+  span: 19.6
+  mac: null
+  sweep: null
+  t/c: null
+
+flaps:
+  type: null
+  area: null
+  bf/b: null
+  lambda_f: null
+  cf/c: null
+  Sf/S: null
+
+engine:
+  type: turbofan
+  mount: rear fuselage
+  number: 2
+  default: General Electric CF34-3A
+  options:
+  - General Electric CF34-3A
+
+drag:
+  cd0: null
+  k: null
+  e: null
+  gears: null
+
+kinematic:
+  takeoff:
+    v2: 145
+    distance_m: null
+  climb_to_fl50:
+    ias: 160
+    vs: 4500
+  climb_to_fl150:
+    ias: 260
+    vs: 3000
+  climb_to_fl240:
+    ias: 260
+    vs: 2500
+  mach_climb:
+    mach: 0.73
+    vs: 2000
+  cruise:
+    mach: 0.75
+    tas: 460
+    range_nm: 3350
+  descent_to_fl240:
+    mach: 0.75
+    vs: 1000
+  descent_to_fl100:
+    ias: 250
+    vs: 3000
+  approach:
+    ias: 210
+    vs: 2000
+  landing:
+    ias: 130
+    distance_m: null

@@ -1,22 +1,30 @@
 aircraft: Boeing 747-8
 
+icao: B748
+iata: null
+
 mtow: 447700
 mlw: 312100
 oew: 220100
 mfc: 238600
 vmo: 365
 mmo: 0.92
-ceiling: 13100
+ceiling: 43000
+
+icao_wtc: heavy
+eu_wtc: upper heavy
+faa_wtc: heavy
+parking_area_m2: 5557
 
 pax:
-  max: 605
+  max: 467
   low: 460
   high: 480
 
 fuselage:
   length: 76.3
-  height: 7.10
-  width: 6.50
+  height: 7.1
+  width: 6.5
 
 wing:
   area: 554
@@ -29,14 +37,9 @@ flaps:
   type: triple-slotted
   area: 78.7
   bf/b: 0.639
-  lambda_f: 0.900
+  lambda_f: 0.9
   cf/c: 0.186
   Sf/S: 0.142
-
-cruise:
-  height: 11000
-  mach: 0.85
-  range: 14800
 
 engine:
   type: turbofan
@@ -51,3 +54,36 @@ drag:
   k: 0.047
   e: 0.806
   gears: 0.015
+
+kinematic:
+  takeoff:
+    v2: 175
+    distance_m: 3190
+  climb_to_fl50:
+    ias: 230
+    vs: 2500
+  climb_to_fl150:
+    ias: 260
+    vs: 2000
+  climb_to_fl240:
+    ias: 260
+    vs: 1500
+  mach_climb:
+    mach: 0.85
+    vs: 1000
+  cruise:
+    mach: 0.86
+    tas: 510
+    range_nm: 4390
+  descent_to_fl240:
+    mach: 0.85
+    vs: 1500
+  descent_to_fl100:
+    ias: 250
+    vs: 3000
+  approach:
+    ias: 220
+    vs: 1500
+  landing:
+    ias: 145
+    distance_m: 2680

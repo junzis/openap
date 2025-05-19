@@ -1,0 +1,90 @@
+aircraft: "Dassault Falcon/Myst\xE8re 50"
+
+icao: FA50
+iata: DF3
+
+mtow: 18500
+mlw: 16200
+oew: null
+mfc: null
+vmo: null
+mmo: null
+ceiling: 49000
+
+icao_wtc: medium
+eu_wtc: lower medium
+faa_wtc: null
+parking_area_m2: 439
+
+pax:
+  max: 12
+  low: 8
+  high: null
+
+fuselage:
+  length: 18.52
+  height: 6.97
+  width: null
+
+wing:
+  area: null
+  span: 18.86
+  mac: null
+  sweep: null
+  t/c: null
+
+flaps:
+  type: null
+  area: null
+  bf/b: null
+  lambda_f: null
+  cf/c: null
+  Sf/S: null
+
+engine:
+  type: turbofan
+  mount: both sides of rear fuselage and fin-integrated
+  number: 3
+  default: Garrett TFE731-3 16.8 kN
+  options:
+  - Garrett TFE731-3 16.8 kN
+  - Garrett TFE731-40 16.5 kN
+
+drag:
+  cd0: null
+  k: null
+  e: null
+  gears: null
+
+kinematic:
+  takeoff:
+    v2: 120
+    distance_m: 1400
+  climb_to_fl50:
+    ias: 150
+    vs: 3000
+  climb_to_fl150:
+    ias: 290
+    vs: 2000
+  climb_to_fl240:
+    ias: 290
+    vs: 2000
+  mach_climb:
+    mach: 0.72
+    vs: 1500
+  cruise:
+    mach: 0.82
+    tas: 480
+    range_nm: 3500
+  descent_to_fl240:
+    mach: 0.8
+    vs: 1000
+  descent_to_fl100:
+    ias: 290
+    vs: 3000
+  approach:
+    ias: 250
+    vs: 1500
+  landing:
+    ias: 130
+    distance_m: 1100

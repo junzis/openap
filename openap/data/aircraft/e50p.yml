@@ -1,0 +1,89 @@
+aircraft: Embraer 500 Phenom 100
+
+icao: E50P
+iata: null
+
+mtow: 4750
+mlw: 4400
+oew: null
+mfc: null
+vmo: null
+mmo: null
+ceiling: 41000
+
+icao_wtc: light
+eu_wtc: light
+faa_wtc: light
+parking_area_m2: 220
+
+pax:
+  max: 6
+  low: 4
+  high: 6
+
+fuselage:
+  length: 12.8
+  height: 4.4
+  width: null
+
+wing:
+  area: null
+  span: 12.3
+  mac: null
+  sweep: null
+  t/c: null
+
+flaps:
+  type: null
+  area: null
+  bf/b: null
+  lambda_f: null
+  cf/c: null
+  Sf/S: null
+
+engine:
+  type: turbofan
+  mount: both sides of rear fuselage
+  number: 2
+  default: Pratt & Whitney Canada PW617F-E turbofan, 7.2 kN (1,695 lbf)
+  options:
+  - Pratt & Whitney Canada PW617F-E turbofan, 7.2 kN (1,695 lbf)
+
+drag:
+  cd0: null
+  k: null
+  e: null
+  gears: null
+
+kinematic:
+  takeoff:
+    v2: 110
+    distance_m: 1036
+  climb_to_fl50:
+    ias: 200
+    vs: 3500
+  climb_to_fl150:
+    ias: 260
+    vs: 2500
+  climb_to_fl240:
+    ias: 260
+    vs: 2000
+  mach_climb:
+    mach: 0.68
+    vs: 2000
+  cruise:
+    mach: 0.7
+    tas: 370
+    range_nm: 1200
+  descent_to_fl240:
+    mach: 0.69
+    vs: 1500
+  descent_to_fl100:
+    ias: 250
+    vs: 2500
+  approach:
+    ias: 140
+    vs: 1500
+  landing:
+    ias: 120
+    distance_m: 820

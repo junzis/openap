@@ -1,0 +1,90 @@
+aircraft: Boeing 777-200LRF/LR
+
+icao: B77L
+iata: null
+
+mtow: 347500
+mlw: 260800
+oew: null
+mfc: null
+vmo: null
+mmo: null
+ceiling: 43000
+
+icao_wtc: heavy
+eu_wtc: upper heavy
+faa_wtc: heavy
+parking_area_m2: 4418
+
+pax:
+  max: 440
+  low: 301
+  high: 440
+
+fuselage:
+  length: 63.73368
+  height: 18.7452
+  width: null
+
+wing:
+  area: null
+  span: 64.64808
+  mac: null
+  sweep: null
+  t/c: null
+
+flaps:
+  type: null
+  area: null
+  bf/b: null
+  lambda_f: null
+  cf/c: null
+  Sf/S: null
+
+engine:
+  type: turbofan
+  mount: underwing
+  number: 2
+  default: GE90-115B
+  options:
+    - GE90-110B1
+    - GE90-115B
+
+drag:
+  cd0: null
+  k: null
+  e: null
+  gears: null
+
+kinematic:
+  takeoff:
+    v2: 123
+    distance_m: 2970
+  climb_to_fl50:
+    ias: 175
+    vs: 2500
+  climb_to_fl150:
+    ias: 280
+    vs: 2000
+  climb_to_fl240:
+    ias: 280
+    vs: 1500
+  mach_climb:
+    mach: 0.83
+    vs: 2000
+  cruise:
+    mach: 0.84
+    tas: 490
+    range_nm: 9380
+  descent_to_fl240:
+    mach: 0.84
+    vs: 1000
+  descent_to_fl100:
+    ias: 240
+    vs: 3000
+  approach:
+    ias: 210
+    vs: 2000
+  landing:
+    ias: 140
+    distance_m: 1700

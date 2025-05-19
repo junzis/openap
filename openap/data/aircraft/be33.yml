@@ -1,0 +1,89 @@
+aircraft: Beech Bonanza 33
+
+icao: BE33
+iata: BEC
+
+mtow: 1390
+mlw: 1500
+oew: null
+mfc: null
+vmo: null
+mmo: null
+ceiling: 17000
+
+icao_wtc: light
+eu_wtc: light
+faa_wtc: light
+parking_area_m2: 128
+
+pax:
+  max: 4
+  low: null
+  high: null
+
+fuselage:
+  length: 7.8
+  height: 2.5
+  width: null
+
+wing:
+  area: null
+  span: 10.2
+  mac: null
+  sweep: null
+  t/c: null
+
+flaps:
+  type: null
+  area: null
+  bf/b: null
+  lambda_f: null
+  cf/c: null
+  Sf/S: null
+
+engine:
+  type: piston
+  mount: nose mounted
+  number: 1
+  default: 225 HP Continental IO-470-K piston engine with two blade propeller
+  options:
+  - 225 HP Continental IO-470-K piston engine with two blade propeller
+
+drag:
+  cd0: null
+  k: null
+  e: null
+  gears: null
+
+kinematic:
+  takeoff:
+    v2: 75
+    distance_m: 350
+  climb_to_fl50:
+    ias: 105
+    vs: 800
+  climb_to_fl150:
+    ias: 110
+    vs: 500
+  climb_to_fl240:
+    ias: 110
+    vs: 500
+  mach_climb:
+    mach: null
+    vs: null
+  cruise:
+    mach: null
+    tas: 160
+    range_nm: 700
+  descent_to_fl240:
+    mach: null
+    vs: null
+  descent_to_fl100:
+    ias: 160
+    vs: 500
+  approach:
+    ias: 160
+    vs: 500
+  landing:
+    ias: 70
+    distance_m: 300

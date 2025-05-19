@@ -1,0 +1,89 @@
+aircraft: canadair CRJ-900
+
+icao: CRJ9
+iata: CR9
+
+mtow: 38330
+mlw: 33300
+oew: null
+mfc: null
+vmo: null
+mmo: null
+ceiling: 41000
+
+icao_wtc: medium
+eu_wtc: lower medium
+faa_wtc: null
+parking_area_m2: 1053
+
+pax:
+  max: 90
+  low: 80
+  high: null
+
+fuselage:
+  length: 36.2
+  height: 7.5
+  width: null
+
+wing:
+  area: null
+  span: 24.9
+  mac: null
+  sweep: null
+  t/c: null
+
+flaps:
+  type: null
+  area: null
+  bf/b: null
+  lambda_f: null
+  cf/c: null
+  Sf/S: null
+
+engine:
+  type: turbofan
+  mount: rear fuselage
+  number: 2
+  default: General Electric CF34-8C5 turbofan
+  options:
+  - General Electric CF34-8C5 turbofan
+
+drag:
+  cd0: null
+  k: null
+  e: null
+  gears: null
+
+kinematic:
+  takeoff:
+    v2: 140
+    distance_m: 1770
+  climb_to_fl50:
+    ias: 165
+    vs: 2500
+  climb_to_fl150:
+    ias: 290
+    vs: 2000
+  climb_to_fl240:
+    ias: 290
+    vs: 1800
+  mach_climb:
+    mach: 0.72
+    vs: 1300
+  cruise:
+    mach: 0.78
+    tas: 450
+    range_nm: 1550
+  descent_to_fl240:
+    mach: 0.72
+    vs: 1500
+  descent_to_fl100:
+    ias: 290
+    vs: 3500
+  approach:
+    ias: 250
+    vs: 1500
+  landing:
+    ias: 135
+    distance_m: 1630

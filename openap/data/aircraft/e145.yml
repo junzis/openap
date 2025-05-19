@@ -1,26 +1,34 @@
-aircraft: Embraer ERJ145 (LR)
+aircraft: Embraer ERJ-145
 
-mtow: 22000
+icao: E145
+iata: EM4/EMJ
+
+mtow: 21198
 mlw: 19300
 oew: 12110
 mfc: 5136
 vmo: 320
 mmo: 0.78
-ceiling: 11300
+ceiling: 37000
+
+icao_wtc: medium
+eu_wtc: lower medium
+faa_wtc: medium
+parking_area_m2: 725
 
 pax:
   max: 50
-  low: 50
-  high: 50
+  low: 45
+  high: 49
 
 fuselage:
   length: 29.87
-  height: 2.28
+  height: 6.7
   width: 2.28
 
 wing:
   area: 51.2
-  span: 20.04
+  span: 20.2
   mac: 3.19
   sweep: 23
   t/c: null
@@ -29,25 +37,54 @@ flaps:
   type: double-slotted
   area: null
   bf/b: null
-  lambda_f: 0.900 #e75l
-  cf/c: 0.150 #e75l
-  Sf/S: 0.150 #e75l
-
-cruise:
-  height: 11000
-  mach: 0.72
-  range: 2200
+  lambda_f: 0.9
+  cf/c: 0.15
+  Sf/S: 0.15
 
 engine:
   type: turbofan
-  mount: wing
+  mount: rear fuselage
   number: 2
   default: AE3007A1
   options:
     - AE3007A1
+    - AE3007A
 
 drag:
-  cd0: 0.018 #e75l
-  k: 0.042 #e75l
-  e: 0.809 #e75l
-  gears: 0.017 #e75l
+  cd0: 0.018
+  k: 0.042
+  e: 0.809
+  gears: 0.017
+
+kinematic:
+  takeoff:
+    v2: 130
+    distance_m: 2000
+  climb_to_fl50:
+    ias: 165
+    vs: 2500
+  climb_to_fl150:
+    ias: 300
+    vs: 1500
+  climb_to_fl240:
+    ias: 300
+    vs: 1000
+  mach_climb:
+    mach: 0.56
+    vs: 1000
+  cruise:
+    mach: 0.76
+    tas: 440
+    range_nm: 1200
+  descent_to_fl240:
+    mach: 0.76
+    vs: 1000
+  descent_to_fl100:
+    ias: 250
+    vs: 2500
+  approach:
+    ias: 210
+    vs: 1500
+  landing:
+    ias: 135
+    distance_m: 1350

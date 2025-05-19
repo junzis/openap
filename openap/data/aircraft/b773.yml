@@ -1,12 +1,20 @@
 aircraft: Boeing 777-300
 
-mtow: 299300
+icao: B773
+iata: "773"
+
+mtow: 299370
 mlw: 237600
 oew: 160500
 mfc: 171200
 vmo: 330
 mmo: 0.89
-ceiling: 13100
+ceiling: 43000
+
+icao_wtc: h
+eu_wtc: upper heavy
+faa_wtc: h
+parking_area_m2: null
 
 pax:
   max: 550
@@ -14,13 +22,13 @@ pax:
   high: 400
 
 fuselage:
-  length: 73.86
-  height: 6.20
-  width: 6.20
+  length: 73.9
+  height: 18.5
+  width: 6.2
 
 wing:
   area: 427.8
-  span: 60.93
+  span: 60.9
   mac: 8.75
   sweep: 31.6
   t/c: null
@@ -29,14 +37,9 @@ flaps:
   type: double-slotted
   area: 67.13
   bf/b: 0.758
-  lambda_f: 0.900
+  lambda_f: 0.9
   cf/c: 0.166
   Sf/S: 0.157
-
-cruise:
-  height: 11000
-  mach: 0.84
-  range: 11000
 
 engine:
   type: turbofan
@@ -49,7 +52,40 @@ engine:
     - Trent 892
 
 drag:
-  cd0: 0.024 #b772
-  k: 0.047 #b772
-  e: 0.783 #b772
-  gears: 0.014 #b772
+  cd0: 0.024
+  k: 0.047
+  e: 0.783
+  gears: 0.014
+
+kinematic:
+  takeoff:
+    v2: 168
+    distance_m: 3000
+  climb_to_fl50:
+    ias: 200
+    vs: 3000
+  climb_to_fl150:
+    ias: 300
+    vs: 2500
+  climb_to_fl240:
+    ias: 300
+    vs: 2000
+  mach_climb:
+    mach: 0.82
+    vs: 1500
+  cruise:
+    mach: 0.84
+    tas: 490
+    range_nm: 5955
+  descent_to_fl240:
+    mach: 0.84
+    vs: 1000
+  descent_to_fl100:
+    ias: 300
+    vs: 3000
+  approach:
+    ias: 240
+    vs: 1500
+  landing:
+    ias: 149
+    distance_m: 1800

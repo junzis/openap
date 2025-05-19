@@ -1,0 +1,89 @@
+aircraft: Northrop T-38 Talon
+
+icao: T38
+iata: null
+
+mtow: 5670
+mlw: null
+oew: null
+mfc: null
+vmo: null
+mmo: null
+ceiling: 50000
+
+icao_wtc: light
+eu_wtc: light
+faa_wtc: light
+parking_area_m2: 168
+
+pax:
+  max: null
+  low: null
+  high: null
+
+fuselage:
+  length: 14.1
+  height: 3.9
+  width: null
+
+wing:
+  area: null
+  span: 7.7
+  mac: null
+  sweep: null
+  t/c: null
+
+flaps:
+  type: null
+  area: null
+  bf/b: null
+  lambda_f: null
+  cf/c: null
+  Sf/S: null
+
+engine:
+  type: turbofan
+  mount: both sides of fuselage
+  number: 2
+  default: GE J85-GE-5 afterburning turbojets
+  options:
+  - GE J85-GE-5 afterburning turbojets
+
+drag:
+  cd0: null
+  k: null
+  e: null
+  gears: null
+
+kinematic:
+  takeoff:
+    v2: 125
+    distance_m: 800
+  climb_to_fl50:
+    ias: 155
+    vs: 33000
+  climb_to_fl150:
+    ias: 300
+    vs: 15000
+  climb_to_fl240:
+    ias: 300
+    vs: 12500
+  mach_climb:
+    mach: 0.74
+    vs: 10000
+  cruise:
+    mach: 0.78
+    tas: 450
+    range_nm: 950
+  descent_to_fl240:
+    mach: 0.78
+    vs: 10000
+  descent_to_fl100:
+    ias: 350
+    vs: 10000
+  approach:
+    ias: 250
+    vs: 1500
+  landing:
+    ias: 160
+    distance_m: 1000

@@ -1,0 +1,89 @@
+aircraft: Socata TBM-700/700A
+
+icao: TBM7
+iata: null
+
+mtow: 3000
+mlw: 2800
+oew: null
+mfc: null
+vmo: null
+mmo: null
+ceiling: 30000
+
+icao_wtc: light
+eu_wtc: light
+faa_wtc: light
+parking_area_m2: 191
+
+pax:
+  max: 7
+  low: null
+  high: null
+
+fuselage:
+  length: 10.63752
+  height: 4.35864
+  width: null
+
+wing:
+  area: null
+  span: 12.67968
+  mac: null
+  sweep: null
+  t/c: null
+
+flaps:
+  type: null
+  area: null
+  bf/b: null
+  lambda_f: null
+  cf/c: null
+  Sf/S: null
+
+engine:
+  type: turboprop
+  mount: nose mounted
+  number: 1
+  default: P&W PT6A-64 700 SHP
+  options:
+  - P&W PT6A-64 700 SHP
+
+drag:
+  cd0: null
+  k: null
+  e: null
+  gears: null
+
+kinematic:
+  takeoff:
+    v2: 85
+    distance_m: 650
+  climb_to_fl50:
+    ias: 115
+    vs: 2000
+  climb_to_fl150:
+    ias: 200
+    vs: 1000
+  climb_to_fl240:
+    ias: 200
+    vs: 1000
+  mach_climb:
+    mach: null
+    vs: null
+  cruise:
+    mach: 0.46
+    tas: 290
+    range_nm: 900
+  descent_to_fl240:
+    mach: null
+    vs: null
+  descent_to_fl100:
+    ias: 240
+    vs: 1500
+  approach:
+    ias: 240
+    vs: 1500
+  landing:
+    ias: 80
+    distance_m: 500

@@ -1,12 +1,20 @@
 aircraft: Boeing 737 MAX 7
 
+icao: B37M
+iata: 7M7
+
 mtow: 80000
 mlw: 60000
 oew: 45000
 mfc: 26000
 vmo: 340
 mmo: 0.82
-ceiling: 12500
+ceiling: 41000
+
+icao_wtc: m
+eu_wtc: upper medium
+faa_wtc: m
+parking_area_m2: null
 
 pax:
   max: 172
@@ -14,13 +22,13 @@ pax:
   high: 153
 
 fuselage:
-  length: 33.6
-  height: 3.73
+  length: 35.56
+  height: 12.29
   width: 3.73
 
 wing:
   area: 124.6
-  span: 34.32
+  span: 35.9
   mac: 4.17
   sweep: 25
   t/c: null
@@ -28,15 +36,10 @@ wing:
 flaps:
   type: double-slotted
   area: null
-  bf/b: 0.60
-  lambda_f: 0.900 #a38m
-  cf/c: 0.150 #a38m
-  Sf/S: 0.150 #a38m
-
-cruise:
-  height: 11000
-  mach: 0.78
-  range: 7100
+  bf/b: 0.6
+  lambda_f: 0.9
+  cf/c: 0.15
+  Sf/S: 0.15
 
 engine:
   type: turbofan
@@ -47,7 +50,40 @@ engine:
     - LEAP-1B
 
 drag:
-  cd0: 0.020 #a38m
-  k: 0.042 #a38m
-  e: 0.797 #a38m
-  gears: 0.018 #a38m
+  cd0: 0.02
+  k: 0.042
+  e: 0.797
+  gears: 0.018
+
+kinematic:
+  takeoff:
+    v2: 145
+    distance_m: 2100
+  climb_to_fl50:
+    ias: 165
+    vs: 2800
+  climb_to_fl150:
+    ias: 290
+    vs: 2500
+  climb_to_fl240:
+    ias: 290
+    vs: 2200
+  mach_climb:
+    mach: 0.78
+    vs: 1800
+  cruise:
+    mach: 0.79
+    tas: 453
+    range_nm: 3850
+  descent_to_fl240:
+    mach: 0.78
+    vs: 1000
+  descent_to_fl100:
+    ias: 290
+    vs: 3500
+  approach:
+    ias: 250
+    vs: 1500
+  landing:
+    ias: 145
+    distance_m: 1500

@@ -1,4 +1,7 @@
-aircraft: Airbus A321neo
+aircraft: Airbus A321 Neo
+
+icao: A21N
+iata: 32Q
 
 mtow: 97000
 mlw: 77800
@@ -6,7 +9,12 @@ oew: 50000
 mfc: 33000
 vmo: 350
 mmo: 0.82
-ceiling: 12500
+ceiling: 39000
+
+icao_wtc: medium
+eu_wtc: upper medium
+faa_wtc: medium
+parking_area_m2: 1789
 
 pax:
   max: 244
@@ -28,15 +36,10 @@ wing:
 flaps:
   type: double-slotted
   area: 21.1
-  bf/b: 0.780
-  lambda_f: 0.900 #a20n
-  cf/c: 0.176 #a20n
-  Sf/S: 0.170 #a20n
-
-cruise:
-  height: 11000
-  mach: 0.78
-  range: 7400
+  bf/b: 0.78
+  lambda_f: 0.9
+  cf/c: 0.176
+  Sf/S: 0.17
 
 engine:
   type: turbofan
@@ -51,11 +54,40 @@ engine:
     A321-253N: LEAP-1A33
 
 drag:
-  cd0: 0.017 #a20n
-  k: 0.038 #a20n
-  e: 0.807 #a20n
-  gears: 0.017 #a20n
+  cd0: 0.017
+  k: 0.038
+  e: 0.807
+  gears: 0.017
 
-fuel:
-  engine: CFM56-5B4/P #a320
-  fuel_coef: 2.65942225 #a320
+kinematic:
+  takeoff:
+    v2: 145
+    distance_m: 2150
+  climb_to_fl50:
+    ias: 175
+    vs: 2000
+  climb_to_fl150:
+    ias: 290
+    vs: 1500
+  climb_to_fl240:
+    ias: 290
+    vs: 1200
+  mach_climb:
+    mach: 0.78
+    vs: 1000
+  cruise:
+    mach: 0.78
+    tas: 450
+    range_nm: 4000
+  descent_to_fl240:
+    mach: 0.78
+    vs: 1500
+  descent_to_fl100:
+    ias: 290
+    vs: 2500
+  approach:
+    ias: 250
+    vs: 1300
+  landing:
+    ias: 140
+    distance_m: 1850

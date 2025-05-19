@@ -1,0 +1,89 @@
+aircraft: Bombardier Learjet 35/36
+
+icao: LJ35
+iata: LRJ
+
+mtow: 8300
+mlw: 6500
+oew: null
+mfc: null
+vmo: null
+mmo: null
+ceiling: 41000
+
+icao_wtc: medium
+eu_wtc: light
+faa_wtc: null
+parking_area_m2: 247
+
+pax:
+  max: 8
+  low: null
+  high: 6
+
+fuselage:
+  length: 14.84376
+  height: 3.74904
+  width: null
+
+wing:
+  area: null
+  span: 12.0396
+  mac: null
+  sweep: null
+  t/c: null
+
+flaps:
+  type: null
+  area: null
+  bf/b: null
+  lambda_f: null
+  cf/c: null
+  Sf/S: null
+
+engine:
+  type: turbofan
+  mount: both sides of rear fuselage
+  number: 2
+  default: Garrett TFE731-2-2B
+  options:
+  - Garrett TFE731-2-2B
+
+drag:
+  cd0: null
+  k: null
+  e: null
+  gears: null
+
+kinematic:
+  takeoff:
+    v2: 140
+    distance_m: 1500
+  climb_to_fl50:
+    ias: 170
+    vs: 4000
+  climb_to_fl150:
+    ias: 290
+    vs: 3000
+  climb_to_fl240:
+    ias: 290
+    vs: 3000
+  mach_climb:
+    mach: 0.72
+    vs: 2000
+  cruise:
+    mach: 0.77
+    tas: 440
+    range_nm: 2100
+  descent_to_fl240:
+    mach: 0.72
+    vs: 1000
+  descent_to_fl100:
+    ias: 290
+    vs: 4000
+  approach:
+    ias: 250
+    vs: 1500
+  landing:
+    ias: 125
+    distance_m: 930

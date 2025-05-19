@@ -1,0 +1,90 @@
+aircraft: Boeing 737-300
+
+icao: B733
+iata: 733/73Y
+
+mtow: 56470
+mlw: 52500
+oew: null
+mfc: null
+vmo: null
+mmo: null
+ceiling: 37000
+
+icao_wtc: medium
+eu_wtc: lower medium
+faa_wtc: medium
+parking_area_m2: 1115
+
+pax:
+  max: 149
+  low: 128
+  high: null
+
+fuselage:
+  length: 33.4
+  height: 11.1
+  width: null
+
+wing:
+  area: null
+  span: 28.9
+  mac: null
+  sweep: null
+  t/c: null
+
+flaps:
+  type: null
+  area: null
+  bf/b: null
+  lambda_f: null
+  cf/c: null
+  Sf/S: null
+
+engine:
+  type: turbofan
+  mount: underwing mounted
+  number: 2
+  default: CFM56-3B1
+  options:
+  - CFM56-3B1
+  - CFM56-3B2
+
+drag:
+  cd0: null
+  k: null
+  e: null
+  gears: null
+
+kinematic:
+  takeoff:
+    v2: 140
+    distance_m: 1600
+  climb_to_fl50:
+    ias: 165
+    vs: 2500
+  climb_to_fl150:
+    ias: 270
+    vs: 2000
+  climb_to_fl240:
+    ias: 270
+    vs: 1400
+  mach_climb:
+    mach: 0.7
+    vs: 1000
+  cruise:
+    mach: 0.74
+    tas: 429
+    range_nm: 1600
+  descent_to_fl240:
+    mach: 0.7
+    vs: 800
+  descent_to_fl100:
+    ias: 280
+    vs: 3500
+  approach:
+    ias: 250
+    vs: 1500
+  landing:
+    ias: 132
+    distance_m: 1400

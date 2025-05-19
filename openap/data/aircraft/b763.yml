@@ -1,55 +1,91 @@
 aircraft: Boeing 767-300
 
-mtow: 158700
-mlw: 136000
-oew: 90000
-mfc: 63200
-vmo: 360
-mmo: 0.86
-ceiling: 13100
+icao: B763
+iata: 763/767/76F/76Y
+
+mtow: 186880
+mlw: 145100
+oew: null
+mfc: null
+vmo: null
+mmo: null
+ceiling: 45000
+
+icao_wtc: heavy
+eu_wtc: lower heavy
+faa_wtc: heavy
+parking_area_m2: 2858
 
 pax:
-  max: 350
-  low: 210
-  high: 290
+  max: 351
+  low: 269
+  high: null
 
 fuselage:
-  length: 54.94
-  height: 5.03
-  width: 5.03
+  length: 54.9
+  height: 15.9
+  width: null
 
 wing:
-  area: 283.3
-  span: 47.57
-  mac: 6.98
-  sweep: 31.5
-  t/c: 0.115
+  area: null
+  span: 47.6
+  mac: null
+  sweep: null
+  t/c: null
 
 flaps:
-  type: double-slotted
-  area: 36.88
-  bf/b: 0.75
-  lambda_f: 0.900 #b752
-  cf/c: 0.187 #b752
-  Sf/S: 0.167 #b752
-
-cruise:
-  height: 11000
-  mach: 0.8
-  range: 11400
+  type: null
+  area: null
+  bf/b: null
+  lambda_f: null
+  cf/c: null
+  Sf/S: null
 
 engine:
   type: turbofan
-  mount: wing
+  mount: underwing
   number: 2
-  default: CF6-80C2B2
+  default: PW4062
   options:
-    - JT9D-7R4D
-    - PW4056
-    - CF6-80C2B2
+    - PW4062
+    - CF6-80C2B7F
+    - RB211-524H
 
 drag:
-  cd0: 0.021 #b752
-  k: 0.049 #b752
-  e: 0.813 #b752
-  gears: 0.016 #b752
+  cd0: null
+  k: null
+  e: null
+  gears: null
+
+kinematic:
+  takeoff:
+    v2: 160
+    distance_m: 2900
+  climb_to_fl50:
+    ias: 190
+    vs: 3000
+  climb_to_fl150:
+    ias: 290
+    vs: 2500
+  climb_to_fl240:
+    ias: 290
+    vs: 2000
+  mach_climb:
+    mach: 0.72
+    vs: 1000
+  cruise:
+    mach: 0.8
+    tas: 460
+    range_nm: 6105
+  descent_to_fl240:
+    mach: 0.72
+    vs: 1000
+  descent_to_fl100:
+    ias: 290
+    vs: 3000
+  approach:
+    ias: 230
+    vs: 1500
+  landing:
+    ias: 140
+    distance_m: 1800

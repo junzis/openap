@@ -1,0 +1,89 @@
+aircraft: DeHavilland Canada 8/DHC8-400
+
+icao: DH8D
+iata: DH4
+
+mtow: 28998
+mlw: 28000
+oew: null
+mfc: null
+vmo: null
+mmo: null
+ceiling: 25000
+
+icao_wtc: medium
+eu_wtc: lower medium
+faa_wtc: null
+parking_area_m2: 1082
+
+pax:
+  max: 78
+  low: null
+  high: null
+
+fuselage:
+  length: 32.8
+  height: 8.3
+  width: null
+
+wing:
+  area: null
+  span: 28.4
+  mac: null
+  sweep: null
+  t/c: null
+
+flaps:
+  type: null
+  area: null
+  bf/b: null
+  lambda_f: null
+  cf/c: null
+  Sf/S: null
+
+engine:
+  type: turboprop
+  mount: front wing leading mounted
+  number: 2
+  default: P&W PW150A turboprop
+  options:
+  - P&W PW150A turboprop
+
+drag:
+  cd0: null
+  k: null
+  e: null
+  gears: null
+
+kinematic:
+  takeoff:
+    v2: 115
+    distance_m: 1300
+  climb_to_fl50:
+    ias: 150
+    vs: 3500
+  climb_to_fl150:
+    ias: 210
+    vs: 1500
+  climb_to_fl240:
+    ias: 210
+    vs: 1200
+  mach_climb:
+    mach: null
+    vs: null
+  cruise:
+    mach: null
+    tas: 360
+    range_nm: 1300
+  descent_to_fl240:
+    mach: null
+    vs: null
+  descent_to_fl100:
+    ias: 270
+    vs: 1500
+  approach:
+    ias: 245
+    vs: 1500
+  landing:
+    ias: 121
+    distance_m: 1100

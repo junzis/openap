@@ -1,26 +1,34 @@
 aircraft: Boeing 737-900
 
-mtow: 85100
-mlw: 71300
+icao: B739
+iata: "739"
+
+mtow: 79015
+mlw: 32400
 oew: 44600
 mfc: 26000
 vmo: 340
 mmo: 0.82
-ceiling: 12500
+ceiling: 41000
+
+icao_wtc: medium
+eu_wtc: upper medium
+faa_wtc: medium
+parking_area_m2: 1630
 
 pax:
-  max: 215
-  low: 170
-  high: 190
+  max: 189
+  low: 177
+  high: 189
 
 fuselage:
-  length: 42.11
-  height: 3.73
+  length: 42.1
+  height: 12.5
   width: 3.73
 
 wing:
   area: 124.6
-  span: 34.32
+  span: 34.3
   mac: 4.17
   sweep: 25
   t/c: null
@@ -28,15 +36,10 @@ wing:
 flaps:
   type: double-slotted
   area: null
-  bf/b: 0.60
-  lambda_f: 0.900
-  cf/c: 0.150
-  Sf/S: 0.150
-
-cruise:
-  height: 11000
-  mach: 0.79
-  range: 5100
+  bf/b: 0.6
+  lambda_f: 0.9
+  cf/c: 0.15
+  Sf/S: 0.15
 
 engine:
   type: turbofan
@@ -48,12 +51,41 @@ engine:
     - CFM56-7B26
     - CFM56-7B27
 
-clean:
-  cd0: 0.020
+drag:
+  cd0: 0.02
   k: 0.042
   e: 0.797
   gears: 0.018
 
-fuel:
-  engine: CFM56-7B27E
-  fuel_coef: 2.79057225
+kinematic:
+  takeoff:
+    v2: 149
+    distance_m: 2300
+  climb_to_fl50:
+    ias: 165
+    vs: 3000
+  climb_to_fl150:
+    ias: 290
+    vs: 2000
+  climb_to_fl240:
+    ias: 290
+    vs: 2000
+  mach_climb:
+    mach: 0.72
+    vs: 1500
+  cruise:
+    mach: 0.78
+    tas: 460
+    range_nm: 2745
+  descent_to_fl240:
+    mach: 0.79
+    vs: 1000
+  descent_to_fl100:
+    ias: 280
+    vs: 3500
+  approach:
+    ias: 250
+    vs: 1500
+  landing:
+    ias: 150
+    distance_m: 1700

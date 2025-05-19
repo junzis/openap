@@ -1,26 +1,34 @@
-aircraft: Airbus A350-900
+aircraft: Airbus 350-900
+
+icao: A359
+iata: "359"
 
 mtow: 280000
-mlw: 205000
+mlw: 207000
 oew: 142400
 mfc: 140795
 vmo: 340
 mmo: 0.89
-ceiling: 13100
+ceiling: 43000
+
+icao_wtc: heavy
+eu_wtc: upper heavy
+faa_wtc: heavy
+parking_area_m2: 4632
 
 pax:
-  max: 440
-  low: 300
-  high: 350
+  max: 475
+  low: 314
+  high: 366
 
 fuselage:
-  length: 66.8
-  height: 6.09
+  length: 66.9
+  height: 17.05
   width: 5.96
 
 wing:
   area: 442
-  span: 64.75
+  span: 64.8
   mac: null
   sweep: 31.9
   t/c: null
@@ -29,14 +37,9 @@ flaps:
   type: double-slotted
   area: null
   bf/b: null
-  lambda_f: 0.900
-  cf/c: 0.150
-  Sf/S: 0.150
-
-cruise:
-  height: 11000
-  mach: 0.85
-  range: 15000
+  lambda_f: 0.9
+  cf/c: 0.15
+  Sf/S: 0.15
 
 engine:
   type: turbofan
@@ -51,3 +54,36 @@ drag:
   k: 0.043
   e: 0.783
   gears: 0.013
+
+kinematic:
+  takeoff:
+    v2: 150
+    distance_m: 888
+  climb_to_fl50:
+    ias: 220
+    vs: 3000
+  climb_to_fl150:
+    ias: 300
+    vs: 2300
+  climb_to_fl240:
+    ias: 300
+    vs: 1600
+  mach_climb:
+    mach: 0.82
+    vs: 1400
+  cruise:
+    mach: 0.85
+    tas: 490
+    range_nm: 8100
+  descent_to_fl240:
+    mach: 0.85
+    vs: 1500
+  descent_to_fl100:
+    ias: 250
+    vs: 3000
+  approach:
+    ias: 240
+    vs: 1500
+  landing:
+    ias: 140
+    distance_m: 888

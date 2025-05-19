@@ -1,0 +1,91 @@
+aircraft: Cessna Citation V/Ultra/Encore
+
+icao: C560
+iata: null
+
+mtow: 7400
+mlw: 6900
+oew: null
+mfc: null
+vmo: null
+mmo: null
+ceiling: 45000
+
+icao_wtc: medium
+eu_wtc: light
+faa_wtc: null
+parking_area_m2: 321
+
+pax:
+  max: 8
+  low: null
+  high: 8
+
+fuselage:
+  length: 14.9
+  height: 4.2
+  width: null
+
+wing:
+  area: null
+  span: 13.8
+  mac: null
+  sweep: null
+  t/c: null
+
+flaps:
+  type: null
+  area: null
+  bf/b: null
+  lambda_f: null
+  cf/c: null
+  Sf/S: null
+
+engine:
+  type: turbofan
+  mount: both sides of rear fuselage
+  number: 2
+  default: P&W JT15D-5A turbofan
+  options:
+  - P&W JT15D-5A turbofan
+  - P&W JT15D-5D turbofan
+  - P&W PW 535A turbofan
+
+drag:
+  cd0: null
+  k: null
+  e: null
+  gears: null
+
+kinematic:
+  takeoff:
+    v2: 105
+    distance_m: 963
+  climb_to_fl50:
+    ias: 135
+    vs: 2500
+  climb_to_fl150:
+    ias: 240
+    vs: 2800
+  climb_to_fl240:
+    ias: 240
+    vs: 3000
+  mach_climb:
+    mach: 0.72
+    vs: 1500
+  cruise:
+    mach: 0.73
+    tas: 430
+    range_nm: 2000
+  descent_to_fl240:
+    mach: 0.7
+    vs: 1000
+  descent_to_fl100:
+    ias: 270
+    vs: 4000
+  approach:
+    ias: 230
+    vs: 1500
+  landing:
+    ias: 110
+    distance_m: 890

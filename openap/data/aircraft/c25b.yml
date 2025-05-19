@@ -1,0 +1,89 @@
+aircraft: Cessna Citation CJ3
+
+icao: C25B
+iata: CNJ
+
+mtow: 6291
+mlw: 5800
+oew: null
+mfc: null
+vmo: null
+mmo: null
+ceiling: 45000
+
+icao_wtc: light
+eu_wtc: light
+faa_wtc: null
+parking_area_m2: 330
+
+pax:
+  max: 8
+  low: null
+  high: null
+
+fuselage:
+  length: 15.59
+  height: 4.2
+  width: null
+
+wing:
+  area: null
+  span: 16.26
+  mac: null
+  sweep: null
+  t/c: null
+
+flaps:
+  type: null
+  area: null
+  bf/b: null
+  lambda_f: null
+  cf/c: null
+  Sf/S: null
+
+engine:
+  type: turbofan
+  mount: both sides of rear fuselage
+  number: 2
+  default: Williams FJ44-3A
+  options:
+  - Williams FJ44-3A
+
+drag:
+  cd0: null
+  k: null
+  e: null
+  gears: null
+
+kinematic:
+  takeoff:
+    v2: 110
+    distance_m: 969
+  climb_to_fl50:
+    ias: 150
+    vs: 3500
+  climb_to_fl150:
+    ias: 222
+    vs: 3500
+  climb_to_fl240:
+    ias: 222
+    vs: 2500
+  mach_climb:
+    mach: 0.56
+    vs: 1000
+  cruise:
+    mach: 0.73
+    tas: 415
+    range_nm: 2040
+  descent_to_fl240:
+    mach: 0.56
+    vs: 2000
+  descent_to_fl100:
+    ias: 270
+    vs: 2000
+  approach:
+    ias: 200
+    vs: 1500
+  landing:
+    ias: 108
+    distance_m: 844

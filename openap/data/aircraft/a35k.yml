@@ -1,0 +1,89 @@
+aircraft: Airbus A350-1000 XWB
+
+icao: A35K
+iata: "351"
+
+mtow: 319000
+mlw: 233000
+oew: null
+mfc: null
+vmo: null
+mmo: null
+ceiling: 41000
+
+icao_wtc: heavy
+eu_wtc: upper heavy
+faa_wtc: heavy
+parking_area_m2: 5105
+
+pax:
+  max: 480
+  low: 350
+  high: 410
+
+fuselage:
+  length: 73.79
+  height: 17.08
+  width: null
+
+wing:
+  area: null
+  span: 64.75
+  mac: null
+  sweep: null
+  t/c: null
+
+flaps:
+  type: null
+  area: null
+  bf/b: null
+  lambda_f: null
+  cf/c: null
+  Sf/S: null
+
+engine:
+  type: turbofan
+  mount: underwing
+  number: 2
+  default: Trent XWB-97
+  options:
+    - Trent XWB-97
+
+drag:
+  cd0: null
+  k: null
+  e: null
+  gears: null
+
+kinematic:
+  takeoff:
+    v2: 155
+    distance_m: 2600
+  climb_to_fl50:
+    ias: 220
+    vs: 2500
+  climb_to_fl150:
+    ias: 300
+    vs: 2000
+  climb_to_fl240:
+    ias: 300
+    vs: 1500
+  mach_climb:
+    mach: 0.82
+    vs: 1000
+  cruise:
+    mach: 0.85
+    tas: 490
+    range_nm: 8700
+  descent_to_fl240:
+    mach: 0.85
+    vs: 1500
+  descent_to_fl100:
+    ias: 270
+    vs: 2500
+  approach:
+    ias: 240
+    vs: 1500
+  landing:
+    ias: 150
+    distance_m: 2000

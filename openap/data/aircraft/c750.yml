@@ -1,0 +1,89 @@
+aircraft: Cessna Citation X
+
+icao: C750
+iata: null
+
+mtow: 16193
+mlw: 14400
+oew: null
+mfc: null
+vmo: null
+mmo: null
+ceiling: 51000
+
+icao_wtc: medium
+eu_wtc: lower medium
+faa_wtc: medium
+parking_area_m2: 529
+
+pax:
+  max: 12
+  low: null
+  high: null
+
+fuselage:
+  length: 22
+  height: 5.8
+  width: null
+
+wing:
+  area: null
+  span: 19.5
+  mac: null
+  sweep: null
+  t/c: null
+
+flaps:
+  type: null
+  area: null
+  bf/b: null
+  lambda_f: null
+  cf/c: null
+  Sf/S: null
+
+engine:
+  type: turbofan
+  mount: both sides of rear fuselage
+  number: 2
+  default: Allison AE300 7C turbofan
+  options:
+  - Allison AE300 7C turbofan
+
+drag:
+  cd0: null
+  k: null
+  e: null
+  gears: null
+
+kinematic:
+  takeoff:
+    v2: 125
+    distance_m: 1740
+  climb_to_fl50:
+    ias: 155
+    vs: 3500
+  climb_to_fl150:
+    ias: 320
+    vs: 3000
+  climb_to_fl240:
+    ias: 320
+    vs: 2500
+  mach_climb:
+    mach: 0.79
+    vs: 1500
+  cruise:
+    mach: 0.9
+    tas: 550
+    range_nm: 3250
+  descent_to_fl240:
+    mach: 0.88
+    vs: 1000
+  descent_to_fl100:
+    ias: 320
+    vs: 2500
+  approach:
+    ias: 250
+    vs: 1500
+  landing:
+    ias: 130
+    distance_m: 1164
