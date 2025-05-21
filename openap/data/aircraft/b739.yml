@@ -42,7 +42,7 @@ engine:
   type: turbofan
   mount: wing
   number: 2
-  default: CFM56-7B26
+  default: CFM56-7B27E
   options:
     - CFM56-7B24
     - CFM56-7B26
