@@ -40,7 +40,7 @@ def atmos(h, dT=0):
             Air pressure (Pa), density (kg/m3), and temperature (K).
 
     """
-    assert -15 < dT < 15
+    assert -25 < dT < 15
 
     T0_ = T0 + dT
     T = 0.65 * np.log(1 + np.exp(-10 * (h / 1000 - 11))) + 216.65

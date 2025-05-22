@@ -141,7 +141,7 @@ class FuelFlow(FuelFlowBase):
         return fuelflow
 
     @ndarrayconvert
-    def enroute(self, mass, tas, alt, vs=0, acc=0, limit=True):
+    def enroute(self, mass, tas, alt, vs=0, acc=0, dT=0, limit=True):
         """Compute the fuel flow during climb, cruise, or descent.
 
         The net thrust is first estimated based on the dynamic equation.
@@ -154,12 +154,12 @@ class FuelFlow(FuelFlowBase):
             alt (int or ndarray): Aircraft altitude (unit: ft).
             vs (float or ndarray): Vertical rate (unit: ft/min). Default is 0.
             acc (float or ndarray): acceleration (unit: m/s^2). Default is 0.
-
+            dT (float or ndarray): Temperature shift (unit: K or degC),default = 0
         Returns:
             float: Fuel flow (unit: kg/s).
 
         """
-        D = self.drag.clean(mass=mass, tas=tas, alt=alt, vs=vs)
+        D = self.drag.clean(mass=mass, tas=tas, alt=alt, vs=vs, dT=dT)
 
         gamma = self.sci.arctan2(vs * fpm, tas * kts)
 
@@ -175,8 +175,8 @@ class FuelFlow(FuelFlowBase):
         T = D + mass * 9.81 * self.sci.sin(gamma) + mass * acc
 
         if limit:
-            T_max = self.thrust.climb(tas=tas, alt=alt, roc=0)
-            T_idle = self.thrust.descent_idle(tas=tas, alt=alt)
+            T_max = self.thrust.climb(tas=tas, alt=alt, roc=0, dT=dT)
+            T_idle = self.thrust.descent_idle(tas=tas, alt=alt, dT=dT)
 
             # below idle thrust (with margin of 20%)
             T = self.sci.where(T < T_idle * 0.8, T_idle * 0.8, T)
