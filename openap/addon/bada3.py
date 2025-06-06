@@ -1,5 +1,5 @@
 """
-Implements BADA3.
+Implements BADA3 based on Revision 3.16 (Report No. 22/05/12-45).
 """
 
 from numpy import ndarray
@@ -8,7 +8,8 @@ from pyBADA.bada3 import Bada3Aircraft
 from .. import base
 from ..extra import ndarrayconvert
 
-def load_bada3(ac:str, bada_version:str, bada_path:str=None):
+
+def load_bada3(ac: str, bada_version: str, bada_path: str = None):
     """
     Load BADA3 aircraft.
 
@@ -30,7 +31,7 @@ def load_bada3(ac:str, bada_version:str, bada_path:str=None):
 class Drag(base.DragBase):
     """
     Compute the drag of an aircraft using BADA3 models.
-    
+
     Attributes:
         ac (str): aircraft ICAO identifer (e.g. A320)
         S (float): wing surface area [m^2]
@@ -59,10 +60,12 @@ class Drag(base.DragBase):
             configuration.
     """
 
-    def __init__(self, ac:str, bada_version:str, bada_path:str=None, **kwargs):
+    def __init__(
+        self, ac: str, bada_version: str, bada_path: str = None, **kwargs
+    ):
         """
         Initialise Drag object.
-        
+
         Args:
             ac (str): aircraft ICAO identifier (e.g. A320)
             bada_version (str): identifier of BADA3 version. Required if
@@ -101,7 +104,7 @@ class Drag(base.DragBase):
         Returns:
             float | ndarray: drag coefficient [-]
         """
-        cd = cd0 + cd0_lg + cd2 * cl ** 2
+        cd = cd0 + cd0_lg + cd2 * cl**2
         return cd
 
     @ndarrayconvert(column=True)
@@ -195,10 +198,10 @@ class Drag(base.DragBase):
 class Thrust(base.ThrustBase):
     """
     Thrust class for computing the thrust of an aircraft using BADA3 models.
-    
+
     This class provides methods to compute thrust during the flight phases
     takeoff, climb and cruise.
-    
+
     Attributes:
         ac (str): aircraft ICAO identifer (e.g. A320)
         engine_type (str): one of JET, TURBOPROP, PISTON or ELECTRIC
@@ -221,9 +224,11 @@ class Thrust(base.ThrustBase):
             Compute the thrust force during idle conditions.
     """
 
-    def __init__(self, ac:str, bada_version:str, bada_path:str=None, **kwargs):
+    def __init__(
+        self, ac: str, bada_version: str, bada_path: str = None, **kwargs
+    ):
         """Initialise Thrust object.
-        
+
         Args:
             ac (str): aircraft ICAO identifier (e.g. A320)
             bada_version (str): identifier of BADA3 version. Required if
@@ -238,11 +243,24 @@ class Thrust(base.ThrustBase):
         model = load_bada3(ac, bada_version, bada_path)
         self.engine_type = model.engineType
         self.ct = model.Ct
-        self.hpdes = model.HpDes
         self.ctdeshigh = model.CTdeshigh
         self.ctdeslow = model.CTdeslow
         self.ctdesapp = model.CTdesapp
         self.ctdesld = model.CTdesld
+
+        # if non-clean data available, H_p,des cannot be below H_max,AP
+        nc_vals = [  # non-clean data (Section 3.6.1)
+            model.CD0["AP"],
+            model.CD0["LD"],
+            model.CD0["GEAR_DOWN"],
+            model.CD2["AP"],
+            model.CD2["LD"],
+        ]
+        nc_avail = all(val == 0 for val in nc_vals)
+        if nc_avail:
+            self.hpdes = self.sci.maximum(model.HpDes, 8000.0)
+        else:
+            self.hpdes = model.HpDes
 
     @ndarrayconvert(column=True)
     def climb(self, tas, alt, dT=0) -> float | ndarray:
@@ -253,7 +271,7 @@ class Thrust(base.ThrustBase):
         Args:
             tas (float | ndarray): true airspeed [kt]
             alt (float | ndarray): geopotential pressure altitude [ft]
-            dT (float | ndarray, optional): ISA temperature deviation [K]. 
+            dT (float | ndarray, optional): ISA temperature deviation [K].
                 Defaults to 0.0 K.
 
         Returns:
@@ -262,7 +280,7 @@ class Thrust(base.ThrustBase):
 
         # calculate maximum climb thrust at ISA
         if self.engine_type == "JET":
-            thr_isa = self.ct[0] * (1 - alt / self.ct[1] + self.ct[2] * alt ** 2)
+            thr_isa = self.ct[0] * (1 - alt / self.ct[1] + self.ct[2] * alt**2)
         elif self.engine_type == "TURBOPROP":
             thr_isa = self.ct[0] / tas * (1 - alt / self.ct[1]) + self.ct[2]
         elif self.engine_type in ("PISTON", "ELECTRIC"):
@@ -270,9 +288,12 @@ class Thrust(base.ThrustBase):
         else:
             raise ValueError("Unknown engine type")
 
-        # correct for temperature deviations from ISA
+        # correct for temperature deviations from ISA whilst considering limits
+        # eq. (3.7.4 - 3.7.7)
         dT_eff = dT - self.ct[3]
-        thr_mcl = thr_isa * (1 - self.ct[4] * dT_eff)
+        c_tc5 = self.sci.maximum(self.ct[4], 0.0)
+        dT_lim = self.sci.maximum(0.0, self.sci.minimum(c_tc5 * dT_eff, 0.4))
+        thr_mcl = thr_isa * (1 - dT_lim)
         return thr_mcl
 
     @ndarrayconvert(column=True)
@@ -285,7 +306,7 @@ class Thrust(base.ThrustBase):
             tas (float | ndarray): true airspeed [kt]
             alt (float | ndarray): geopotential pressure altitude [ft]
             roc: unused
-            dT (float | ndarray, optional): ISA temperature deviation [K]. 
+            dT (float | ndarray, optional): ISA temperature deviation [K].
                 Defaults to 0.0 K.
 
         Returns:
@@ -299,13 +320,13 @@ class Thrust(base.ThrustBase):
     @ndarrayconvert(column=True)
     def takeoff(self, tas, alt, dT=0) -> float | ndarray:
         """
-        Compute takeoff thrust, which is assumed by BADA3 to be equal to 
+        Compute takeoff thrust, which is assumed by BADA3 to be equal to
         maximum climb thrust.
 
         Args:
             tas (float | ndarray): true airspeed [kt]
             alt (float | ndarray): geopotential pressure altitude [ft]
-            dT (float | ndarray, optional): ISA temperature deviation [K]. 
+            dT (float | ndarray, optional): ISA temperature deviation [K].
                 Defaults to 0.0 K.
 
         Returns:
@@ -323,7 +344,7 @@ class Thrust(base.ThrustBase):
             tas (float | ndarray): true airspeed [kt]
             alt (float | ndarray): geopotential pressure altitude [ft]
             roc: unused.
-            dT (float | ndarray, optional): ISA temperature deviation [K]. 
+            dT (float | ndarray, optional): ISA temperature deviation [K].
                 Defaults to 0.0 K.
             config (str): Aircraft configuration, choice of CR, AP or LD
 
@@ -375,9 +396,11 @@ class FuelFlow(base.FuelFlowBase):
             Compute the fuel flow [kg/s] in approach.
     """
 
-    def __init__(self, ac:str, bada_version:str, bada_path:str=None, **kwargs):
+    def __init__(
+        self, ac: str, bada_version: str, bada_path: str = None, **kwargs
+    ):
         """Initialise FuelFlow object.
-        
+
         Args:
             ac (str): aircraft ICAO identifier (e.g. A320)
             bada_version (str): identifier of BADA3 version. Required if
@@ -413,11 +436,16 @@ class FuelFlow(base.FuelFlowBase):
         Returns:
             float | ndarray: Nominal fuel flow [kg/s]
         """
-        # calculate gamma angle, drag and thrust
+        # calculate gamma angle and drag
         v = tas * self.aero.kts
         gamma = self.sci.arctan2(vs * self.aero.fpm, v)
         D = self.drag.clean(mass, tas, alt, vs)
-        T = D + mass * self.aero.g0 * self.sci.sin(gamma)
+
+        # thrust is equal to drag, but not larger than climb thrust
+        T = self.sci.minimum(
+            D + mass * self.aero.g0 * self.sci.sin(gamma),
+            self.thrust.climb(tas, alt)
+        )
 
         # calculate nominal fuel flow depending on engine_type
         if self.engine_type == "JET":
@@ -431,6 +459,8 @@ class FuelFlow(base.FuelFlowBase):
         else:
             raise ValueError("Unknown engine type.")
 
+        # nominal must be at least idle
+        f_nom = self.sci.maximum(f_nom, self.idle(mass, tas, alt, vs))
         return f_nom / 60.0  # conversion [kg/min] -> [kg/s]
 
     @ndarrayconvert(column=True)

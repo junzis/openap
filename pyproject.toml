@@ -21,6 +21,7 @@ dependencies = [
     "pandas>=1.2",
     "pyyaml>=5.1",
     "matplotlib>=3.1",
+    "pyBADA>=0.1.5",
 ]
 
 [project.urls]
