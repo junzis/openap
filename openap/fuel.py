@@ -161,7 +161,7 @@ class FuelFlow(FuelFlowBase):
             alt (int or ndarray): Aircraft altitude (unit: ft).
             vs (float or ndarray): Vertical rate (unit: ft/min). Default is 0.
             acc (float or ndarray): acceleration (unit: m/s^2). Default is 0.
-            dT (float or ndarray): Temperature shift (unit: K or degC),default = 0
+            dT (float or ndarray): Temperature shift (unit: K or degC), default = 0
         Returns:
             float: Fuel flow (unit: kg/s).
 
