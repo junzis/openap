@@ -33,11 +33,11 @@ class Emission(object):
 
         self.engine = prop.engine(eng)
 
-    def _fl2sl(self, ffac, tas, alt, dT =0):
+    def _fl2sl(self, ffac, tas, alt, dT=0):
         """Convert to sea-level equivalent"""
-        M = self.aero.tas2mach(tas * self.aero.kts, alt * self.aero.ft,dT)
+        M = self.aero.tas2mach(tas * self.aero.kts, alt * self.aero.ft, dT=dT)
         beta = self.sci.exp(0.2 * (M**2))
-        theta = (self.aero.temperature(alt * self.aero.ft, dT) / 288.15) / beta
+        theta = (self.aero.temperature(alt * self.aero.ft, dT=dT) / 288.15) / beta
         delta = (1 - 0.0019812 * alt / 288.15) ** 5.255876 / self.sci.power(beta, 3.5)
         ratio = (theta**3.3) / (delta**1.02)
         # TODO: Where does this equation come from?
@@ -109,12 +109,12 @@ class Emission(object):
             ffac (float or ndarray): Fuel flow for all engines (unit: kg/s).
             tas (float or ndarray): Speed (unit: kt).
             alt (int or ndarray): Aircraft altitude (unit: ft).
-            dT (float or ndarray): Temperature shift (unit: K or degC),default = 0
+            dT (float or ndarray): Temperature shift (unit: K or degC), default = 0
         Returns:
             float: NOx emission from all engines (unit: g/s).
 
         """
-        ff_sl, ratio = self._fl2sl(ffac, tas, alt, dT)
+        ff_sl, ratio = self._fl2sl(ffac, tas, alt, dT=dT)
 
         nox_sl = self.sci.interp(
             ff_sl,
@@ -157,7 +157,7 @@ class Emission(object):
             float: CO emission from all engines (unit: g/s).
 
         """
-        ff_sl, ratio = self._fl2sl(ffac, tas, alt,dT)
+        ff_sl, ratio = self._fl2sl(ffac, tas, alt, dT=dT)
 
         co_sl = self.sci.interp(
             ff_sl,
@@ -184,7 +184,7 @@ class Emission(object):
         return co_rate
 
     @ndarrayconvert
-    def hc(self, ffac, tas, alt=0,dT=0):
+    def hc(self, ffac, tas, alt=0, dT=0):
         """Compute HC emission with given fuel flow, speed, and altitude.
 
         Args:
@@ -197,7 +197,7 @@ class Emission(object):
             float: HC emission from all engines (unit: g/s).
 
         """
-        ff_sl, ratio = self._fl2sl(ffac, tas, alt, dT)
+        ff_sl, ratio = self._fl2sl(ffac, tas, alt, dT=dT)
 
         hc_sl = self.sci.interp(
             ff_sl,
