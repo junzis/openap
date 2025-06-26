@@ -106,12 +106,19 @@ class FuelFlow(FuelFlowBase):
 
         ratio = acthr / (max_eng_thrust * n_eng)
 
-        # always limit the lowest ratio to 0.02 without creating a discontinuity
-        ratio = self.sci.log(1 + self.sci.exp(50 * (ratio - 0.03))) / 50 + 0.03
+        # the approximation formula for limits:
+            # x = x_min+(log(1+exp(k(x-x_min)))-log(1+exp(k(x-x_max))))/log(1+exp(k))
+            # where x_min, x_max - lower and upper bounds
+            # and k - sharpness of the corners
 
-        # upper limit the ratio to 1
-        if limit:
-            ratio = self.sci.where(ratio > 1, 1, ratio)
+        # always limit the lowest and highest ratio to 0.03 and 1 without creating a discontinuity
+        ratio = (
+            (
+                self.sci.log(1 + self.sci.exp(50 * (ratio - 0.03)))
+                - self.sci.log(1 + self.sci.exp(50 * (ratio - 1)))
+            )
+            / (self.sci.log(1 + self.sci.exp(50)))
+        ) + 0.03
 
         fuelflow = self.func_fuel(ratio)
 
@@ -141,7 +148,7 @@ class FuelFlow(FuelFlowBase):
         return fuelflow
 
     @ndarrayconvert
-    def enroute(self, mass, tas, alt, vs=0, acc=0, limit=True):
+    def enroute(self, mass, tas, alt, vs=0, acc=0, dT=0, limit=True):
         """Compute the fuel flow during climb, cruise, or descent.
 
         The net thrust is first estimated based on the dynamic equation.
@@ -154,35 +161,57 @@ class FuelFlow(FuelFlowBase):
             alt (int or ndarray): Aircraft altitude (unit: ft).
             vs (float or ndarray): Vertical rate (unit: ft/min). Default is 0.
             acc (float or ndarray): acceleration (unit: m/s^2). Default is 0.
-
+            dT (float or ndarray): Temperature shift (unit: K or degC),default = 0
         Returns:
             float: Fuel flow (unit: kg/s).
 
         """
-        D = self.drag.clean(mass=mass, tas=tas, alt=alt, vs=vs)
+        D = self.drag.clean(mass=mass, tas=tas, alt=alt, vs=vs, dT=dT)
 
         gamma = self.sci.arctan2(vs * fpm, tas * kts)
 
         if limit:
             # limit gamma to -20 to 20 degrees (0.175 radians)
-            gamma = self.sci.where(gamma < -0.175, -0.175, gamma)
-            gamma = self.sci.where(gamma > 0.175, 0.175, gamma)
+            # gamma = self.sci.where(gamma < -0.175, -0.175, gamma)
+            # gamma = self.sci.where(gamma > 0.175, 0.175, gamma)
+            gamma = (
+                (
+                    self.sci.log(1 + self.sci.exp(100 * (gamma + 0.175)))
+                    - self.sci.log(1 + self.sci.exp(100 * (gamma - 0.175)))
+                )
+                / (self.sci.log(1 + self.sci.exp(100)))
+            ) - 0.175
 
             # limit acc to 5 m/s^2
-            acc = self.sci.where(acc < -5, -5, acc)
-            acc = self.sci.where(acc > 5, 5, acc)
-
+            # acc = self.sci.where(acc < -5, -5, acc)
+            # acc = self.sci.where(acc > 5, 5, acc)
+            acc = (
+                (
+                    self.sci.log(1 + self.sci.exp(50 * (acc + 5)))
+                    - self.sci.log(1 + self.sci.exp(50 * (acc - 5)))
+                )
+                / (self.sci.log(1 + self.sci.exp(50)))
+            ) - 5
+            
         T = D + mass * 9.81 * self.sci.sin(gamma) + mass * acc
 
         if limit:
-            T_max = self.thrust.climb(tas=tas, alt=alt, roc=0)
-            T_idle = self.thrust.descent_idle(tas=tas, alt=alt)
+            T_max = self.thrust.climb(tas=tas, alt=alt, roc=0, dT=dT)
+            T_idle = self.thrust.descent_idle(tas=tas, alt=alt, dT=dT)
 
-            # below idle thrust (with margin of 20%)
-            T = self.sci.where(T < T_idle * 0.8, T_idle * 0.8, T)
+            # # below idle thrust (with margin of 20%)
+            # T = self.sci.where(T < T_idle * 0.8, T_idle * 0.8, T)
 
-            # outside performance boundary (with margin of 20%)
-            T = self.sci.where(T > T_max * 1.2, T_max * 1.2, T)
+            # # outside performance boundary (with margin of 20%)
+            # T = self.sci.where(T > T_max * 1.2, T_max * 1.2, T)
+
+            T = (
+                (
+                    self.sci.log(1 + self.sci.exp(50 * (T - T_idle * 0.8) / 100_000))
+                    - self.sci.log(1 + self.sci.exp(50 * (T - T_max * 1.2) / 100_000))
+                )
+                / (self.sci.log(1 + self.sci.exp(50)))
+            ) * 100_000 + T_idle * 0.8
 
         fuelflow = self.at_thrust(T, alt, limit=limit)
 
