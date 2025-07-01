@@ -57,7 +57,7 @@ def atmos(h, dT=0):
             Air pressure (Pa), density (kg/m3), and temperature (K).
 
     """
-    dT = np.maximum(-15, np.minimum(dT, 15))
+    dT = np.maximum(-25, np.minimum(dT, 15))
     T0_shift = T0 + dT
 
     T = np.maximum(T0_shift + beta * h, 216.65 + dT)
@@ -79,7 +79,7 @@ def temperature(h, dT=0):
         float or ndarray: Air temperature (K).
 
     """
-    p, r, T = atmos(h, dT)
+    p, r, T = atmos(h, dT=dT)
     return T
 
 
@@ -94,7 +94,7 @@ def pressure(h, dT=0):
         float or ndarray: Air pressure (Pa).
 
     """
-    p, r, T = atmos(h, dT)
+    p, r, T = atmos(h, dT=dT)
     return p
 
 
@@ -109,7 +109,7 @@ def density(h, dT=0):
         float or ndarray: Air density (kg/m3).
 
     """
-    p, r, T = atmos(h, dT)
+    p, r, T = atmos(h, dT=dT)
     return r
 
 
@@ -124,7 +124,7 @@ def vsound(h, dT=0):
         float or ndarray: speed of sound (m/s).
 
     """
-    T = temperature(h, dT)
+    T = temperature(h, dT=dT)
     a = np.sqrt(gamma * R * T)
     return a
 
@@ -256,7 +256,7 @@ def tas2mach(v_tas, h, dT=0):
         float or ndarray: mach number.
 
     """
-    a = vsound(h, dT)
+    a = vsound(h, dT=dT)
     mach = v_tas / a
     return mach
 
@@ -273,7 +273,7 @@ def mach2tas(mach, h, dT=0):
         float or ndarray: True airspeed (m/s).
 
     """
-    a = vsound(h, dT)
+    a = vsound(h, dT=dT)
     v_tas = mach * a
     return v_tas
 
@@ -290,7 +290,7 @@ def eas2tas(v_eas, h, dT=0):
         float or ndarray: True airspeed (m/s).
 
     """
-    rho = density(h, dT)
+    rho = density(h, dT=dT)
     v_tas = v_eas * np.sqrt(rho0 / rho)
     return v_tas
 
@@ -307,7 +307,7 @@ def tas2eas(v_tas, h, dT=0):
         float or ndarray: Equivalent airspeed (m/s).
 
     """
-    rho = density(h, dT)
+    rho = density(h, dT=dT)
     v_eas = v_tas * np.sqrt(rho / rho0)
     return v_eas
 
@@ -324,7 +324,7 @@ def cas2tas(v_cas, h, dT=0):
         float or ndarray: True airspeed (m/s).
 
     """
-    p, rho, T = atmos(h, dT)
+    p, rho, T = atmos(h, dT=dT)
     qdyn = p0 * ((1.0 + rho0 * v_cas * v_cas / (7.0 * p0)) ** 3.5 - 1.0)
     v_tas = np.sqrt(7.0 * p / rho * ((1.0 + qdyn / p) ** (2.0 / 7.0) - 1.0))
     return v_tas
@@ -342,7 +342,7 @@ def tas2cas(v_tas, h, dT=0):
         float or ndarray: Calibrated airspeed (m/s).
 
     """
-    p, rho, T = atmos(h, dT)
+    p, rho, T = atmos(h, dT=dT)
     qdyn = p * ((1.0 + rho * v_tas * v_tas / (7.0 * p)) ** 3.5 - 1.0)
     v_cas = np.sqrt(7.0 * p0 / rho0 * ((qdyn / p0 + 1.0) ** (2.0 / 7.0) - 1.0))
     return v_cas
@@ -360,8 +360,8 @@ def mach2cas(mach, h, dT=0):
         float or ndarray: Calibrated airspeed (m/s).
 
     """
-    v_tas = mach2tas(mach, h, dT)
-    v_cas = tas2cas(v_tas, h, dT)
+    v_tas = mach2tas(mach, h, dT=dT)
+    v_cas = tas2cas(v_tas, h, dT=dT)
     return v_cas
 
 
@@ -377,8 +377,8 @@ def cas2mach(v_cas, h, dT=0):
         float or ndarray: Mach number.
 
     """
-    v_tas = cas2tas(v_cas, h, dT)
-    mach = tas2mach(v_tas, h, dT)
+    v_tas = cas2tas(v_cas, h, dT=dT)
+    mach = tas2mach(v_tas, h, dT=dT)
     return mach
 
 

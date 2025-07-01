@@ -82,13 +82,13 @@ class Drag(DragBase):
         return dragpolar
 
     @ndarrayconvert
-    def _cl(self, mass, tas, alt, vs=0):
+    def _cl(self, mass, tas, alt, vs=0, dT=0):
         v = tas * self.aero.kts
         h = alt * self.aero.ft
         vs = vs * self.aero.fpm
         gamma = self.sci.arctan2(vs, v)
         S = self.aircraft["wing"]["area"]
-        rho = self.aero.density(h)
+        rho = self.aero.density(h, dT=dT)
         qS = 0.5 * rho * v**2 * S
         L = mass * self.aero.g0 * self.sci.cos(gamma)
         qS = self.sci.maximum(qS, 1e-3)  # avoid zero division
@@ -97,14 +97,14 @@ class Drag(DragBase):
         return cl, qS
 
     @ndarrayconvert
-    def _calc_drag(self, mass, tas, alt, cd0, k, vs):
-        cl, qS = self._cl(mass, tas, alt, vs)
+    def _calc_drag(self, mass, tas, alt, cd0, k, vs, dT=0):
+        cl, qS = self._cl(mass, tas, alt, vs, dT=dT)
         cd = cd0 + k * cl**2
         D = cd * qS
         return D
 
     @ndarrayconvert
-    def clean(self, mass, tas, alt, vs=0):
+    def clean(self, mass, tas, alt, vs=0, dT=0):
         """Compute drag at clean configuration (considering compressibility).
 
         Args:
@@ -112,7 +112,7 @@ class Drag(DragBase):
             tas (int or ndarray): True airspeed (unit: kt).
             alt (int or ndarray): Altitude (unit: ft).
             vs (float or ndarray): Vertical rate (unit: feet/min). Defaults to 0.
-
+            dT (float or ndarray): Temperature shift (unit: K or degC),default = 0
         Returns:
             int: Total drag (unit: N).
 
@@ -122,8 +122,8 @@ class Drag(DragBase):
         k = self.polar["clean"]["k"]
 
         if self.wave_drag:
-            mach = self.aero.tas2mach(tas * self.aero.kts, alt * self.aero.ft)
-            cl, qS = self._cl(mass, tas, alt)
+            mach = self.aero.tas2mach(tas * self.aero.kts, alt * self.aero.ft, dT=dT)
+            cl, qS = self._cl(mass, tas, alt, dT=dT)
 
             sweep = self.aircraft["wing"]["sweep"] * self.sci.pi / 180
             tc = self.aircraft["wing"]["t/c"]
@@ -150,11 +150,11 @@ class Drag(DragBase):
 
         cd0 = cd0 + dCdw
 
-        D = self._calc_drag(mass, tas, alt, cd0, k, vs)
+        D = self._calc_drag(mass, tas, alt, cd0, k, vs, dT=dT)
         return D
 
     @ndarrayconvert
-    def nonclean(self, mass, tas, alt, flap_angle, vs=0, landing_gear=False):
+    def nonclean(self, mass, tas, alt, flap_angle, vs=0, dT=0, landing_gear=False):
         """Compute drag at at non-clean configuration.
 
         Args:
@@ -163,6 +163,7 @@ class Drag(DragBase):
             alt (int or ndarray): Altitude (unit: ft).
             flap_angle (int or ndarray): flap deflection angle (unit: degree).
             vs (float or ndarray): Vertical rate (unit: feet/min). Defaults to 0.
+            dT (float or ndarray): Temperature shift (unit: K or degC),default = 0.
             landing_gear (bool): Is landing gear extended? Defaults to False.
 
         Returns:
@@ -212,5 +213,5 @@ class Drag(DragBase):
         ar = self.aircraft["wing"]["span"] ** 2 / self.aircraft["wing"]["area"]
         k_total = 1 / (1 / k + self.sci.pi * ar * delta_e_flap)
 
-        D = self._calc_drag(mass, tas, alt, cd0_total, k_total, vs)
+        D = self._calc_drag(mass, tas, alt, cd0_total, k_total, vs, dT=dT)
         return D
