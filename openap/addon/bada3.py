@@ -1,33 +1,128 @@
-"""
-Implements BADA3 based on Revision 3.16 (Report No. 22/05/12-45).
-"""
+# %%
+import re
+from pathlib import Path
+from typing import Optional
 
 from numpy import ndarray
-from pyBADA.bada3 import Bada3Aircraft
 
 from .. import base
 from ..extra import ndarrayconvert
 
 
-def load_bada3(ac: str, bada_version: str, bada_path: str = None):
-    """
-    Load BADA3 aircraft.
+# %%
+def load_bada3(ac: str, bada_path: str):
+    file = Path(bada_path) / f"{ac.upper()}__.OPF"
 
-    Args:
-        ac (str): aircraft ICAO identifier (e.g. A320)
-        bada_version (str): identifier of BADA version. Required if
-            bada_path=None,  else has no functionality but must be given.
-        bada_path (str, optional): path to BADA3 models. If None, data is taken
-            from `pyData/aircraft/BADA3/{badaVersion}/`.
-    """
+    if not file.exists():
+        raise FileNotFoundError(f"OPF file not found: {file}")
+    with open(file, "r") as f:
+        lines = f.readlines()
+    content = "".join(lines)
 
-    model = Bada3Aircraft(
-        badaVersion=bada_version, acName=ac, filePath=bada_path
+    # Wing area
+    mS = re.search(r"Wing Area.*?CD \d+\s+([\d.E+-]+)", content, re.DOTALL)
+    if mS:
+        S = float(mS.group(1))
+
+    # Engine type
+    engine_type = "JET"
+    m_actype = re.search(r"Actype[\s\S]*?^CD\s+.*$", content, re.MULTILINE)
+    if m_actype:
+        cd_line = m_actype.group(0)
+        if re.search(r"Turboprop", cd_line, re.IGNORECASE):
+            engine_type = "TURBOPROP"
+        elif re.search(r"Jet", cd_line, re.IGNORECASE):
+            engine_type = "JET"
+        elif re.search(r"Piston", cd_line, re.IGNORECASE):
+            engine_type = "PISTON"
+        elif re.search(r"Electric", cd_line, re.IGNORECASE):
+            engine_type = "ELECTRIC"
+
+    # Drag coefficients (CD0, CD2) different phases
+    def get_drag_coeff(phase):
+        m = re.search(
+            rf"CD \d+ {phase}\s+\S+\s+[\d.E+-]+\s+([\d.E+-]+)\s+([\d.E+-]+)", content
+        )
+        if m:
+            return float(m.group(1)), float(m.group(2))
+        return 0.0, 0.0
+
+    cd0_cr, cd2_cr = get_drag_coeff("CR")
+    cd0_ic, cd2_ic = get_drag_coeff("IC")
+    cd0_to, cd2_to = get_drag_coeff("TO")
+    cd0_ap, cd2_ap = get_drag_coeff("AP")
+    cd0_ld, cd2_ld = get_drag_coeff("LD")
+
+    m_gear = re.search(r"CD \d+\s+DOWN\s+([\d.E+-]+)", content)
+    cd0_lgear = float(m_gear.group(1)) if m_gear else 0.0
+
+    # Thrust coefficients (Max climb thrust)
+    m_thr = re.search(
+        r"Max climb thrust coefficients.*?CD\s+([\d.E+-]+)\s+([\d.E+-]+)\s+([\d.E+-]+)\s+([\d.E+-]+)\s+([\d.E+-]+)",
+        content,
+        re.DOTALL,
     )
+    ct = [float(m_thr.group(i)) for i in range(1, 6)] if m_thr else [0] * 5
+    m_ctdes = re.search(
+        r"Desc\(low\).*?CD\s+([\d.E+-]+)\s+([\d.E+-]+)\s+([\d.E+-]+)\s+([\d.E+-]+)\s+([\d.E+-]+)",
+        content,
+        re.DOTALL,
+    )
+    ctdes = [float(m_ctdes.group(i)) for i in range(1, 6)] if m_ctdes else [0] * 5
 
-    return model
+    # Fuel coefficients
+    m_cf = re.search(
+        r"Thrust Specific Fuel Consumption Coefficients.*?CD\s+([\d.E+-]+)\s+([\d.E+-]+)",
+        content,
+        re.DOTALL,
+    )
+    cf = [float(m_cf.group(i)) for i in range(1, 3)] if m_cf else [0, 0]
+    m_cfdes = re.search(
+        r"Descent Fuel Flow Coefficients.*?CD\s+([\d.E+-]+)\s+([\d.E+-]+)",
+        content,
+        re.DOTALL,
+    )
+    cfdes = [float(m_cfdes.group(i)) for i in range(1, 3)] if m_cfdes else [0, 0]
+    m_cfcr = re.search(r"Cruise Corr.*?CD\s+([\d.E+-]+)", content, re.DOTALL)
+    cfcr = float(m_cfcr.group(1)) if m_cfcr else 1.0
+
+    # Altitude for hpdes (from Desc level)
+    m_hpdes = re.search(
+        r"Desc level.*?CD\s+[\d.E+-]+\s+[\d.E+-]+\s+([\d.E+-]+)", content, re.DOTALL
+    )
+    hpdes = float(m_hpdes.group(1)) if m_hpdes else 8000.0
+
+    return {
+        "engineType": engine_type,
+        "S": S,
+        "CD0": {
+            "CR": cd0_cr,
+            "IC": cd0_ic,
+            "TO": cd0_to,
+            "AP": cd0_ap,
+            "LD": cd0_ld,
+        },
+        "CD2": {
+            "CR": cd2_cr,
+            "IC": cd2_ic,
+            "TO": cd2_to,
+            "AP": cd2_ap,
+            "LD": cd2_ld,
+        },
+        "CD0_lgear": cd0_lgear,
+        "Ct": ct,
+        "CTdeshigh": ctdes[1],
+        "CTdeslow": ctdes[0],
+        "CTdesapp": ctdes[3],
+        "CTdesld": ctdes[4],
+        "HpDes": hpdes,
+        "Cf": cf,
+        "CfDes": cfdes,
+        "CfCrz": cfcr,
+    }
 
 
+# %%
 class Drag(base.DragBase):
     """
     Compute the drag of an aircraft using BADA3 models.
@@ -60,34 +155,18 @@ class Drag(base.DragBase):
             configuration.
     """
 
-    def __init__(
-        self, ac: str, bada_version: str, bada_path: str = None, **kwargs
-    ):
-        """
-        Initialise Drag object.
-
-        Args:
-            ac (str): aircraft ICAO identifier (e.g. A320)
-            bada_version (str): identifier of BADA3 version. Required if
-                bada_path=None, else has no functionality but must be given.
-            bada_path (str, optional): path to BADA3 models. If None, data is
-                taken from `pyData/aircraft/BADA3/{badaVersion}/`.
-        """
+    def __init__(self, ac: str, bada_path: str, **kwargs):
         super().__init__(ac, **kwargs)
         self.ac = ac.upper()
-
-        # load parameters from BADA3
-        model = load_bada3(ac, bada_version, bada_path)
-        self.S = model.S
-        self.cd0_cr = model.CD0["CR"]
-        self.cd2_cr = model.CD2["CR"]
-
-        # add nonclean drag coefficients
-        self.cd0_ap = model.CD0["AP"]
-        self.cd2_ap = model.CD2["AP"]
-        self.cd0_ld = model.CD0["LD"]
-        self.cd2_ld = model.CD2["LD"]
-        self.cd0_lgear = model.CD0["GEAR_DOWN"]
+        model = load_bada3(ac, bada_path)
+        self.S = model["S"]
+        self.cd0_cr = model["CD0"]["CR"]
+        self.cd2_cr = model["CD2"]["CR"]
+        self.cd0_ap = model["CD0"]["AP"]
+        self.cd2_ap = model["CD2"]["AP"]
+        self.cd0_ld = model["CD0"]["LD"]
+        self.cd2_ld = model["CD2"]["LD"]
+        self.cd0_lgear = model["CD0_lgear"]
 
     @ndarrayconvert(column=True)
     def _cd(self, cl, cd0, cd2, cd0_lg=0.0):
@@ -153,10 +232,7 @@ class Drag(base.DragBase):
         return D
 
     @ndarrayconvert(column=True)
-    def nonclean(
-        self, mass, tas, alt, flap_angle=None, vs=None,
-        landing_gear=False, phase=None
-    ):
+    def nonclean(self, mass, tas, alt, landing_gear=False, phase=None):
         """
         Compute drag in non-clean configuration (approach and landing phases).
         BADA3 eq. (3.6-3, 3-6-4, 3.6-5)
@@ -188,8 +264,10 @@ class Drag(base.DragBase):
                 cd = self._cd(cl, self.cd0_cr, self.cd2_cr)
             else:
                 cd = self._cd(
-                    cl, self.cd0_ld, self.cd2_ld,
-                    self.cd0_lgear if landing_gear else 0.0
+                    cl,
+                    self.cd0_ld,
+                    self.cd2_ld,
+                    self.cd0_lgear if landing_gear else 0.0,
                 )
         D = cd * qS
         return D
@@ -224,43 +302,29 @@ class Thrust(base.ThrustBase):
             Compute the thrust force during idle conditions.
     """
 
-    def __init__(
-        self, ac: str, bada_version: str, bada_path: str = None, **kwargs
-    ):
-        """Initialise Thrust object.
-
-        Args:
-            ac (str): aircraft ICAO identifier (e.g. A320)
-            bada_version (str): identifier of BADA3 version. Required if
-                bada_path=None, else has no functionality but must be given.
-            bada_path (str, optional): path to BADA3 models. If None, data is
-                taken from `pyData/aircraft/BADA3/{badaVersion}/`.
-        """
+    def __init__(self, ac: str, bada_path: str, **kwargs):
         super().__init__(ac, **kwargs)
         self.ac = ac.upper()
+        model = load_bada3(ac, bada_path)
+        self.engine_type = model["engineType"]
+        self.ct = model["Ct"]
+        self.ctdeshigh = model["CTdeshigh"]
+        self.ctdeslow = model["CTdeslow"]
+        self.ctdesapp = model["CTdesapp"]
+        self.ctdesld = model["CTdesld"]
 
-        # load parameters from BADA3
-        model = load_bada3(ac, bada_version, bada_path)
-        self.engine_type = model.engineType
-        self.ct = model.Ct
-        self.ctdeshigh = model.CTdeshigh
-        self.ctdeslow = model.CTdeslow
-        self.ctdesapp = model.CTdesapp
-        self.ctdesld = model.CTdesld
-
-        # if non-clean data available, H_p,des cannot be below H_max,AP
-        nc_vals = [  # non-clean data (Section 3.6.1)
-            model.CD0["AP"],
-            model.CD0["LD"],
-            model.CD0["GEAR_DOWN"],
-            model.CD2["AP"],
-            model.CD2["LD"],
+        nc_vals = [
+            model["CD0"]["AP"],
+            model["CD0"]["LD"],
+            model["CD0_lgear"],
+            model["CD2"]["AP"],
+            model["CD2"]["LD"],
         ]
         nc_avail = all(val == 0 for val in nc_vals)
         if nc_avail:
-            self.hpdes = self.sci.maximum(model.HpDes, 8000.0)
+            self.hpdes = self.sci.maximum(model["HpDes"], 8000.0)
         else:
-            self.hpdes = model.HpDes
+            self.hpdes = model["HpDes"]
 
     @ndarrayconvert(column=True)
     def climb(self, tas, alt, dT=0) -> float | ndarray:
@@ -396,31 +460,19 @@ class FuelFlow(base.FuelFlowBase):
             Compute the fuel flow [kg/s] in approach.
     """
 
-    def __init__(
-        self, ac: str, bada_version: str, bada_path: str = None, **kwargs
-    ):
-        """Initialise FuelFlow object.
-
-        Args:
-            ac (str): aircraft ICAO identifier (e.g. A320)
-            bada_version (str): identifier of BADA3 version. Required if
-                bada_path=None, else has no functionality but must be given.
-            bada_path (str, optional): path to BADA3 models. If None, data is
-                taken from `pyData/aircraft/BADA3/{badaVersion}/`.
-        """
+    def __init__(self, ac: str, bada_path: Optional[str] = None, **kwargs):
         super().__init__(ac, **kwargs)
         self.ac = ac.upper()
-        self.thrust = Thrust(ac, bada_version, bada_path)
-        self.drag = Drag(ac, bada_version, bada_path)
-
+        self.thrust = Thrust(ac, bada_path)
+        self.drag = Drag(ac, bada_path)
         # load parameters from BADA3
-        model = load_bada3(ac, bada_version, bada_path)
-        self.engine_type = model.engineType
-        self.cf1 = model.Cf[0]
-        self.cf2 = model.Cf[1]
-        self.cf3 = model.CfDes[0]
-        self.cf4 = model.CfDes[1]
-        self.cfcr = model.CfCrz
+        model = load_bada3(ac, bada_path)
+        self.engine_type = model["engineType"]
+        self.cf1 = model["Cf"][0]
+        self.cf2 = model["Cf"][1]
+        self.cf3 = model["CfDes"][0]
+        self.cf4 = model["CfDes"][1]
+        self.cfcr = model["CfCrz"]
 
     @ndarrayconvert(column=True)
     def nominal(self, mass, tas, alt, vs=0) -> float | ndarray:
@@ -443,8 +495,7 @@ class FuelFlow(base.FuelFlowBase):
 
         # thrust is equal to drag, but not larger than climb thrust
         T = self.sci.minimum(
-            D + mass * self.aero.g0 * self.sci.sin(gamma),
-            self.thrust.climb(tas, alt)
+            D + mass * self.aero.g0 * self.sci.sin(gamma), self.thrust.climb(tas, alt)
         )
 
         # calculate nominal fuel flow depending on engine_type

@@ -21,7 +21,6 @@ dependencies = [
     "pandas>=1.2",
     "pyyaml>=5.1",
     "matplotlib>=3.1",
-    "pyBADA>=0.1.5",
 ]
 
 [project.urls]
@@ -34,6 +33,7 @@ dev-dependencies = [
     "flake8>=5.0.0",
     "black>=22.12.0",
     "isort>=5.11.4",
+    "ipykernel>=6.9.0",
     # "mypy>=0.991",
     # "pytest>=7.2.0",
 ]
