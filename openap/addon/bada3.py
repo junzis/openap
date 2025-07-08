@@ -305,10 +305,11 @@ class Drag(base.DragBase):
             configuration.
     """
 
-    def __init__(self, ac: str, bada_path: str, **kwargs):
+    def __init__(self, ac: str, bada_path: str, model=None, **kwargs):
         super().__init__(ac, **kwargs)
         self.ac = ac.upper()
-        model = load_bada3(ac, bada_path)
+        if not model:
+            model = load_bada3(ac, bada_path)
         self.S = model["wing"]["area"]
         self.cd0_cr = model["CD0"]["CR"]
         self.cd2_cr = model["CD2"]["CR"]
@@ -452,10 +453,11 @@ class Thrust(base.ThrustBase):
             Compute the thrust force during idle conditions.
     """
 
-    def __init__(self, ac: str, bada_path: str, **kwargs):
+    def __init__(self, ac: str, bada_path: str, model=None, **kwargs):
         super().__init__(ac, **kwargs)
         self.ac = ac.upper()
-        model = load_bada3(ac, bada_path)
+        if not model:
+            model = load_bada3(ac, bada_path)
         self.engine_type = model["engine"]["type"]
         self.ct = model["Ct"]
         self.ctdeshigh = model["CTdeshigh"]
@@ -610,13 +612,14 @@ class FuelFlow(base.FuelFlowBase):
             Compute the fuel flow [kg/s] in approach.
     """
 
-    def __init__(self, ac: str, bada_path: Optional[str] = None, **kwargs):
+    def __init__(self, ac: str, bada_path: Optional[str] = None, model=None, **kwargs):
         super().__init__(ac, **kwargs)
         self.ac = ac.upper()
-        self.thrust = Thrust(ac, bada_path)
-        self.drag = Drag(ac, bada_path)
+        if not model:
+            model = load_bada3(ac, bada_path)
+        self.thrust = Thrust(ac, bada_path, model=model)
+        self.drag = Drag(ac, bada_path, model=model)
         # load parameters from BADA3
-        model = load_bada3(ac, bada_path)
         self.engine_type = model["engine"]["type"]
         self.cf1 = model["Cf"][0]
         self.cf2 = model["Cf"][1]
