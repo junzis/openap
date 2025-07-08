@@ -6,10 +6,40 @@ from typing import Optional
 from numpy import ndarray
 
 from .. import base
+from .. import prop
 from ..extra import ndarrayconvert
 
 
 # %%
+def bada3_aircraft(ac: str, bada_path: str):
+    """Update aircraft with BADA3 data.
+
+    Args:
+        ac (str): Aircraft identifier (e.g. "A320")
+        bada_path (str): Path to the BADA3 data folder.
+
+    Returns:
+        dict: Dictionary with aircraft performance data from aircraft yaml file
+            as well as from BADA3.
+    """
+
+    def deep_update(target: dict, updates: dict):
+        # recursively update values in target dictionary
+        for key, value in updates.items():
+            if (
+                key in target
+                and isinstance(target[key], dict)
+                and isinstance(value, dict)
+            ):
+                deep_update(target[key], value)
+            else:
+                target[key] = value
+
+    aircraft = prop.aircraft(ac)
+    deep_update(aircraft, load_bada3(ac, bada_path))
+    return aircraft
+
+
 def load_bada3(ac: str, bada_path: str):
     """
     Load BADA3 aircraft performance data by first resolving the synonym
@@ -41,9 +71,7 @@ def load_bada3(ac: str, bada_path: str):
     opf_data = parse_opf_content(content)
     return {
         "typecode": ac,
-        "synonym": synonym,
-        "manufacturer": synonym_data["manufacturer"],
-        "model": synonym_data["model"],
+        **synonym_data,
         **opf_data,
     }
 
@@ -86,6 +114,7 @@ def read_synonym(ac: str, bada_path: str, synonym_file: str = "SYNONYM.NEW"):
                 code, manufacturer, model, synonym = match.groups()
                 if code.upper() == ac.upper():
                     return {
+                        "aircraft": f"{manufacturer.strip()} {model.strip()}",
                         "manufacturer": manufacturer.strip(),
                         "model": model.strip(),
                         "synonym": synonym.strip()[:4],
@@ -123,6 +152,28 @@ def parse_opf_content(content: str):
             [float(m.group(i)) for i in range(1, count + 1)] if m else [default] * count
         )
 
+    # actype
+    engine_type = "turbofan"
+    num_engines = None  # or default like 0
+    m_actype = re.search(r"Actype[\s\S]*?^CD\s+.*$", content, re.MULTILINE)
+    if m_actype:
+        cd_line = m_actype.group(0)
+
+        # Engine type
+        if re.search(r"Turboprop", cd_line, re.IGNORECASE):
+            engine_type = "turboprop"
+        elif re.search(r"Jet", cd_line, re.IGNORECASE):
+            engine_type = "turbofan"
+        elif re.search(r"Piston", cd_line, re.IGNORECASE):
+            engine_type = "piston"
+        elif re.search(r"Electric", cd_line, re.IGNORECASE):
+            engine_type = "electric"
+
+        # Number of engines
+        m_engines = re.search(r"(\d+)\s+engines?", cd_line, re.IGNORECASE)
+        if m_engines:
+            num_engines = int(m_engines.group(1))
+
     # aircraft mass
     mass_vals = get_floats(
         r"Mass \(t\).*?CD\s+([\d.E+-]+)\s+([\d.E+-]+)\s+([\d.E+-]+)"
@@ -130,27 +181,15 @@ def parse_opf_content(content: str):
         4,
     )
 
-    # Wing area and span
-    wing_area = get_floats(r"Wing Area.*?CD \d+\s+([\d.E+-]+)", 1)[0]
-    wing_span = get_floats(
-        r"Ground.*?CD\s+([\d.E+-]+)\s+([\d.E+-]+)\s+([\d.E+-]+)"
-        r"\s+([\d.E+-]+)\s+[\d.E+-]+",
-        4,
-    )[2]
+    # flight envelope
+    envelope_vals = get_floats(
+        r"Flight envelope.*?CD\s+([\d.E+-]+)\s+([\d.E+-]+)\s+([\d.E+-]+)"
+        r"\s+[\d.E+-]+\s+[\d.E+-]+",
+        3,
+    )
 
-    # Engine type
-    engine_type = "JET"
-    m_actype = re.search(r"Actype[\s\S]*?^CD\s+.*$", content, re.MULTILINE)
-    if m_actype:
-        cd_line = m_actype.group(0)
-        if re.search(r"Turboprop", cd_line, re.IGNORECASE):
-            engine_type = "TURBOPROP"
-        elif re.search(r"Jet", cd_line, re.IGNORECASE):
-            engine_type = "JET"
-        elif re.search(r"Piston", cd_line, re.IGNORECASE):
-            engine_type = "PISTON"
-        elif re.search(r"Electric", cd_line, re.IGNORECASE):
-            engine_type = "ELECTRIC"
+    # wing area
+    wing_area = get_floats(r"Wing Area.*?CD \d+\s+([\d.E+-]+)", 1)[0]
 
     # Drag coefficients
     cd0_cr, cd2_cr = get_drag_coeff("CR")
@@ -192,10 +231,32 @@ def parse_opf_content(content: str):
         default=8000.0,
     )[0]
 
+    ground_vals = get_floats(
+        r"Ground.*?CD\s+([\d.E+-]+)\s+([\d.E+-]+)\s+([\d.E+-]+)"
+        r"\s+([\d.E+-]+)\s+[\d.E+-]+",
+        4,
+    )
+
+    # return as openap aircraft style dictionary
     return {
-        "engineType": engine_type,
-        "S": wing_area,
-        "b": wing_span,
+        "mtow": mass_vals[2] * 1e3,  # convert to kg
+        "mref": mass_vals[0] * 1e3,
+        "oew": mass_vals[1] * 1e3,
+        "mpl": mass_vals[3] * 1e3,
+        "vmo": envelope_vals[0],  # kt
+        "mmo": envelope_vals[1],
+        "ceiling": envelope_vals[2] * 0.3048,  # convert to m
+        "fuselage": {
+            "length": ground_vals[3],
+        },
+        "wing": {
+            "area": wing_area,
+            "span": ground_vals[2],
+        },
+        "engine": {
+            "type": engine_type,
+            "number": num_engines,
+        },
         "CD0": {"CR": cd0_cr, "IC": cd0_ic, "TO": cd0_to, "AP": cd0_ap, "LD": cd0_ld},
         "CD2": {"CR": cd2_cr, "IC": cd2_ic, "TO": cd2_to, "AP": cd2_ap, "LD": cd2_ld},
         "CD0_lgear": cd0_lgear,
@@ -208,10 +269,6 @@ def parse_opf_content(content: str):
         "Cf": cf,
         "CfDes": cfdes,
         "CfCrz": cfcr,
-        "MREF": mass_vals[0],
-        "OEW": mass_vals[1],
-        "MTOW": mass_vals[2],
-        "MPL": mass_vals[3],
     }
 
 
@@ -252,7 +309,7 @@ class Drag(base.DragBase):
         super().__init__(ac, **kwargs)
         self.ac = ac.upper()
         model = load_bada3(ac, bada_path)
-        self.S = model["S"]
+        self.S = model["wing"]["area"]
         self.cd0_cr = model["CD0"]["CR"]
         self.cd2_cr = model["CD2"]["CR"]
         self.cd0_ap = model["CD0"]["AP"]
@@ -375,7 +432,7 @@ class Thrust(base.ThrustBase):
 
     Attributes:
         ac (str): aircraft ICAO identifer (e.g. A320)
-        engine_type (str): one of JET, TURBOPROP, PISTON or ELECTRIC
+        engine_type (str): one of turbofan, turboprop, piston or electric
         ct (list): list of thrust-related coefficients from BADA3
         hpdes (float): design geopotential pressure altitude [ft]
         ctdes* (float): (high, low, app, ld) thrust-related coefficients for
@@ -399,7 +456,7 @@ class Thrust(base.ThrustBase):
         super().__init__(ac, **kwargs)
         self.ac = ac.upper()
         model = load_bada3(ac, bada_path)
-        self.engine_type = model["engineType"]
+        self.engine_type = model["engine"]["type"]
         self.ct = model["Ct"]
         self.ctdeshigh = model["CTdeshigh"]
         self.ctdeslow = model["CTdeslow"]
@@ -436,11 +493,11 @@ class Thrust(base.ThrustBase):
         """
 
         # calculate maximum climb thrust at ISA
-        if self.engine_type == "JET":
+        if self.engine_type == "turbofan":
             thr_isa = self.ct[0] * (1 - alt / self.ct[1] + self.ct[2] * alt**2)
-        elif self.engine_type == "TURBOPROP":
+        elif self.engine_type == "turboprop":
             thr_isa = self.ct[0] / tas * (1 - alt / self.ct[1]) + self.ct[2]
-        elif self.engine_type in ("PISTON", "ELECTRIC"):
+        elif self.engine_type in ("piston", "electric"):
             thr_isa = self.ct[0] * (1 - alt / self.ct[1]) + self.ct[2] / tas
         else:
             raise ValueError("Unknown engine type")
@@ -531,7 +588,7 @@ class FuelFlow(base.FuelFlowBase):
 
     Attributes:
         ac (str): aircraft ICAO identifier (e.g. A320)
-        engine_type (str): one of JET, TURBOPROP, PISTON or ELECTRIC
+        engine_type (str): one of turbofan, turboprop, piston or electric
         cf1 (float): 1st thrust specific fuel consumption coefficient
         cf2 (float): 2nd thrust specific fuel consumption coefficient
         cf3 (float): 1st descent fuel flow coefficient
@@ -560,7 +617,7 @@ class FuelFlow(base.FuelFlowBase):
         self.drag = Drag(ac, bada_path)
         # load parameters from BADA3
         model = load_bada3(ac, bada_path)
-        self.engine_type = model["engineType"]
+        self.engine_type = model["engine"]["type"]
         self.cf1 = model["Cf"][0]
         self.cf2 = model["Cf"][1]
         self.cf3 = model["CfDes"][0]
@@ -592,13 +649,13 @@ class FuelFlow(base.FuelFlowBase):
         )
 
         # calculate nominal fuel flow depending on engine_type
-        if self.engine_type == "JET":
+        if self.engine_type == "turbofan":
             eta = self.cf1 * (1 + tas / self.cf2) * 1e-3
             f_nom = eta * T
-        elif self.engine_type == "TURBOPROP":
+        elif self.engine_type == "turboprop":
             eta = self.cf1 * (1 - tas / self.cf2) * (tas / 1e3) * 1e-3
             f_nom = eta * T
-        elif self.engine_type in ("PISTON", "ELECTRIC"):
+        elif self.engine_type in ("piston", "electric"):
             f_nom = self.cf1
         else:
             raise ValueError("Unknown engine type.")
@@ -639,9 +696,9 @@ class FuelFlow(base.FuelFlowBase):
         Returns:
             float | ndarray: Idle fuel flow [kg/s]
         """
-        if self.engine_type in ("JET", "TURBOPROP"):
+        if self.engine_type in ("turbofan", "turboprop"):
             f_min = self.cf3 * (1 - alt / self.cf4)
-        elif self.engine_type in ("PISTON", "ELECTRIC"):
+        elif self.engine_type in ("piston", "electric"):
             f_min = self.cf3
         else:
             raise ValueError("Unknown engine type.")
@@ -662,7 +719,7 @@ class FuelFlow(base.FuelFlowBase):
         Returns:
             float | ndarray: Approach/landing fuel flow [kg/s]
         """
-        if self.engine_type not in ("JET", "TURBOPROP"):
+        if self.engine_type not in ("turbofan", "turboprop"):
             raise ValueError(
                 f"Engine type {self.engine_type} unknown or not applicable."
             )
