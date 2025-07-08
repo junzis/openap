@@ -11,18 +11,132 @@ from ..extra import ndarrayconvert
 
 # %%
 def load_bada3(ac: str, bada_path: str):
-    file = Path(bada_path) / f"{ac.upper()}__.OPF"
+    """
+    Load BADA3 aircraft performance data by first resolving the synonym
+    and then parsing the associated .OPF file.
+
+    Args:
+        ac (str): Aircraft identifier (e.g. "A320").
+        bada_path (str): Path to the BADA3 data folder.
+
+    Raises:
+        FileNotFoundError: If the OPF file corresponding to the synonym
+            cannot be found.
+        ValueError: If the aircraft code is not found in the SYNONYM file.
+
+    Returns:
+        dict: Dictionary with full aircraft performance data including
+            aerodynamic coefficients, thrust/fuel parameters, and metadata.
+    """
+    synonym_data = read_synonym(ac, bada_path)
+    synonym = synonym_data["synonym"]
+    file = Path(bada_path) / f"{synonym}__.OPF"
 
     if not file.exists():
         raise FileNotFoundError(f"OPF file not found: {file}")
-    with open(file, "r") as f:
-        lines = f.readlines()
-    content = "".join(lines)
 
-    # Wing area
-    mS = re.search(r"Wing Area.*?CD \d+\s+([\d.E+-]+)", content, re.DOTALL)
-    if mS:
-        S = float(mS.group(1))
+    with file.open("r", encoding="utf-8") as f:
+        content = f.read()
+
+    opf_data = parse_opf_content(content)
+    return {
+        "typecode": ac,
+        "synonym": synonym,
+        "manufacturer": synonym_data["manufacturer"],
+        "model": synonym_data["model"],
+        **opf_data,
+    }
+
+
+def read_synonym(ac: str, bada_path: str, synonym_file: str = "SYNONYM.NEW"):
+    """
+    Parse the BADA3 SYNONYM.NEW file to find manufacturer, model and synonym
+    information for aircraft identifier "ac".
+
+    Args:
+        ac (str): Aircraft identifier (e.g. "A320")
+        bada_path (str): Path to BADA3 folder.
+        synonym_file (str, optional): Name of the SYNONYM file.
+            Defaults to "SYNONYM.NEW".
+
+    Raises:
+        FileNotFoundError: If the SYNONYM file is not found.
+        ValueError: If the aircraft code is not found in the file.
+
+    Returns:
+        dict: Dictionary with keys 'manufacturer', 'model', and 'synonym'.
+    """
+
+    file = Path(bada_path) / synonym_file
+
+    if not file.exists():
+        raise FileNotFoundError(f"SYNONYM file not found at: {file}")
+
+    pattern = re.compile(
+        r"^CD\s+[^\s]\s+(\S+)\s+"  # A/C code
+        r"(\S(?:.*?\S)?)\s{2,}"  # Manufacturer
+        r"(.+?)\s{2,}"  # Model
+        r"(\S+)\s+.*?/$"  # Synonym
+    )
+
+    with open(file, "r", encoding="utf-8") as f:
+        for line in f:
+            match = pattern.match(line)
+            if match:
+                code, manufacturer, model, synonym = match.groups()
+                if code.upper() == ac.upper():
+                    return {
+                        "manufacturer": manufacturer.strip(),
+                        "model": model.strip(),
+                        "synonym": synonym.strip()[:4],
+                    }
+
+    raise ValueError(f"Aircraft code '{ac}' not found in SYNONYM file.")
+
+
+def parse_opf_content(content: str):
+    """
+    Parse the contents of a BADA3 .OPF file and extract aircraft performance
+    parameters.
+
+    Args:
+        content (str): Raw text content of the .OPF file.
+
+    Returns:
+        dict: Dictionary containing parsed aerodynamic and engine parameters,
+            including CD0/CD2 by phase, thrust coefficients, fuel flow
+            coefficients, wing area, engine type, and others.
+    """
+
+    def get_drag_coeff(phase):
+        # get drag coefficients
+        pattern = (
+            rf"CD\s+\d+\s+{phase}\s+\S+\s+[\d.E+-]+\s+" r"([\d.E+-]+)\s+([\d.E+-]+)"
+        )
+        m = re.search(pattern, content)
+        return (float(m.group(1)), float(m.group(2))) if m else (0.0, 0.0)
+
+    def get_floats(pattern, count, default=0.0):
+        # get a certain number of floats from a regex pattern
+        m = re.search(pattern, content, re.DOTALL)
+        return (
+            [float(m.group(i)) for i in range(1, count + 1)] if m else [default] * count
+        )
+
+    # aircraft mass
+    mass_vals = get_floats(
+        r"Mass \(t\).*?CD\s+([\d.E+-]+)\s+([\d.E+-]+)\s+([\d.E+-]+)"
+        r"\s+([\d.E+-]+)\s+[\d.E+-]+",
+        4,
+    )
+
+    # Wing area and span
+    wing_area = get_floats(r"Wing Area.*?CD \d+\s+([\d.E+-]+)", 1)[0]
+    wing_span = get_floats(
+        r"Ground.*?CD\s+([\d.E+-]+)\s+([\d.E+-]+)\s+([\d.E+-]+)"
+        r"\s+([\d.E+-]+)\s+[\d.E+-]+",
+        4,
+    )[2]
 
     # Engine type
     engine_type = "JET"
@@ -38,77 +152,52 @@ def load_bada3(ac: str, bada_path: str):
         elif re.search(r"Electric", cd_line, re.IGNORECASE):
             engine_type = "ELECTRIC"
 
-    # Drag coefficients (CD0, CD2) different phases
-    def get_drag_coeff(phase):
-        m = re.search(
-            rf"CD \d+ {phase}\s+\S+\s+[\d.E+-]+\s+([\d.E+-]+)\s+([\d.E+-]+)", content
-        )
-        if m:
-            return float(m.group(1)), float(m.group(2))
-        return 0.0, 0.0
-
+    # Drag coefficients
     cd0_cr, cd2_cr = get_drag_coeff("CR")
     cd0_ic, cd2_ic = get_drag_coeff("IC")
     cd0_to, cd2_to = get_drag_coeff("TO")
     cd0_ap, cd2_ap = get_drag_coeff("AP")
     cd0_ld, cd2_ld = get_drag_coeff("LD")
 
-    m_gear = re.search(r"CD \d+\s+DOWN\s+([\d.E+-]+)", content)
-    cd0_lgear = float(m_gear.group(1)) if m_gear else 0.0
+    # Landing gear
+    cd0_lgear = get_floats(r"CD \d+\s+DOWN\s+([\d.E+-]+)", 1)[0]
 
-    # Thrust coefficients (Max climb thrust)
-    m_thr = re.search(
-        r"Max climb thrust coefficients.*?CD\s+([\d.E+-]+)\s+([\d.E+-]+)\s+([\d.E+-]+)\s+([\d.E+-]+)\s+([\d.E+-]+)",
-        content,
-        re.DOTALL,
+    # Thrust coefficients
+    ct = get_floats(
+        r"Max climb thrust coefficients.*?CD\s+([\d.E+-]+)\s+([\d.E+-]+)"
+        r"\s+([\d.E+-]+)\s+([\d.E+-]+)\s+([\d.E+-]+)",
+        5,
     )
-    ct = [float(m_thr.group(i)) for i in range(1, 6)] if m_thr else [0] * 5
-    m_ctdes = re.search(
-        r"Desc\(low\).*?CD\s+([\d.E+-]+)\s+([\d.E+-]+)\s+([\d.E+-]+)\s+([\d.E+-]+)\s+([\d.E+-]+)",
-        content,
-        re.DOTALL,
+    ctdes = get_floats(
+        r"Desc\(low\).*?CD\s+([\d.E+-]+)\s+([\d.E+-]+)"
+        r"\s+([\d.E+-]+)\s+([\d.E+-]+)\s+([\d.E+-]+)",
+        5,
     )
-    ctdes = [float(m_ctdes.group(i)) for i in range(1, 6)] if m_ctdes else [0] * 5
 
     # Fuel coefficients
-    m_cf = re.search(
-        r"Thrust Specific Fuel Consumption Coefficients.*?CD\s+([\d.E+-]+)\s+([\d.E+-]+)",
-        content,
-        re.DOTALL,
+    cf = get_floats(
+        r"Thrust Specific Fuel Consumption Coefficients.*?CD\s+([\d.E+-]+)"
+        r"\s+([\d.E+-]+)",
+        2,
     )
-    cf = [float(m_cf.group(i)) for i in range(1, 3)] if m_cf else [0, 0]
-    m_cfdes = re.search(
-        r"Descent Fuel Flow Coefficients.*?CD\s+([\d.E+-]+)\s+([\d.E+-]+)",
-        content,
-        re.DOTALL,
+    cfdes = get_floats(
+        r"Descent Fuel Flow Coefficients.*?CD\s+([\d.E+-]+)\s+([\d.E+-]+)", 2
     )
-    cfdes = [float(m_cfdes.group(i)) for i in range(1, 3)] if m_cfdes else [0, 0]
-    m_cfcr = re.search(r"Cruise Corr.*?CD\s+([\d.E+-]+)", content, re.DOTALL)
-    cfcr = float(m_cfcr.group(1)) if m_cfcr else 1.0
+    cfcr = get_floats(r"Cruise Corr.*?CD\s+([\d.E+-]+)", 1, default=1.0)[0]
 
     # Altitude for hpdes (from Desc level)
-    m_hpdes = re.search(
-        r"Desc level.*?CD\s+[\d.E+-]+\s+[\d.E+-]+\s+([\d.E+-]+)", content, re.DOTALL
-    )
-    hpdes = float(m_hpdes.group(1)) if m_hpdes else 8000.0
+    hpdes = get_floats(
+        r"Desc level.*?CD\s+[\d.E+-]+\s+[\d.E+-]+\s+([\d.E+-]+)",
+        1,
+        default=8000.0,
+    )[0]
 
     return {
         "engineType": engine_type,
-        "S": S,
-        "CD0": {
-            "CR": cd0_cr,
-            "IC": cd0_ic,
-            "TO": cd0_to,
-            "AP": cd0_ap,
-            "LD": cd0_ld,
-        },
-        "CD2": {
-            "CR": cd2_cr,
-            "IC": cd2_ic,
-            "TO": cd2_to,
-            "AP": cd2_ap,
-            "LD": cd2_ld,
-        },
+        "S": wing_area,
+        "b": wing_span,
+        "CD0": {"CR": cd0_cr, "IC": cd0_ic, "TO": cd0_to, "AP": cd0_ap, "LD": cd0_ld},
+        "CD2": {"CR": cd2_cr, "IC": cd2_ic, "TO": cd2_to, "AP": cd2_ap, "LD": cd2_ld},
         "CD0_lgear": cd0_lgear,
         "Ct": ct,
         "CTdeshigh": ctdes[1],
@@ -119,6 +208,10 @@ def load_bada3(ac: str, bada_path: str):
         "Cf": cf,
         "CfDes": cfdes,
         "CfCrz": cfcr,
+        "MREF": mass_vals[0],
+        "OEW": mass_vals[1],
+        "MTOW": mass_vals[2],
+        "MPL": mass_vals[3],
     }
 
 
