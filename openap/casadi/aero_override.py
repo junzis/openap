@@ -40,10 +40,10 @@ def atmos(h, dT=0):
             Air pressure (Pa), density (kg/m3), and temperature (K).
 
     """
-    assert -25 < dT < 15
+    dT = casadi.fmax(-25, casadi.fmin(15, dT))
 
     T0_ = T0 + dT
-    T = 0.65 * np.log(1 + np.exp(-10 * (h / 1000 - 11))) + 216.65
+    T = 0.65 * np.log(1 + np.exp(-10 * (h / 1000 - 11))) + 216.65 + dT
     rho = rho0 * ((T0_ + beta * h) / T0_) ** 4.2559
     p = rho * R * T
     return p, rho, T

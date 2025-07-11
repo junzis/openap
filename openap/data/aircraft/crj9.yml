@@ -1,0 +1,56 @@
+aircraft: BOMBARDIER CRJ9
+
+mtow: 37421
+mlw: 33340
+oew: 20412
+mfc: 8888
+vmo: 320
+mmo: 0.82
+ceiling: 12500
+
+pax:
+  max: 88
+  low: 64
+  high: 78
+
+fuselage:
+  length: 33.50
+  height: 2.69
+  width: 2.69
+
+wing:
+  area: 71.07
+  span: 23.24
+  mac: 3.19 #e75l
+  sweep: 23 #e75l
+  t/c: null
+
+flaps:
+  type: double-slotted #e75l
+  area: null
+  bf/b: null
+  lambda_f: 0.900 #e75l
+  cf/c: 0.150 #e75l
+  Sf/S: 0.150 #e75l
+
+cruise:
+  height: 11000 #e75l
+  mach: 0.75 #e75l
+
+engine:
+  type: turbofan
+  mount: wing
+  number: 2
+  default: CF34-8C5
+  options:
+    - CF34-8C5
+
+drag:
+  cd0: 0.018 #e75l
+  k: 0.042 #e75l
+  e: 0.809 #e75l
+  gears: 0.017 #e75l
+
+fuel:
+  engine: CF34-8C5
+  fuel_coef: 1.54520615 #e75l
