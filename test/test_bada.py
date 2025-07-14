@@ -13,7 +13,7 @@ bada4_path = "../../../../data/bada_4.2/tables"
 drag = bada3.Drag("A320", bada3_path)
 print("bada 3 drag", drag.clean(60000, 300, 12_000))
 
-drag = bada4.Drag("A320", bada4_path)
+drag = bada4.Drag("A320-231", bada4_path)
 print("bada 4 drag", drag.clean(60000, 300, 12_000))
 
 drag = openap.Drag("A320")
@@ -24,7 +24,7 @@ print("openap drag", drag.clean(60000, 300, 12_000))
 fuel_bada3 = bada3.FuelFlow("A320", bada3_path)
 print("bada fuel", fuel_bada3.enroute(mass=60000, tas=350, alt=35_000))
 
-fuel_bada4 = bada4.FuelFlow("A320", bada4_path)
+fuel_bada4 = bada4.FuelFlow("A320-231", bada4_path)
 print("bada fuel", fuel_bada4.enroute(mass=60000, tas=350, alt=35_000))
 
 fuel_openap = openap.FuelFlow("A320")
@@ -32,18 +32,14 @@ print("openap fuel", fuel_openap.enroute(mass=60000, tas=350, alt=35_000))
 
 # %%
 
-typecode = "a320"
 
-fuel_bada3 = bada3.FuelFlow(typecode, bada3_path)
-fuel_bada4 = bada4.FuelFlow(typecode, bada4_path)
-fuel_openap = openap.FuelFlow(typecode)
+fuel_bada3 = bada3.FuelFlow("A320", bada3_path)
+fuel_bada4 = bada4.FuelFlow("A320-231", bada4_path)
+fuel_openap = openap.FuelFlow("A320")
 
-drag_bada3 = bada3.Drag(typecode, bada3_path)
-drag_bada4 = bada4.Drag(typecode, bada4_path)
-drag_openap = openap.Drag(typecode)
-
-
-mass_assume = openap.prop.aircraft(typecode)["mtow"] * 0.8
+drag_bada3 = bada3.Drag("A320", bada3_path)
+drag_bada4 = bada4.Drag("A320-231", bada4_path)
+drag_openap = openap.Drag("A320")
 
 
 flight = pd.read_csv("../examples/data/flight_a320_qar.csv").query("ALTI_STD_FT>100")
@@ -69,7 +65,6 @@ drag_estimate_openap = drag_openap.clean(
 
 fuel_estimate_bada3 = fuel_bada3.enroute(
     flight["MASS_KG"],
-    # mass_assume,
     flight["TRUE_AIR_SPD_KT"],
     flight["ALTI_STD_FT"],
     flight["VERT_SPD_FTMN"],
@@ -77,7 +72,6 @@ fuel_estimate_bada3 = fuel_bada3.enroute(
 
 fuel_estimate_bada4 = fuel_bada4.enroute(
     flight["MASS_KG"],
-    # mass_assume,
     flight["TRUE_AIR_SPD_KT"],
     flight["ALTI_STD_FT"],
     flight["VERT_SPD_FTMN"],
@@ -85,7 +79,6 @@ fuel_estimate_bada4 = fuel_bada4.enroute(
 
 fuel_estimate_openap = fuel_openap.enroute(
     flight["MASS_KG"],
-    # mass_assume,
     flight["TRUE_AIR_SPD_KT"],
     flight["ALTI_STD_FT"],
     flight["VERT_SPD_FTMN"],
