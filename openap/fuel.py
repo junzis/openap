@@ -82,20 +82,17 @@ class FuelFlow(FuelFlowBase):
             ref_engine = prop.engine(params["engine_type"])
             scale = self.engine["ff_to"] / ref_engine["ff_to"]
 
-        return (
-            lambda x: c1
-            - self.sci.exp(-c2 * (x * self.sci.exp(c3 * x) - self.sci.log(c1) / c2))
-            * scale
+        return lambda x: scale * (
+            c1 - self.sci.exp(-c2 * (x * self.sci.exp(c3 * x) - self.sci.log(c1) / c2))
         )
 
     @ndarrayconvert
-    def at_thrust(self, acthr, alt=0, limit=True):
+    def at_thrust(self, total_ac_thrust):
         """Compute the fuel flow at a given total thrust.
 
         Args:
-            acthr (int or ndarray): The total net thrust of the
+            total_ac_thrust (int or ndarray): The total net thrust of the
                 aircraft (unit: N).
-            alt (int or ndarray): Aircraft altitude (unit: ft).
 
         Returns:
             float: Fuel flow (unit: kg/s).
@@ -104,7 +101,7 @@ class FuelFlow(FuelFlowBase):
         max_eng_thrust = self.engine["max_thrust"]
         n_eng = self.aircraft["engine"]["number"]
 
-        ratio = acthr / (max_eng_thrust * n_eng)
+        ratio = (total_ac_thrust / n_eng) / max_eng_thrust
 
         # the approximation formula for limits:
         # x = x_min+(log(1+exp(k(x-x_min)))-log(1+exp(k(x-x_max))))/log(1+exp(k))
@@ -120,7 +117,7 @@ class FuelFlow(FuelFlowBase):
             / (self.sci.log(1 + self.sci.exp(50)))
         ) + 0.03
 
-        fuelflow = self.func_fuel(ratio)
+        fuelflow = self.func_fuel(ratio) * n_eng
 
         return fuelflow
 
@@ -172,7 +169,7 @@ class FuelFlow(FuelFlowBase):
 
         T = D + mass * 9.81 * self.sci.sin(gamma) + mass * acc
 
-        fuelflow = self.at_thrust(T, alt, limit=limit)
+        fuelflow = self.at_thrust(T)
 
         return fuelflow
 
