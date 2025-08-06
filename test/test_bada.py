@@ -22,10 +22,10 @@ print("openap drag", drag.clean(60000, 300, 12_000))
 # %%
 
 fuel_bada3 = bada3.FuelFlow("A320", bada3_path)
-print("bada fuel", fuel_bada3.enroute(mass=60000, tas=350, alt=35_000))
+print("bada 3 fuel", fuel_bada3.enroute(mass=60000, tas=350, alt=35_000))
 
 fuel_bada4 = bada4.FuelFlow("A320-231", bada4_path)
-print("bada fuel", fuel_bada4.enroute(mass=60000, tas=350, alt=35_000))
+print("bada 4 fuel", fuel_bada4.enroute(mass=60000, tas=350, alt=35_000))
 
 fuel_openap = openap.FuelFlow("A320")
 print("openap fuel", fuel_openap.enroute(mass=60000, tas=350, alt=35_000))
@@ -104,5 +104,7 @@ plt.ylim(0)
 
 plt.legend()
 plt.show()
+
+# %%
 
 # %%

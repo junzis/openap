@@ -48,13 +48,16 @@ acropole_aircraft = pd.read_csv("acropole_aircraft_params.csv")
 
 acropole_typecodes = acropole_aircraft.ACFT_ICAO_TYPE.unique()
 
-# acropole_typecodes = ["A320"]
+# acropole_typecodes = ["CRJ9", "A318"]
 
 rng = np.random.default_rng(42)
 
 results = []
 
 for typecode in acropole_typecodes:
+    if typecode == "B734":  # model is bad
+        continue
+
     if typecode.lower() not in openap.prop.available_aircraft():
         print(f"{typecode} not in openap")
         continue
@@ -87,10 +90,14 @@ for typecode in acropole_typecodes:
         for i, f in tqdm(enumerate(files_all_flights)):
             t = Traffic.from_file(f).assign(flight_id=lambda d: d.flight_id + f"_{i}")
 
+            t_select = (
+                t.query(f"typecode=='{typecode.lower()}'").longer_than("2h").eval()
+            )
+
             if t_typecode is None:
-                t_typecode = t.query(f"typecode=='{typecode.lower()}'")
+                t_typecode = t_select
             else:
-                t_typecode = t_typecode + t.query(f"typecode=='{typecode.lower()}'")
+                t_typecode = t_typecode + t_select
 
             n_flights = len(t_typecode.flight_ids) if t_typecode is not None else 0
             print(f"got {n_flights} flights | {pathlib.Path(f).stem}")
@@ -170,9 +177,14 @@ for typecode in acropole_typecodes:
         df_typecode.to_parquet(typecode_file, index=False)
 
     # remove outliers
-    X = np.array([df_typecode.thrust_ratio, df_typecode.fuel_flow]).T
+
+    df_typecode = df_typecode.assign(
+        engine_fuel_flow=lambda d: d.fuel_flow.round(2) / ac["engine"]["number"]
+    ).sample(10000, replace=True)
+
+    X = np.array([df_typecode.thrust_ratio, df_typecode.engine_fuel_flow]).T
     X_std = (X - X.mean(axis=0)) / X.std(axis=0)
-    clustering = cluster.DBSCAN(eps=0.1, min_samples=100).fit(X_std)
+    clustering = cluster.DBSCAN(eps=0.1, min_samples=100).fit(X)
     mask = clustering.labels_ == 0
 
     df0 = (
@@ -181,38 +193,42 @@ for typecode in acropole_typecodes:
         .assign(tas_=lambda d: d.tas // 20 * 20)
     )
 
+    # fmt: off
     df1 = df0.query("vertical_rate<=-1000")
     df2 = df0.query("-250<=vertical_rate<=250")
     df3 = df0.query("vertical_rate>=500 and altitude>15000")
     df4 = df0.query("vertical_rate>=1000 and altitude<10000 and tas<180")
     df5 = df0.query("vertical_rate>=1000 and altitude<10000 and tas>250")
+    # fmt: on
 
-    df_combine = pd.concat([df1, df2, df3, df4], ignore_index=True)
+    df_combine = pd.concat([df1, df2, df3, df4, df5], ignore_index=True)
 
     popt, pcov = curve_fit(
         func,
         df_combine.thrust_ratio,
-        df_combine.fuel_flow,
-        bounds=[(0, 0, 0), (df_combine.fuel_flow.max() * 1.2, np.inf, np.inf)],
+        df_combine.engine_fuel_flow,
+        bounds=[(0, 0, 0), (df_combine.engine_fuel_flow.max() * 1.2, np.inf, np.inf)],
     )
 
     if show_plot:
         fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 5), sharex=True, sharey=True)
 
-        x = np.linspace(0, 1, 100)
-        ax1.scatter(df0.thrust_ratio, df0.fuel_flow, alpha=0.02, s=5)
-        ax1.plot(x, func(x, *popt), "r-", label=f"fit: {popt}")
+        ratio = np.linspace(0, 1, 100)
+        total_ac_fuel = func(ratio, *popt) * ac["engine"]["number"]
+
+        ax1.scatter(df0.thrust_ratio, df0.fuel_flow, alpha=0.1, s=5)
+        ax1.plot(ratio, total_ac_fuel, "r-", label=f"fit: {popt}")
         ax1.legend()
         ax1.set_xlim(0, 0.7)
         ax1.set_xlabel("Thrust ratio")
         ax1.set_ylabel("Fuel flow")
 
-        ax2.scatter(df1.thrust_ratio, df1.fuel_flow, s=5, alpha=0.02, c="tab:green")
-        ax2.scatter(df2.thrust_ratio, df2.fuel_flow, s=5, alpha=0.02, c="tab:orange")
-        ax2.scatter(df3.thrust_ratio, df3.fuel_flow, s=5, alpha=0.02, c="tab:purple")
-        ax2.scatter(df4.thrust_ratio, df4.fuel_flow, s=5, alpha=0.02, c="tab:red")
-        ax2.scatter(df5.thrust_ratio, df5.fuel_flow, s=5, alpha=0.02, c="gray")
-        ax2.plot(x, func(x, *popt), "r-")
+        ax2.scatter(df1.thrust_ratio, df1.fuel_flow, s=5, alpha=0.1, c="tab:green")
+        ax2.scatter(df2.thrust_ratio, df2.fuel_flow, s=5, alpha=0.1, c="tab:orange")
+        ax2.scatter(df3.thrust_ratio, df3.fuel_flow, s=5, alpha=0.1, c="tab:purple")
+        ax2.scatter(df4.thrust_ratio, df4.fuel_flow, s=5, alpha=0.1, c="tab:red")
+        ax2.scatter(df5.thrust_ratio, df5.fuel_flow, s=5, alpha=0.1, c="gray")
+        ax2.plot(ratio, total_ac_fuel, "r-")
         ax2.set_xlim(0, 0.7)
         ax2.set_xlabel("Thrust ratio")
         ax2.set_ylabel("Fuel flow")
@@ -274,7 +290,7 @@ for i, row in fuel_models.iterrows():
 
     ff_norms.append(ff_norm)
 
-    plt.plot(ratio_samples, ff_norm, label=row["typecode"], alpha=0.2)
+    plt.plot(ratio_samples, ff_norm, label=row["typecode"], alpha=0.5)
 
 df = pd.DataFrame(
     np.array(ff_norms), index=fuel_models.typecode.to_list(), columns=ratio_samples
@@ -319,3 +335,5 @@ fuel_models = pd.concat(
 # %%
 
 fuel_models.to_csv("fuel_models.csv", index=False)
+
+# %%
