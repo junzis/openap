@@ -145,10 +145,19 @@ class WRAP(object):
         """Get initial crusie altitude."""
         return self._get_var("cr_h_init")
 
+    def cruise_max_alt(self):
+        return self._get_var("cr_h_max")
+
     def cruise_mach(self):
         """Get average crusie Mach number."""
         return self._get_var("cr_v_mach_mean")
+    
+    def cruise_max_mach(self):
+        return self._get_var("cr_v_mach_max")
 
+    def cruise_mean_vcas(self):
+        return self._get_var("cr_v_cas_mean")
+    
     def descent_range(self):
         """Get descent range."""
         return self._get_var("de_d_range")
