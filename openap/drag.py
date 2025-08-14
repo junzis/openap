@@ -1,7 +1,6 @@
 """OpenAP drag model."""
 
 import glob
-import importlib
 import os
 import warnings
 

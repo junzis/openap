@@ -1,11 +1,7 @@
 """ "OpenAP FuelFlow model."""
 
-import glob
 import importlib
 import os
-import pathlib
-
-import yaml
 
 import pandas as pd
 from openap import prop
