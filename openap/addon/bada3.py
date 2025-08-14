@@ -6,109 +6,259 @@ from typing import Optional
 from numpy import ndarray
 
 from .. import base
+from .. import prop
 from ..extra import ndarrayconvert
 
 
 # %%
+def bada3_aircraft(ac: str, bada_path: str):
+    """Update aircraft with BADA3 data.
+
+    Args:
+        ac (str): Aircraft identifier (e.g. "A320")
+        bada_path (str): Path to the BADA3 data folder.
+
+    Returns:
+        dict: Dictionary with aircraft performance data from aircraft yaml file
+            as well as from BADA3.
+    """
+
+    def deep_update(target: dict, updates: dict):
+        # recursively update values in target dictionary
+        for key, value in updates.items():
+            if (
+                key in target
+                and isinstance(target[key], dict)
+                and isinstance(value, dict)
+            ):
+                deep_update(target[key], value)
+            else:
+                target[key] = value
+
+    aircraft = prop.aircraft(ac)
+    deep_update(aircraft, load_bada3(ac, bada_path))
+    return aircraft
+
+
 def load_bada3(ac: str, bada_path: str):
-    file = Path(bada_path) / f"{ac.upper()}__.OPF"
+    """
+    Load BADA3 aircraft performance data by first resolving the synonym
+    and then parsing the associated .OPF file.
+
+    Args:
+        ac (str): Aircraft identifier (e.g. "A320").
+        bada_path (str): Path to the BADA3 data folder.
+
+    Raises:
+        FileNotFoundError: If the OPF file corresponding to the synonym
+            cannot be found.
+        ValueError: If the aircraft code is not found in the SYNONYM file.
+
+    Returns:
+        dict: Dictionary with full aircraft performance data including
+            aerodynamic coefficients, thrust/fuel parameters, and metadata.
+    """
+    synonym_data = read_synonym(ac, bada_path)
+    synonym = synonym_data["synonym"]
+    file = Path(bada_path) / f"{synonym}__.OPF"
 
     if not file.exists():
         raise FileNotFoundError(f"OPF file not found: {file}")
-    with open(file, "r") as f:
-        lines = f.readlines()
-    content = "".join(lines)
 
-    # Wing area
-    mS = re.search(r"Wing Area.*?CD \d+\s+([\d.E+-]+)", content, re.DOTALL)
-    if mS:
-        S = float(mS.group(1))
+    with file.open("r", encoding="utf-8") as f:
+        content = f.read()
 
-    # Engine type
-    engine_type = "JET"
+    opf_data = parse_opf_content(content)
+    return {
+        "typecode": ac,
+        **synonym_data,
+        **opf_data,
+    }
+
+
+def read_synonym(ac: str, bada_path: str, synonym_file: str = "SYNONYM.NEW"):
+    """
+    Parse the BADA3 SYNONYM.NEW file to find manufacturer, model and synonym
+    information for aircraft identifier "ac".
+
+    Args:
+        ac (str): Aircraft identifier (e.g. "A320")
+        bada_path (str): Path to BADA3 folder.
+        synonym_file (str, optional): Name of the SYNONYM file.
+            Defaults to "SYNONYM.NEW".
+
+    Raises:
+        FileNotFoundError: If the SYNONYM file is not found.
+        ValueError: If the aircraft code is not found in the file.
+
+    Returns:
+        dict: Dictionary with keys 'manufacturer', 'model', and 'synonym'.
+    """
+
+    file = Path(bada_path) / synonym_file
+
+    if not file.exists():
+        raise FileNotFoundError(f"SYNONYM file not found at: {file}")
+
+    pattern = re.compile(
+        r"^CD\s+[^\s]\s+(\S+)\s+"  # A/C code
+        r"(\S(?:.*?\S)?)\s{2,}"  # Manufacturer
+        r"(.+?)\s{2,}"  # Model
+        r"(\S+)\s+.*?/$"  # Synonym
+    )
+
+    with open(file, "r", encoding="utf-8") as f:
+        for line in f:
+            match = pattern.match(line)
+            if match:
+                code, manufacturer, model, synonym = match.groups()
+                if code.upper() == ac.upper():
+                    return {
+                        "aircraft": f"{manufacturer.strip()} {model.strip()}",
+                        "manufacturer": manufacturer.strip(),
+                        "model": model.strip(),
+                        "synonym": synonym.strip()[:4],
+                    }
+
+    raise ValueError(f"Aircraft code '{ac}' not found in SYNONYM file.")
+
+
+def parse_opf_content(content: str):
+    """
+    Parse the contents of a BADA3 .OPF file and extract aircraft performance
+    parameters.
+
+    Args:
+        content (str): Raw text content of the .OPF file.
+
+    Returns:
+        dict: Dictionary containing parsed aerodynamic and engine parameters,
+            including CD0/CD2 by phase, thrust coefficients, fuel flow
+            coefficients, wing area, engine type, and others.
+    """
+
+    def get_drag_coeff(phase):
+        # get drag coefficients
+        pattern = (
+            rf"CD\s+\d+\s+{phase}\s+\S+\s+[\d.E+-]+\s+" r"([\d.E+-]+)\s+([\d.E+-]+)"
+        )
+        m = re.search(pattern, content)
+        return (float(m.group(1)), float(m.group(2))) if m else (0.0, 0.0)
+
+    def get_floats(pattern, count, default=0.0):
+        # get a certain number of floats from a regex pattern
+        m = re.search(pattern, content, re.DOTALL)
+        return (
+            [float(m.group(i)) for i in range(1, count + 1)] if m else [default] * count
+        )
+
+    # actype
+    engine_type = "turbofan"
+    num_engines = None  # or default like 0
     m_actype = re.search(r"Actype[\s\S]*?^CD\s+.*$", content, re.MULTILINE)
     if m_actype:
         cd_line = m_actype.group(0)
+
+        # Engine type
         if re.search(r"Turboprop", cd_line, re.IGNORECASE):
-            engine_type = "TURBOPROP"
+            engine_type = "turboprop"
         elif re.search(r"Jet", cd_line, re.IGNORECASE):
-            engine_type = "JET"
+            engine_type = "turbofan"
         elif re.search(r"Piston", cd_line, re.IGNORECASE):
-            engine_type = "PISTON"
+            engine_type = "piston"
         elif re.search(r"Electric", cd_line, re.IGNORECASE):
-            engine_type = "ELECTRIC"
+            engine_type = "electric"
 
-    # Drag coefficients (CD0, CD2) different phases
-    def get_drag_coeff(phase):
-        m = re.search(
-            rf"CD \d+ {phase}\s+\S+\s+[\d.E+-]+\s+([\d.E+-]+)\s+([\d.E+-]+)", content
-        )
-        if m:
-            return float(m.group(1)), float(m.group(2))
-        return 0.0, 0.0
+        # Number of engines
+        m_engines = re.search(r"(\d+)\s+engines?", cd_line, re.IGNORECASE)
+        if m_engines:
+            num_engines = int(m_engines.group(1))
 
+    # aircraft mass
+    mass_vals = get_floats(
+        r"Mass \(t\).*?CD\s+([\d.E+-]+)\s+([\d.E+-]+)\s+([\d.E+-]+)"
+        r"\s+([\d.E+-]+)\s+[\d.E+-]+",
+        4,
+    )
+
+    # flight envelope
+    envelope_vals = get_floats(
+        r"Flight envelope.*?CD\s+([\d.E+-]+)\s+([\d.E+-]+)\s+([\d.E+-]+)"
+        r"\s+[\d.E+-]+\s+[\d.E+-]+",
+        3,
+    )
+
+    # wing area
+    wing_area = get_floats(r"Wing Area.*?CD \d+\s+([\d.E+-]+)", 1)[0]
+
+    # Drag coefficients
     cd0_cr, cd2_cr = get_drag_coeff("CR")
     cd0_ic, cd2_ic = get_drag_coeff("IC")
     cd0_to, cd2_to = get_drag_coeff("TO")
     cd0_ap, cd2_ap = get_drag_coeff("AP")
     cd0_ld, cd2_ld = get_drag_coeff("LD")
 
-    m_gear = re.search(r"CD \d+\s+DOWN\s+([\d.E+-]+)", content)
-    cd0_lgear = float(m_gear.group(1)) if m_gear else 0.0
+    # Landing gear
+    cd0_lgear = get_floats(r"CD \d+\s+DOWN\s+([\d.E+-]+)", 1)[0]
 
-    # Thrust coefficients (Max climb thrust)
-    m_thr = re.search(
-        r"Max climb thrust coefficients.*?CD\s+([\d.E+-]+)\s+([\d.E+-]+)\s+([\d.E+-]+)\s+([\d.E+-]+)\s+([\d.E+-]+)",
-        content,
-        re.DOTALL,
+    # Thrust coefficients
+    ct = get_floats(
+        r"Max climb thrust coefficients.*?CD\s+([\d.E+-]+)\s+([\d.E+-]+)"
+        r"\s+([\d.E+-]+)\s+([\d.E+-]+)\s+([\d.E+-]+)",
+        5,
     )
-    ct = [float(m_thr.group(i)) for i in range(1, 6)] if m_thr else [0] * 5
-    m_ctdes = re.search(
-        r"Desc\(low\).*?CD\s+([\d.E+-]+)\s+([\d.E+-]+)\s+([\d.E+-]+)\s+([\d.E+-]+)\s+([\d.E+-]+)",
-        content,
-        re.DOTALL,
+    ctdes = get_floats(
+        r"Desc\(low\).*?CD\s+([\d.E+-]+)\s+([\d.E+-]+)"
+        r"\s+([\d.E+-]+)\s+([\d.E+-]+)\s+([\d.E+-]+)",
+        5,
     )
-    ctdes = [float(m_ctdes.group(i)) for i in range(1, 6)] if m_ctdes else [0] * 5
 
     # Fuel coefficients
-    m_cf = re.search(
-        r"Thrust Specific Fuel Consumption Coefficients.*?CD\s+([\d.E+-]+)\s+([\d.E+-]+)",
-        content,
-        re.DOTALL,
+    cf = get_floats(
+        r"Thrust Specific Fuel Consumption Coefficients.*?CD\s+([\d.E+-]+)"
+        r"\s+([\d.E+-]+)",
+        2,
     )
-    cf = [float(m_cf.group(i)) for i in range(1, 3)] if m_cf else [0, 0]
-    m_cfdes = re.search(
-        r"Descent Fuel Flow Coefficients.*?CD\s+([\d.E+-]+)\s+([\d.E+-]+)",
-        content,
-        re.DOTALL,
+    cfdes = get_floats(
+        r"Descent Fuel Flow Coefficients.*?CD\s+([\d.E+-]+)\s+([\d.E+-]+)", 2
     )
-    cfdes = [float(m_cfdes.group(i)) for i in range(1, 3)] if m_cfdes else [0, 0]
-    m_cfcr = re.search(r"Cruise Corr.*?CD\s+([\d.E+-]+)", content, re.DOTALL)
-    cfcr = float(m_cfcr.group(1)) if m_cfcr else 1.0
+    cfcr = get_floats(r"Cruise Corr.*?CD\s+([\d.E+-]+)", 1, default=1.0)[0]
 
     # Altitude for hpdes (from Desc level)
-    m_hpdes = re.search(
-        r"Desc level.*?CD\s+[\d.E+-]+\s+[\d.E+-]+\s+([\d.E+-]+)", content, re.DOTALL
-    )
-    hpdes = float(m_hpdes.group(1)) if m_hpdes else 8000.0
+    hpdes = get_floats(
+        r"Desc level.*?CD\s+[\d.E+-]+\s+[\d.E+-]+\s+([\d.E+-]+)",
+        1,
+        default=8000.0,
+    )[0]
 
+    ground_vals = get_floats(
+        r"Ground.*?CD\s+([\d.E+-]+)\s+([\d.E+-]+)\s+([\d.E+-]+)"
+        r"\s+([\d.E+-]+)\s+[\d.E+-]+",
+        4,
+    )
+
+    # return as openap aircraft style dictionary
     return {
-        "engineType": engine_type,
-        "S": S,
-        "CD0": {
-            "CR": cd0_cr,
-            "IC": cd0_ic,
-            "TO": cd0_to,
-            "AP": cd0_ap,
-            "LD": cd0_ld,
+        "mtow": mass_vals[2] * 1e3,  # convert to kg
+        "mref": mass_vals[0] * 1e3,
+        "oew": mass_vals[1] * 1e3,
+        "mpl": mass_vals[3] * 1e3,
+        "vmo": envelope_vals[0],  # kt
+        "mmo": envelope_vals[1],
+        "ceiling": envelope_vals[2] * 0.3048,  # convert to m
+        "fuselage": {
+            "length": ground_vals[3],
         },
-        "CD2": {
-            "CR": cd2_cr,
-            "IC": cd2_ic,
-            "TO": cd2_to,
-            "AP": cd2_ap,
-            "LD": cd2_ld,
+        "wing": {
+            "area": wing_area,
+            "span": ground_vals[2],
         },
+        "engine": {
+            "type": engine_type,
+            "number": num_engines,
+        },
+        "CD0": {"CR": cd0_cr, "IC": cd0_ic, "TO": cd0_to, "AP": cd0_ap, "LD": cd0_ld},
+        "CD2": {"CR": cd2_cr, "IC": cd2_ic, "TO": cd2_to, "AP": cd2_ap, "LD": cd2_ld},
         "CD0_lgear": cd0_lgear,
         "Ct": ct,
         "CTdeshigh": ctdes[1],
@@ -155,11 +305,12 @@ class Drag(base.DragBase):
             configuration.
     """
 
-    def __init__(self, ac: str, bada_path: str, **kwargs):
+    def __init__(self, ac: str, bada_path: str, model=None, **kwargs):
         super().__init__(ac, **kwargs)
         self.ac = ac.upper()
-        model = load_bada3(ac, bada_path)
-        self.S = model["S"]
+        if not model:
+            model = load_bada3(ac, bada_path)
+        self.S = model["wing"]["area"]
         self.cd0_cr = model["CD0"]["CR"]
         self.cd2_cr = model["CD2"]["CR"]
         self.cd0_ap = model["CD0"]["AP"]
@@ -282,7 +433,7 @@ class Thrust(base.ThrustBase):
 
     Attributes:
         ac (str): aircraft ICAO identifer (e.g. A320)
-        engine_type (str): one of JET, TURBOPROP, PISTON or ELECTRIC
+        engine_type (str): one of turbofan, turboprop, piston or electric
         ct (list): list of thrust-related coefficients from BADA3
         hpdes (float): design geopotential pressure altitude [ft]
         ctdes* (float): (high, low, app, ld) thrust-related coefficients for
@@ -302,11 +453,12 @@ class Thrust(base.ThrustBase):
             Compute the thrust force during idle conditions.
     """
 
-    def __init__(self, ac: str, bada_path: str, **kwargs):
+    def __init__(self, ac: str, bada_path: str, model=None, **kwargs):
         super().__init__(ac, **kwargs)
         self.ac = ac.upper()
-        model = load_bada3(ac, bada_path)
-        self.engine_type = model["engineType"]
+        if not model:
+            model = load_bada3(ac, bada_path)
+        self.engine_type = model["engine"]["type"]
         self.ct = model["Ct"]
         self.ctdeshigh = model["CTdeshigh"]
         self.ctdeslow = model["CTdeslow"]
@@ -343,11 +495,11 @@ class Thrust(base.ThrustBase):
         """
 
         # calculate maximum climb thrust at ISA
-        if self.engine_type == "JET":
+        if self.engine_type == "turbofan":
             thr_isa = self.ct[0] * (1 - alt / self.ct[1] + self.ct[2] * alt**2)
-        elif self.engine_type == "TURBOPROP":
+        elif self.engine_type == "turboprop":
             thr_isa = self.ct[0] / tas * (1 - alt / self.ct[1]) + self.ct[2]
-        elif self.engine_type in ("PISTON", "ELECTRIC"):
+        elif self.engine_type in ("piston", "electric"):
             thr_isa = self.ct[0] * (1 - alt / self.ct[1]) + self.ct[2] / tas
         else:
             raise ValueError("Unknown engine type")
@@ -438,7 +590,7 @@ class FuelFlow(base.FuelFlowBase):
 
     Attributes:
         ac (str): aircraft ICAO identifier (e.g. A320)
-        engine_type (str): one of JET, TURBOPROP, PISTON or ELECTRIC
+        engine_type (str): one of turbofan, turboprop, piston or electric
         cf1 (float): 1st thrust specific fuel consumption coefficient
         cf2 (float): 2nd thrust specific fuel consumption coefficient
         cf3 (float): 1st descent fuel flow coefficient
@@ -460,14 +612,15 @@ class FuelFlow(base.FuelFlowBase):
             Compute the fuel flow [kg/s] in approach.
     """
 
-    def __init__(self, ac: str, bada_path: Optional[str] = None, **kwargs):
+    def __init__(self, ac: str, bada_path: Optional[str] = None, model=None, **kwargs):
         super().__init__(ac, **kwargs)
         self.ac = ac.upper()
-        self.thrust = Thrust(ac, bada_path)
-        self.drag = Drag(ac, bada_path)
+        if not model:
+            model = load_bada3(ac, bada_path)
+        self.thrust = Thrust(ac, bada_path, model=model)
+        self.drag = Drag(ac, bada_path, model=model)
         # load parameters from BADA3
-        model = load_bada3(ac, bada_path)
-        self.engine_type = model["engineType"]
+        self.engine_type = model["engine"]["type"]
         self.cf1 = model["Cf"][0]
         self.cf2 = model["Cf"][1]
         self.cf3 = model["CfDes"][0]
@@ -499,13 +652,13 @@ class FuelFlow(base.FuelFlowBase):
         )
 
         # calculate nominal fuel flow depending on engine_type
-        if self.engine_type == "JET":
+        if self.engine_type == "turbofan":
             eta = self.cf1 * (1 + tas / self.cf2) * 1e-3
             f_nom = eta * T
-        elif self.engine_type == "TURBOPROP":
+        elif self.engine_type == "turboprop":
             eta = self.cf1 * (1 - tas / self.cf2) * (tas / 1e3) * 1e-3
             f_nom = eta * T
-        elif self.engine_type in ("PISTON", "ELECTRIC"):
+        elif self.engine_type in ("piston", "electric"):
             f_nom = self.cf1
         else:
             raise ValueError("Unknown engine type.")
@@ -546,9 +699,9 @@ class FuelFlow(base.FuelFlowBase):
         Returns:
             float | ndarray: Idle fuel flow [kg/s]
         """
-        if self.engine_type in ("JET", "TURBOPROP"):
+        if self.engine_type in ("turbofan", "turboprop"):
             f_min = self.cf3 * (1 - alt / self.cf4)
-        elif self.engine_type in ("PISTON", "ELECTRIC"):
+        elif self.engine_type in ("piston", "electric"):
             f_min = self.cf3
         else:
             raise ValueError("Unknown engine type.")
@@ -569,7 +722,7 @@ class FuelFlow(base.FuelFlowBase):
         Returns:
             float | ndarray: Approach/landing fuel flow [kg/s]
         """
-        if self.engine_type not in ("JET", "TURBOPROP"):
+        if self.engine_type not in ("turbofan", "turboprop"):
             raise ValueError(
                 f"Engine type {self.engine_type} unknown or not applicable."
             )
