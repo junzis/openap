@@ -78,6 +78,7 @@ class FlightGenerator:
             **cas_const_cl (int): Constant CAS for climb (kt).
             **mach_const_cl (float): Constant Mach for climb (-).
             **alt_cr (int): Target cruise altitude (ft).
+            **airport_elevation: Airport elevation (ft).
             **random (bool): Generate trajectory with random parameters.
 
         """
@@ -114,6 +115,11 @@ class FlightGenerator:
                 / aero.ft,
             )
 
+            airport_elevation = kwargs.get(
+                "airport_elevation",
+                0
+            )
+
             vs_pre_constcas = self.rng.uniform(
                 self.wrap.climb_vs_pre_concas()["minimum"],
                 self.wrap.climb_vs_pre_concas()["maximum"],
@@ -142,6 +148,11 @@ class FlightGenerator:
             alt_cr = kwargs.get(
                 "alt_cr", self.wrap.cruise_alt()["default"] * 1000 / aero.ft
             )
+
+            airport_elevation = kwargs.get(
+                "airport_elevation",
+                0
+            ) * aero.ft
             vs_pre_constcas = self.wrap.climb_vs_pre_concas()["default"]
             vs_constcas = self.wrap.climb_vs_concas()["default"]
             vs_constmach = self.wrap.climb_vs_conmach()["default"]
@@ -159,7 +170,7 @@ class FlightGenerator:
         # intitial conditions
         t = 0
         tcr = 0
-        h = 0
+        h = airport_elevation
         s = 0
         v = 0
         vs = 0
@@ -176,7 +187,7 @@ class FlightGenerator:
                 v = v + a_tof * dt
                 vs = 0
                 seg = "TO"
-            elif h < 1500 * aero.ft:
+            elif h < airport_elevation + 1500 * aero.ft:
                 v = v + a * dt
                 if aero.tas2cas(v, h) >= vcas_const:
                     v = aero.cas2tas(vcas_const, h)
@@ -237,6 +248,7 @@ class FlightGenerator:
             **cas_const_de (int): Constant CAS for climb (kt).
             **mach_const_de (float): Constant Mach for climb (-).
             **alt_cr (int): top of descent altitude (ft).
+            **arr_airport_elevation (float): airport elevation(ft).
             **random (bool): Generate trajectory with random parameters, default to False.
             **withcr (bool): Include a short cruise segment of 60 seconds, default to True.
 
@@ -276,6 +288,11 @@ class FlightGenerator:
                 / aero.kts,
             )
 
+            arr_airport_elevation = kwargs.get(
+                "arr_airport_elevation",
+                0
+            ) * aero.ft
+
             vs_constmach = self.rng.uniform(
                 self.wrap.descent_vs_conmach()["minimum"],
                 self.wrap.descent_vs_conmach()["maximum"],
@@ -301,6 +318,12 @@ class FlightGenerator:
             alt_cr = kwargs.get(
                 "alt_cr", self.wrap.cruise_alt()["default"] * 1000 / aero.ft
             )
+            
+            arr_airport_elevation = kwargs.get(
+                "arr_airport_elevation",
+                0
+            ) * aero.ft
+            
             vs_constmach = self.wrap.descent_vs_conmach()["default"]
             vs_constcas = self.wrap.descent_vs_concas()["default"]
             vs_post_constcas = self.wrap.descent_vs_post_concas()["default"]
@@ -342,18 +365,18 @@ class FlightGenerator:
                 v = aero.cas2tas(vcas_const, h)
                 vs = vs_constcas
                 seg = "CAS"
-            elif h > 1000 * aero.ft:
+            elif h > arr_airport_elevation + 1000 * aero.ft:
                 v = v + a * dt
                 if aero.tas2cas(v, h) < v_app:
                     v = aero.cas2tas(v_app, h)
                 vs = vs_post_constcas
                 seg = "POST-CAS"
-            elif h > 0:
+            elif h > arr_airport_elevation:
                 v = v_app
                 vs = vs_fa
                 seg = "FA"
             else:
-                h = 0
+                h = arr_airport_elevation
                 vs = 0
                 v = v + a_lnd * dt
                 seg = "LD"
@@ -491,6 +514,8 @@ class FlightGenerator:
             **range_cr (int): Cruise range (km).
             **alt_cr (int): Target cruise altitude (ft).
             **mach_cr (float): Cruise Mach number (-).
+            **airport_elevation (float): Airport elevation (ft).
+            **arr_airport_elevation(float): Arrival airport elevation(ft).
             **random (bool): Generate trajectory with random parameters.
 
         """
