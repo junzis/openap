@@ -3,12 +3,13 @@
 import glob
 import os
 import warnings
-
-import yaml
+from typing import Optional
 
 import pandas as pd
+import yaml
 
 from . import prop
+from .backends import BackendType
 from .base import DragBase
 from .extra import ndarrayconvert
 
@@ -18,15 +19,21 @@ warnings.simplefilter("once", UserWarning)
 class Drag(DragBase):
     """Compute the drag of an aircraft."""
 
-    def __init__(self, ac, wave_drag=False, **kwargs):
+    def __init__(
+        self,
+        ac: str,
+        wave_drag: bool = False,
+        backend: Optional[BackendType] = None,
+        **kwargs,
+    ):
         """Initialize Drag object.
 
         Args:
-            ac (string): ICAO aircraft type (for example: A320).
-            wave_drag (bool): enable Wave drag model (experimental).
-
+            ac: ICAO aircraft type (for example: A320).
+            wave_drag: Enable wave drag model (experimental).
+            backend: Math backend to use. Defaults to NumpyBackend.
         """
-        super().__init__(ac, **kwargs)
+        super().__init__(ac, backend=backend, **kwargs)
 
         self.use_synonym = kwargs.get("use_synonym", False)
 
@@ -42,9 +49,8 @@ class Drag(DragBase):
         """Find and construct the drag polar model.
 
         Returns:
-            dict: drag polar model parameters.
+            dict: Drag polar model parameters.
         """
-
         # Load drag polar data
         curr_path = os.path.dirname(os.path.realpath(__file__))
         dir_dragpolar = os.path.join(curr_path, "data/dragpolar/")
@@ -67,11 +73,11 @@ class Drag(DragBase):
                 )
             elif self.use_synonym:
                 raise ValueError(
-                    f"Drag polar for {self.ac} not avaiable, and no synonym found."
+                    f"Drag polar for {self.ac} not available, and no synonym found."
                 )
             else:
                 raise ValueError(
-                    f"Drag polar for {self.ac} not avaiable."
+                    f"Drag polar for {self.ac} not available. "
                     "Try to set `use_synonym=True` to initialize the object."
                 )
 
@@ -82,21 +88,49 @@ class Drag(DragBase):
 
     @ndarrayconvert
     def _cl(self, mass, tas, alt, vs=0, dT=0):
+        """Compute lift coefficient and dynamic pressure.
+
+        Args:
+            mass: Aircraft mass (kg).
+            tas: True airspeed (kt).
+            alt: Altitude (ft).
+            vs: Vertical speed (ft/min). Defaults to 0.
+            dT: Temperature deviation (K). Defaults to 0.
+
+        Returns:
+            Tuple of (lift coefficient, dynamic pressure * area).
+        """
+        b = self.backend
+
         v = tas * self.aero.kts
         h = alt * self.aero.ft
         vs = vs * self.aero.fpm
-        gamma = self.sci.arctan2(vs, v)
+        gamma = b.arctan2(vs, v)
         S = self.aircraft["wing"]["area"]
         rho = self.aero.density(h, dT=dT)
         qS = 0.5 * rho * v**2 * S
-        L = mass * self.aero.g0 * self.sci.cos(gamma)
-        qS = self.sci.maximum(qS, 1e-3)  # avoid zero division
+        L = mass * self.aero.g0 * b.cos(gamma)
+        qS = b.maximum(qS, 1e-3)  # avoid zero division
         cl = L / qS
 
         return cl, qS
 
     @ndarrayconvert
     def _calc_drag(self, mass, tas, alt, cd0, k, vs, dT=0):
+        """Compute drag from drag polar coefficients.
+
+        Args:
+            mass: Aircraft mass (kg).
+            tas: True airspeed (kt).
+            alt: Altitude (ft).
+            cd0: Zero-lift drag coefficient.
+            k: Induced drag factor.
+            vs: Vertical speed (ft/min).
+            dT: Temperature deviation (K). Defaults to 0.
+
+        Returns:
+            Total drag (N).
+        """
         cl, qS = self._cl(mass, tas, alt, vs, dT=dT)
         cd = cd0 + k * cl**2
         D = cd * qS
@@ -107,15 +141,16 @@ class Drag(DragBase):
         """Compute drag at clean configuration (considering compressibility).
 
         Args:
-            mass (int or ndarray): Mass of the aircraft (unit: kg).
-            tas (int or ndarray): True airspeed (unit: kt).
-            alt (int or ndarray): Altitude (unit: ft).
-            vs (float or ndarray): Vertical rate (unit: feet/min). Defaults to 0.
-            dT (float or ndarray): Temperature shift (unit: K or degC),default = 0
-        Returns:
-            int: Total drag (unit: N).
+            mass: Mass of the aircraft (kg).
+            tas: True airspeed (kt).
+            alt: Altitude (ft).
+            vs: Vertical rate (ft/min). Defaults to 0.
+            dT: Temperature shift (K or degC). Defaults to 0.
 
+        Returns:
+            Total drag (N).
         """
+        b = self.backend
 
         cd0 = self.polar["clean"]["cd0"]
         k = self.polar["clean"]["k"]
@@ -124,14 +159,14 @@ class Drag(DragBase):
             mach = self.aero.tas2mach(tas * self.aero.kts, alt * self.aero.ft, dT=dT)
             cl, qS = self._cl(mass, tas, alt, dT=dT)
 
-            sweep = self.aircraft["wing"]["sweep"] * self.sci.pi / 180
+            sweep = self.aircraft["wing"]["sweep"] * b.pi / 180
             tc = self.aircraft["wing"]["t/c"]
 
             # Default thickness to chord ratio, based on Obert (2009)
             if tc is None:
                 tc = 0.12
 
-            cos_sweep = self.sci.cos(sweep)
+            cos_sweep = b.cos(sweep)
 
             kappa = 0.95  # assume supercritical airfoils
 
@@ -141,7 +176,7 @@ class Drag(DragBase):
             )
 
             # Equation 15 in Gur et al. (2010)
-            dmach = self.sci.maximum(mach - mach_crit, 0.0)
+            dmach = b.maximum(mach - mach_crit, 0.0)
             dCdw = 20 * dmach**4
 
         else:
@@ -154,21 +189,22 @@ class Drag(DragBase):
 
     @ndarrayconvert
     def nonclean(self, mass, tas, alt, flap_angle, vs=0, dT=0, landing_gear=False):
-        """Compute drag at at non-clean configuration.
+        """Compute drag at non-clean configuration.
 
         Args:
-            mass (int or ndarray): Mass of the aircraft (unit: kg).
-            tas (int or ndarray): True airspeed (unit: kt).
-            alt (int or ndarray): Altitude (unit: ft).
-            flap_angle (int or ndarray): flap deflection angle (unit: degree).
-            vs (float or ndarray): Vertical rate (unit: feet/min). Defaults to 0.
-            dT (float or ndarray): Temperature shift (unit: K or degC),default = 0.
-            landing_gear (bool): Is landing gear extended? Defaults to False.
+            mass: Mass of the aircraft (kg).
+            tas: True airspeed (kt).
+            alt: Altitude (ft).
+            flap_angle: Flap deflection angle (degree).
+            vs: Vertical rate (ft/min). Defaults to 0.
+            dT: Temperature shift (K or degC). Defaults to 0.
+            landing_gear: Is landing gear extended? Defaults to False.
 
         Returns:
-            int or ndarray: Total drag (unit: N).
-
+            Total drag (N).
         """
+        b = self.backend
+
         cd0 = self.polar["clean"]["cd0"]
         k = self.polar["clean"]["k"]
 
@@ -179,10 +215,7 @@ class Drag(DragBase):
 
         # Equation 3.45-3.46 in McCormick (1994), page 109.
         delta_cd_flap = (
-            lambda_f
-            * (cfc) ** 1.38
-            * (SfS)
-            * self.sci.sin(flap_angle * self.sci.pi / 180) ** 2
+            lambda_f * (cfc) ** 1.38 * (SfS) * b.sin(flap_angle * b.pi / 180) ** 2
         )
 
         if landing_gear:
@@ -210,7 +243,7 @@ class Drag(DragBase):
             delta_e_flap = 0.0026 * flap_angle
 
         ar = self.aircraft["wing"]["span"] ** 2 / self.aircraft["wing"]["area"]
-        k_total = 1 / (1 / k + self.sci.pi * ar * delta_e_flap)
+        k_total = 1 / (1 / k + b.pi * ar * delta_e_flap)
 
         D = self._calc_drag(mass, tas, alt, cd0_total, k_total, vs, dT=dT)
         return D

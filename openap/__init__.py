@@ -1,3 +1,5 @@
+from .aero import Aero
+from .backends import CasadiBackend, JaxBackend, NumpyBackend, get_backend
 from .drag import Drag
 from .emission import Emission
 from .extra import aero, filters, nav, statistics
@@ -6,3 +8,22 @@ from .gen import FlightGenerator
 from .kinematic import WRAP
 from .phase import FlightPhase
 from .thrust import Thrust
+
+__all__ = [
+    "Aero",
+    "Drag",
+    "Emission",
+    "FuelFlow",
+    "FlightGenerator",
+    "FlightPhase",
+    "Thrust",
+    "WRAP",
+    "NumpyBackend",
+    "CasadiBackend",
+    "JaxBackend",
+    "get_backend",
+    "aero",
+    "filters",
+    "nav",
+    "statistics",
+]

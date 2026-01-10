@@ -1,44 +1,51 @@
-"""OpenAP FuelFlow model."""
+"""OpenAP Emission model."""
 
-import importlib
+from typing import Optional
 
 from openap import prop
+from openap.backends import BackendType
 from openap.extra import ndarrayconvert
 
+from .base import EmissionBase
 
-class Emission(object):
-    """Emission model based on ICAO emmision databank."""
 
-    def __init__(self, ac, eng=None, **kwargs):
+class Emission(EmissionBase):
+    """Emission model based on ICAO emission databank."""
+
+    def __init__(
+        self,
+        ac: str,
+        eng: Optional[str] = None,
+        backend: Optional[BackendType] = None,
+        **kwargs,
+    ):
         """Initialize Emission object.
 
         Args:
-            ac (string): ICAO aircraft type (for example: A320).
-            eng (string): Engine type (for example: CFM56-5A3).
+            ac: ICAO aircraft type (for example: A320).
+            eng: Engine type (for example: CFM56-5A3).
                 Leave empty to use the default engine specified
                 by in the aircraft database.
-
+            backend: Math backend to use. Defaults to NumpyBackend.
         """
-        if not hasattr(self, "np"):
-            self.sci = importlib.import_module("numpy")
+        super().__init__(ac, eng, backend=backend, **kwargs)
 
-        if not hasattr(self, "aero"):
-            self.aero = importlib.import_module("openap").aero
-
-        self.ac = prop.aircraft(ac, **kwargs)
-        self.n_eng = self.ac["engine"]["number"]
+        self.aircraft = prop.aircraft(ac, **kwargs)
+        self.n_eng = self.aircraft["engine"]["number"]
 
         if eng is None:
-            eng = self.ac["engine"]["default"]
+            eng = self.aircraft["engine"]["default"]
 
         self.engine = prop.engine(eng)
 
     def _fl2sl(self, ffac, tas, alt, dT=0):
-        """Convert to sea-level equivalent"""
+        """Convert to sea-level equivalent."""
+        b = self.backend
+
         M = self.aero.tas2mach(tas * self.aero.kts, alt * self.aero.ft, dT=dT)
-        beta = self.sci.exp(0.2 * (M**2))
+        beta = b.exp(0.2 * (M**2))
         theta = (self.aero.temperature(alt * self.aero.ft, dT=dT) / 288.15) / beta
-        delta = (1 - 0.0019812 * alt / 288.15) ** 5.255876 / self.sci.power(beta, 3.5)
+        delta = (1 - 0.0019812 * alt / 288.15) ** 5.255876 / b.power(beta, 3.5)
         ratio = (theta**3.3) / (delta**1.02)
         # TODO: Where does this equation come from?
         ff_sl = (ffac / self.n_eng) * theta**3.8 / delta * beta
@@ -114,9 +121,11 @@ class Emission(object):
             float: NOx emission from all engines (unit: g/s).
 
         """
+        b = self.backend
+
         ff_sl, ratio = self._fl2sl(ffac, tas, alt, dT=dT)
 
-        nox_sl = self.sci.interp(
+        nox_sl = b.interp(
             ff_sl,
             [
                 self.engine["ff_idl"],
@@ -133,12 +142,10 @@ class Emission(object):
         )
 
         # convert back to actual flight level
-        omega = 10 ** (-3) * self.sci.exp(-0.0001426 * (alt - 12900))
+        omega = 10 ** (-3) * b.exp(-0.0001426 * (alt - 12900))
 
         # TODO: source
-        nox_fl = (
-            nox_sl * self.sci.sqrt(1 / ratio) * self.sci.exp(-19 * (omega - 0.00634))
-        )
+        nox_fl = nox_sl * b.sqrt(1 / ratio) * b.exp(-19 * (omega - 0.00634))
 
         # convert g/(kg fuel) to g/s for all engines
         nox_rate = nox_fl * ffac
@@ -157,9 +164,11 @@ class Emission(object):
             float: CO emission from all engines (unit: g/s).
 
         """
+        b = self.backend
+
         ff_sl, ratio = self._fl2sl(ffac, tas, alt, dT=dT)
 
-        co_sl = self.sci.interp(
+        co_sl = b.interp(
             ff_sl,
             [
                 self.engine["ff_idl"],
@@ -191,15 +200,17 @@ class Emission(object):
             ffac (float or ndarray): Fuel flow for all engines (unit: kg/s).
             tas (float or ndarray): Speed (unit: kt).
             alt (int or ndarray): Aircraft altitude (unit: ft).
-            dT (float or ndarray): Temperature shift (unit: K or degC),default = 0
+            dT (float or ndarray): Temperature shift (unit: K or degC), default = 0
 
         Returns:
             float: HC emission from all engines (unit: g/s).
 
         """
+        b = self.backend
+
         ff_sl, ratio = self._fl2sl(ffac, tas, alt, dT=dT)
 
-        hc_sl = self.sci.interp(
+        hc_sl = b.interp(
             ff_sl,
             [
                 self.engine["ff_idl"],

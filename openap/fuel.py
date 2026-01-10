@@ -1,10 +1,13 @@
-""" "OpenAP FuelFlow model."""
+"""OpenAP FuelFlow model."""
 
 import importlib
 import os
+from typing import Optional
 
 import pandas as pd
+
 from openap import prop
+from openap.backends import BackendType
 from openap.extra import ndarrayconvert
 from openap.extra.aero import fpm, kts
 
@@ -14,17 +17,23 @@ from .base import FuelFlowBase
 class FuelFlow(FuelFlowBase):
     """Fuel flow model based on ICAO emission databank."""
 
-    def __init__(self, ac, eng=None, **kwargs):
+    def __init__(
+        self,
+        ac: str,
+        eng: Optional[str] = None,
+        backend: Optional[BackendType] = None,
+        **kwargs,
+    ):
         """Initialize FuelFlow object.
 
         Args:
-            ac (string): ICAO aircraft type (for example: A320).
-            eng (string): Engine type (for example: CFM56-5A3).
+            ac: ICAO aircraft type (for example: A320).
+            eng: Engine type (for example: CFM56-5A3).
                 Leave empty to use the default engine specified
                 by in the aircraft database.
-
+            backend: Math backend to use. Defaults to NumpyBackend.
         """
-        super().__init__(ac, eng, **kwargs)
+        super().__init__(ac, eng, backend=backend, **kwargs)
 
         if not hasattr(self, "Thrust"):
             self.Thrust = importlib.import_module("openap.thrust").Thrust
@@ -47,8 +56,9 @@ class FuelFlow(FuelFlowBase):
 
         self.engine = prop.engine(eng)
 
-        self.thrust = self.Thrust(ac, eng, **kwargs)
-        self.drag = self.Drag(ac, **kwargs)
+        # Pass backend to Thrust and Drag
+        self.thrust = self.Thrust(ac, eng, backend=self.backend, **kwargs)
+        self.drag = self.Drag(ac, backend=self.backend, **kwargs)
         self.wrap = self.WRAP(ac, **kwargs)
 
         self.func_fuel = self._load_fuel_model()
@@ -78,8 +88,9 @@ class FuelFlow(FuelFlowBase):
             ref_engine = prop.engine(params["engine_type"])
             scale = self.engine["ff_to"] / ref_engine["ff_to"]
 
+        b = self.backend
         return lambda x: scale * (
-            c1 - self.sci.exp(-c2 * (x * self.sci.exp(c3 * x) - self.sci.log(c1) / c2))
+            c1 - b.exp(-c2 * (x * b.exp(c3 * x) - b.log(c1) / c2))
         )
 
     @ndarrayconvert
@@ -94,6 +105,8 @@ class FuelFlow(FuelFlowBase):
             float: Fuel flow (unit: kg/s).
 
         """
+        b = self.backend
+
         max_eng_thrust = self.engine["max_thrust"]
         n_eng = self.aircraft["engine"]["number"]
 
@@ -107,10 +120,10 @@ class FuelFlow(FuelFlowBase):
         # limit the lowest/highest ratio to 0.03/1 without creating discontinuity
         ratio = (
             (
-                self.sci.log(1 + self.sci.exp(50 * (ratio - 0.03)))
-                - self.sci.log(1 + self.sci.exp(45 * (ratio - 1.2)))
+                b.log(1 + b.exp(50 * (ratio - 0.03)))
+                - b.log(1 + b.exp(45 * (ratio - 1.2)))
             )
-            / (self.sci.log(1 + self.sci.exp(50)))
+            / (b.log(1 + b.exp(50)))
         ) + 0.03
 
         fuelflow = self.func_fuel(ratio) * n_eng
@@ -159,11 +172,13 @@ class FuelFlow(FuelFlowBase):
             float: Fuel flow (unit: kg/s).
 
         """
+        b = self.backend
+
         D = self.drag.clean(mass=mass, tas=tas, alt=alt, vs=vs, dT=dT)
 
-        gamma = self.sci.arctan2(vs * fpm, tas * kts)
+        gamma = b.arctan2(vs * fpm, tas * kts)
 
-        T = D + mass * 9.81 * self.sci.sin(gamma) + mass * acc
+        T = D + mass * 9.81 * b.sin(gamma) + mass * acc
 
         fuelflow = self.at_thrust(T)
 
@@ -190,7 +205,7 @@ class FuelFlow(FuelFlowBase):
         ]
         plt.scatter(x, y, color="k")
 
-        xx = self.sci.linspace(0, 1, 50)
+        xx = self.backend.linspace(0, 1, 50)
         yy = self.func_fuel(xx)
         plt.plot(xx, yy, "--", color="gray")
 

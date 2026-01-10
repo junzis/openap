@@ -8,7 +8,10 @@ Models for Modern Two-Shaft Turbofan Engines
 - C. Svoboda, Turbofan engine database as a preliminary design (cruise thrust)
 """
 
+from typing import Optional
+
 from openap import prop
+from openap.backends import BackendType
 from openap.extra import ndarrayconvert
 
 from .base import ThrustBase
@@ -17,15 +20,21 @@ from .base import ThrustBase
 class Thrust(ThrustBase):
     """Simplified two-shaft turbofan model."""
 
-    def __init__(self, ac, eng=None, **kwargs):
+    def __init__(
+        self,
+        ac: str,
+        eng: Optional[str] = None,
+        backend: Optional[BackendType] = None,
+        **kwargs,
+    ):
         """Initialize Thrust object.
 
         Args:
-            ac (string): ICAO aircraft type (for example: A320).
-            eng (string): Engine type (for example: CFM56-5A3).
-
+            ac: ICAO aircraft type (for example: A320).
+            eng: Engine type (for example: CFM56-5A3).
+            backend: Math backend to use. Defaults to NumpyBackend.
         """
-        super().__init__(ac, eng, **kwargs)
+        super().__init__(ac, eng, backend=backend, **kwargs)
 
         aircraft = prop.aircraft(ac, **kwargs)
         force_engine = kwargs.get("force_engine", False)
@@ -63,35 +72,45 @@ class Thrust(ThrustBase):
             self.eng_cruise_thrust = 0.2 * self.eng_max_thrust + 890
 
     def _dfunc(self, mratio):
-        """
-        Linear fit to the data from Table 2 in Bartel and Young (2008).
+        """Compute parameter 'd' from Equation 15 in Bartel and Young (2008).
+
+        Linear fit to the data from Table 2.
 
         Args:
-            mratio (float or ndarray): Ratio of mach number to reference mach
-                number
+            mratio: Ratio of mach number to reference mach number.
 
         Returns:
-            float or ndarray: parameter 'd' in Equation 15 from Bartel
-                and Young (2008)
+            Parameter 'd'.
         """
         d = -0.4204 * mratio + 1.0824
         return d
 
     def _nfunc(self, roc):
-        """
-        Linear fit to data from Table 3 in Bartel and Young (2008),
-        assuming the following climb rates:
+        """Compute parameter 'n' from Table 3 in Bartel and Young (2008).
 
-        Fast climb : 4000 ft / min
-        Moderate climb : 2500 ft / min
-        Slow climb : 1000 ft / min
+        Linear fit assuming climb rates:
+        - Fast climb: 4000 ft/min
+        - Moderate climb: 2500 ft/min
+        - Slow climb: 1000 ft/min
+
+        Args:
+            roc: Rate of climb (ft/min).
+
+        Returns:
+            Parameter 'n'.
         """
         n = 2.667e-05 * roc + 0.8633
         return n
 
     def _mfunc(self, vratio, roc):
-        """
-        Based on data from Table 4 in Bartel and Young (2008).
+        """Compute parameter 'm' from Table 4 in Bartel and Young (2008).
+
+        Args:
+            vratio: Ratio of CAS to reference CAS.
+            roc: Rate of climb (ft/min).
+
+        Returns:
+            Parameter 'm'.
         """
         m = -1.2043e-1 * vratio - 8.8889e-9 * roc**2 + 2.4444e-5 * roc + 4.7379e-1
         return m
@@ -101,13 +120,15 @@ class Thrust(ThrustBase):
         """Calculate thrust at take-off condition.
 
         Args:
-            tas (float or ndarray): True airspeed (kt).
-            alt (float or ndarray): Altitude of the runway (ft). Defaults to 0.
-            dT (float or ndarray): Temperature shift (unit: K or degC), default = 0
-        Returns:
-            float or ndarray: Total thrust (unit: N).
+            tas: True airspeed (kt).
+            alt: Altitude of the runway (ft). Defaults to 0.
+            dT: Temperature shift (K or degC). Defaults to 0.
 
+        Returns:
+            Total thrust (N).
         """
+        b = self.backend
+
         # Flight mach number
         mach = self.aero.tas2mach(tas * self.aero.kts, 0, dT=dT)
 
@@ -131,48 +152,46 @@ class Thrust(ThrustBase):
         # Equation 11 in Bartel and Young (2008)
         ratio = (
             A
-            - 0.377
-            * (1 + eng_bpr)
-            / self.sci.sqrt((1 + 0.82 * eng_bpr) * G0)
-            * Z
-            * mach
-            + (0.23 + 0.19 * self.sci.sqrt(eng_bpr)) * X * mach**2
+            - 0.377 * (1 + eng_bpr) / b.sqrt((1 + 0.82 * eng_bpr) * G0) * Z * mach
+            + (0.23 + 0.19 * b.sqrt(eng_bpr)) * X * mach**2
         )
 
         F = ratio * self.eng_max_thrust * self.eng_number
         return F
 
     @ndarrayconvert
-    def cruise(self, tas, alt, dT = 0):
-        """Calculate thrust at the cruise.
+    def cruise(self, tas, alt, dT=0):
+        """Calculate thrust at cruise.
 
         Args:
-            tas (float or ndarray): True airspeed (kt).
-            alt (float or ndarray): Altitude (ft).
-            dT (float or ndarray): Temperature shift (unit: K or degC), default = 0
-        Returns:
-            float or ndarray: Total thrust (unit: N).
+            tas: True airspeed (kt).
+            alt: Altitude (ft).
+            dT: Temperature shift (K or degC). Defaults to 0.
 
+        Returns:
+            Total thrust (N).
         """
         return self.climb(tas, alt, roc=0, dT=dT)
 
     @ndarrayconvert
     def climb(self, tas, alt, roc, dT=0):
-        """
-        Calculate thrust during the climb.
+        """Calculate thrust during climb.
 
         Args:
-            tas (float or ndarray): True airspeed (kt).
-            alt (float or ndarray): Altitude (ft)
-            roc (float or ndarray): Vertical rate (ft/min).
-            dT (float or ndarray): Temperature shift (unit: K or degC), default = 0
+            tas: True airspeed (kt).
+            alt: Altitude (ft).
+            roc: Vertical rate (ft/min).
+            dT: Temperature shift (K or degC). Defaults to 0.
+
         Returns:
-            float or ndarray: Total thrust (unit: N).
+            Total thrust (N).
         """
-        roc = self.sci.abs(roc)
+        b = self.backend
+
+        roc = b.abs(roc)
 
         h = alt * self.aero.ft
-        tas = self.sci.maximum(10, tas)
+        tas = b.maximum(10, tas)
 
         mach = self.aero.tas2mach(tas * self.aero.kts, h, dT=dT)
         vcas = self.aero.tas2cas(tas * self.aero.kts, h, dT=dT)
@@ -184,16 +203,18 @@ class Thrust(ThrustBase):
 
         # approximate thrust at top of climb
         Fcr = self.eng_cruise_thrust * self.eng_number
-        vcas_ref = self.aero.mach2cas(self.cruise_mach, self.cruise_alt * self.aero.ft, dT=dT)
+        vcas_ref = self.aero.mach2cas(
+            self.cruise_mach, self.cruise_alt * self.aero.ft, dT=dT
+        )
 
         # segment 3: alt > 30000:
         d = self._dfunc(mach / self.cruise_mach)
 
         # Equation 16 in Bartel and Young (2008)
-        b = (mach / self.cruise_mach) ** (-0.11)
+        bcoef = (mach / self.cruise_mach) ** (-0.11)
 
         # Equation 15 in Bartel and Young (2008)
-        ratio_seg3 = d * self.sci.log(P / Pcr) + b
+        ratio_seg3 = d * b.log(P / Pcr) + bcoef
 
         # segment 2: 10000 < alt <= 30000:
         # Equation 18 in Bartel and Young (2008)
@@ -211,27 +232,26 @@ class Thrust(ThrustBase):
         # Equation 19 in Bartel and Young (2008)
         ratio_seg1 = m * (P / Pcr) + (F10 / Fcr - m * (P10 / Pcr))
 
-        ratio = self.sci.where(
-            alt > 30000, ratio_seg3, self.sci.where(alt > 10000, ratio_seg2, ratio_seg1)
+        ratio = b.where(
+            alt > 30000, ratio_seg3, b.where(alt > 10000, ratio_seg2, ratio_seg1)
         )
 
         F = ratio * Fcr
         return F
 
     def descent_idle(self, tas, alt, dT=0):
-        """Idle thrust during the descent.
+        """Calculate idle thrust during descent.
 
         Note: The idle thrust at the descent is taken as 7% of the maximum
-        available thrust. This is an approximation and most likely differ
-        from the actual idle thrust.
+        available thrust. This is an approximation.
 
         Args:
-            tas (float or ndarray): True airspeed (kt).
-            alt (float or ndarray): Altitude (ft)
-            dT (float or ndarray): Temperature shift (unit: K or degC), default = 0
-        Returns:
-            float or ndarray: Total thrust (unit: N).
+            tas: True airspeed (kt).
+            alt: Altitude (ft).
+            dT: Temperature shift (K or degC). Defaults to 0.
 
+        Returns:
+            Total thrust (N).
         """
         F = 0.07 * self.takeoff(tas, alt, dT=dT)
         return F

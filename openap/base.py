@@ -1,24 +1,28 @@
-import importlib
+"""Base classes for OpenAP performance models.
 
+These base classes provide the foundation for thrust, drag, and fuel flow
+models with configurable backends (NumPy, CasADi, JAX).
+"""
+
+from typing import Optional
+
+from openap.aero import Aero
+from openap.backends import BackendType, NumpyBackend, default_backend
 from openap.extra import ndarrayconvert
 
 
-class DragBase(object):
+class DragBase:
     """Base class for drag models."""
 
-    def __init__(self, ac, **kwargs):
-        """Initialize BaseDrag object.
+    def __init__(self, ac: str, backend: Optional[BackendType] = None, **kwargs):
+        """Initialize DragBase object.
 
         Args:
-            ac (string): ICAO aircraft type (for example: A320).
-
+            ac: ICAO aircraft type (for example: A320).
+            backend: Math backend to use. Defaults to NumpyBackend.
         """
-        if not hasattr(self, "sci"):
-            self.sci = importlib.import_module("numpy")
-
-        if not hasattr(self, "aero"):
-            self.aero = importlib.import_module("openap").aero
-
+        self.backend = backend or default_backend()
+        self.aero = Aero(backend=self.backend)
         self.ac = ac.upper()
 
     def clean(self, mass, tas, alt, vs):
@@ -28,23 +32,21 @@ class DragBase(object):
         raise NotImplementedError
 
 
-class ThrustBase(object):
+class ThrustBase:
     """Base class for thrust models."""
 
-    def __init__(self, ac, eng=None, **kwargs):
+    def __init__(
+        self, ac: str, eng: Optional[str] = None, backend: Optional[BackendType] = None, **kwargs
+    ):
         """Initialize ThrustBase object.
 
         Args:
-            ac (string): ICAO aircraft type (for example: A320).
-            eng (string): Engine type (for example: CFM56-5A3).
-
+            ac: ICAO aircraft type (for example: A320).
+            eng: Engine type (for example: CFM56-5A3).
+            backend: Math backend to use. Defaults to NumpyBackend.
         """
-        if not hasattr(self, "sci"):
-            self.sci = importlib.import_module("numpy")
-
-        if not hasattr(self, "aero"):
-            self.aero = importlib.import_module("openap").aero
-
+        self.backend = backend or default_backend()
+        self.aero = Aero(backend=self.backend)
         self.ac = ac.upper()
 
     def takeoff(self, tas, alt):
@@ -60,25 +62,23 @@ class ThrustBase(object):
         raise NotImplementedError
 
 
-class FuelFlowBase(object):
+class FuelFlowBase:
     """Base class for fuel flow models."""
 
-    def __init__(self, ac, eng=None, **kwargs):
+    def __init__(
+        self, ac: str, eng: Optional[str] = None, backend: Optional[BackendType] = None, **kwargs
+    ):
         """Initialize FuelFlowBase object.
 
         Args:
-            ac (string): ICAO aircraft type (for example: A320).
-            eng (string): Engine type (for example: CFM56-5A3).
+            ac: ICAO aircraft type (for example: A320).
+            eng: Engine type (for example: CFM56-5A3).
                 Leave empty to use the default engine specified
-                by in the aircraft database.
-
+                in the aircraft database.
+            backend: Math backend to use. Defaults to NumpyBackend.
         """
-        if not hasattr(self, "sci"):
-            self.sci = importlib.import_module("numpy")
-
-        if not hasattr(self, "aero"):
-            self.aero = importlib.import_module("openap").aero
-
+        self.backend = backend or default_backend()
+        self.aero = Aero(backend=self.backend)
         self.ac = ac.upper()
 
     @ndarrayconvert
@@ -88,3 +88,21 @@ class FuelFlowBase(object):
     @ndarrayconvert
     def idle(self, mass, tas, alt, vs=0):
         raise NotImplementedError
+
+
+class EmissionBase:
+    """Base class for emission models."""
+
+    def __init__(
+        self, ac: str, eng: Optional[str] = None, backend: Optional[BackendType] = None, **kwargs
+    ):
+        """Initialize EmissionBase object.
+
+        Args:
+            ac: ICAO aircraft type (for example: A320).
+            eng: Engine type (for example: CFM56-5A3).
+            backend: Math backend to use. Defaults to NumpyBackend.
+        """
+        self.backend = backend or default_backend()
+        self.aero = Aero(backend=self.backend)
+        self.ac = ac.upper()
