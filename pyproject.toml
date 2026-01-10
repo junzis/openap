@@ -28,18 +28,17 @@ homepage = "https://openap.dev"
 repository = "https://github.com/junzis/openap"
 issues = "https://github.com/junzis/openap/issues"
 
-[tool.uv]
-dev-dependencies = [
+[dependency-groups]
+dev = [
     "flake8>=5.0.0",
     "black>=22.12.0",
     "isort>=5.11.4",
     "ipykernel>=6.9.0",
-    # "mypy>=0.991",
-    # "pytest>=7.2.0",
+    "pytest>=7.2.0",
 ]
 
 [tool.ruff]
-target-version = "py311"
+target-version = "py39"
 
 [tool.ruff.lint]
 select = [

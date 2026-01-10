@@ -33,8 +33,8 @@ file_synonym = os.path.join(curr_path, "data/wrap/_synonym.csv")
 wrap_synonym = pd.read_csv(file_synonym)
 
 
-class WRAP(object):
-    """Construct the kinematic model of the aicraft."""
+class WRAP:
+    """Construct the kinematic model of the aircraft."""
 
     def __init__(self, ac, **kwargs):
         """Initialize WRAP object.
@@ -43,8 +43,6 @@ class WRAP(object):
             ac (string): ICAO aircraft type (for example: A320).
 
         """
-        super(WRAP, self).__init__()
-
         self.ac = ac.lower()
 
         self.use_synonym = kwargs.get("use_synonym", True)

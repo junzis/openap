@@ -8,10 +8,13 @@ Models for Modern Two-Shaft Turbofan Engines
 - C. Svoboda, Turbofan engine database as a preliminary design (cruise thrust)
 """
 
-from typing import Optional
+from typing import Any, Optional, Union
 
 from openap import prop
 from openap.backends import BackendType
+
+# Type alias for numeric inputs (scalar, array, or symbolic)
+Numeric = Any
 from openap.extra import ndarrayconvert
 
 from .base import ThrustBase
@@ -71,7 +74,7 @@ class Thrust(ThrustBase):
             self.cruise_mach = aircraft["cruise"]["mach"]
             self.eng_cruise_thrust = 0.2 * self.eng_max_thrust + 890
 
-    def _dfunc(self, mratio):
+    def _dfunc(self, mratio: Numeric) -> Numeric:
         """Compute parameter 'd' from Equation 15 in Bartel and Young (2008).
 
         Linear fit to the data from Table 2.
@@ -85,7 +88,7 @@ class Thrust(ThrustBase):
         d = -0.4204 * mratio + 1.0824
         return d
 
-    def _nfunc(self, roc):
+    def _nfunc(self, roc: Numeric) -> Numeric:
         """Compute parameter 'n' from Table 3 in Bartel and Young (2008).
 
         Linear fit assuming climb rates:
@@ -102,7 +105,7 @@ class Thrust(ThrustBase):
         n = 2.667e-05 * roc + 0.8633
         return n
 
-    def _mfunc(self, vratio, roc):
+    def _mfunc(self, vratio: Numeric, roc: Numeric) -> Numeric:
         """Compute parameter 'm' from Table 4 in Bartel and Young (2008).
 
         Args:
@@ -116,7 +119,9 @@ class Thrust(ThrustBase):
         return m
 
     @ndarrayconvert
-    def takeoff(self, tas, alt=0, dT=0):
+    def takeoff(
+        self, tas: Numeric, alt: Numeric = 0, dT: Numeric = 0
+    ) -> Numeric:
         """Calculate thrust at take-off condition.
 
         Args:
@@ -160,7 +165,7 @@ class Thrust(ThrustBase):
         return F
 
     @ndarrayconvert
-    def cruise(self, tas, alt, dT=0):
+    def cruise(self, tas: Numeric, alt: Numeric, dT: Numeric = 0) -> Numeric:
         """Calculate thrust at cruise.
 
         Args:
@@ -174,7 +179,9 @@ class Thrust(ThrustBase):
         return self.climb(tas, alt, roc=0, dT=dT)
 
     @ndarrayconvert
-    def climb(self, tas, alt, roc, dT=0):
+    def climb(
+        self, tas: Numeric, alt: Numeric, roc: Numeric, dT: Numeric = 0
+    ) -> Numeric:
         """Calculate thrust during climb.
 
         Args:
@@ -239,7 +246,9 @@ class Thrust(ThrustBase):
         F = ratio * Fcr
         return F
 
-    def descent_idle(self, tas, alt, dT=0):
+    def descent_idle(
+        self, tas: Numeric, alt: Numeric, dT: Numeric = 0
+    ) -> Numeric:
         """Calculate idle thrust during descent.
 
         Note: The idle thrust at the descent is taken as 7% of the maximum

@@ -23,7 +23,7 @@ class DragBase:
         """
         self.backend = backend or default_backend()
         self.aero = Aero(backend=self.backend)
-        self.ac = ac.upper()
+        self.ac = ac.lower()
 
     def clean(self, mass, tas, alt, vs):
         raise NotImplementedError
@@ -47,7 +47,7 @@ class ThrustBase:
         """
         self.backend = backend or default_backend()
         self.aero = Aero(backend=self.backend)
-        self.ac = ac.upper()
+        self.ac = ac.lower()
 
     def takeoff(self, tas, alt):
         raise NotImplementedError
@@ -79,7 +79,7 @@ class FuelFlowBase:
         """
         self.backend = backend or default_backend()
         self.aero = Aero(backend=self.backend)
-        self.ac = ac.upper()
+        self.ac = ac.lower()
 
     @ndarrayconvert
     def enroute(self, mass, tas, alt, vs=0, acc=0):
@@ -105,4 +105,4 @@ class EmissionBase:
         """
         self.backend = backend or default_backend()
         self.aero = Aero(backend=self.backend)
-        self.ac = ac.upper()
+        self.ac = ac.lower()

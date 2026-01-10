@@ -1,22 +1,30 @@
+from typing import Union
+
 import numpy as np
 
 from . import prop
 
 
-def from_range(typecode, distance, load_factor=0.8, fraction=False, **kwargs):
+def from_range(
+    typecode: str,
+    distance: float,
+    load_factor: float = 0.8,
+    fraction: bool = False,
+    **kwargs,
+) -> float:
     """Compute aircraft mass based on range, load factor, and fraction settings.
 
     This function calculates the aircraft mass considering fuel and payload weights
     based on the given flight distance and load factor.
 
     Args:
-        typecode (str): ICAO aircraft type code (e.g. A320, B738)
-        distance (float): Flight distance in nautical miles
-        load_factor (float): Load factor between 0 and 1, default 0.8
-        fraction (bool): If True, return mass fraction of MTOW, default False
+        typecode: ICAO aircraft type code (e.g. A320, B738).
+        distance: Flight distance in nautical miles.
+        load_factor: Load factor between 0 and 1. Defaults to 0.8.
+        fraction: If True, return mass fraction of MTOW. Defaults to False.
 
     Returns:
-        float: Aircraft mass in kg, or mass fraction if fraction=True
+        Aircraft mass in kg, or mass fraction if fraction=True.
 
     """
     ac = prop.aircraft(typecode, **kwargs)

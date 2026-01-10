@@ -11,6 +11,26 @@ from openap import Aero, Drag, Emission, FuelFlow, Thrust
 from openap.backends import CasadiBackend, JaxBackend, NumpyBackend
 
 
+# Expected values computed with NumPy backend (reference)
+EXPECTED = {
+    "thrust_takeoff": 185981.10,  # N, tas=150kt, alt=0ft
+    "thrust_climb": 72317.87,  # N, tas=280kt, alt=20000ft, roc=2000fpm
+    "drag_clean": 47722.51,  # N, mass=65000kg, tas=250kt, alt=35000ft
+    "fuelflow_enroute": 0.988612,  # kg/s, mass=65000kg, tas=250kt, alt=35000ft
+    "fuelflow_at_thrust": 1.030994,  # kg/s, thrust=50000N
+    "emission_nox": 16.2334,  # g/s, ffac=1.0kg/s, tas=250kt, alt=35000ft
+    "emission_co2": 3160.0,  # g/s, ffac=1.0kg/s
+    "emission_h2o": 1230.0,  # g/s, ffac=1.0kg/s
+    "aero_temperature": 223.15,  # K, h=10000m
+    "aero_density": 0.412604,  # kg/m³, h=10000m
+    "aero_pressure": 26429.70,  # Pa, h=10000m
+    "thrust_array": [185981.10, 141161.74, 96559.57],  # N
+}
+
+# Tolerance for floating point comparisons
+RTOL = 1e-4  # 0.01% relative tolerance
+
+
 class TestNumpyBackend:
     """Tests for NumpyBackend (default)."""
 
@@ -21,15 +41,14 @@ class TestNumpyBackend:
 
         T = thrust.takeoff(tas=150, alt=0)
         assert isinstance(T, (float, np.floating))
-        assert T > 0
-        assert T < 300000  # Reasonable upper bound
+        assert T == pytest.approx(EXPECTED["thrust_takeoff"], rel=RTOL)
 
     def test_thrust_climb(self):
         """Test thrust calculation during climb."""
         thrust = Thrust("A320")
         T = thrust.climb(tas=280, alt=20000, roc=2000)
         assert isinstance(T, (float, np.floating))
-        assert T > 0
+        assert T == pytest.approx(EXPECTED["thrust_climb"], rel=RTOL)
 
     def test_drag_clean(self):
         """Test drag calculation in clean configuration."""
@@ -38,8 +57,7 @@ class TestNumpyBackend:
 
         D = drag.clean(mass=65000, tas=250, alt=35000)
         assert isinstance(D, (float, np.floating))
-        assert D > 0
-        assert D < 100000  # Reasonable upper bound
+        assert D == pytest.approx(EXPECTED["drag_clean"], rel=RTOL)
 
     def test_fuelflow_enroute(self):
         """Test fuel flow calculation."""
@@ -48,8 +66,14 @@ class TestNumpyBackend:
 
         fuel = ff.enroute(mass=65000, tas=250, alt=35000)
         assert isinstance(fuel, (float, np.floating))
-        assert fuel > 0
-        assert fuel < 5  # kg/s, reasonable upper bound
+        assert fuel == pytest.approx(EXPECTED["fuelflow_enroute"], rel=RTOL)
+
+    def test_fuelflow_at_thrust(self):
+        """Test fuel flow at given thrust."""
+        ff = FuelFlow("A320")
+        fuel = ff.at_thrust(50000)
+        assert isinstance(fuel, (float, np.floating))
+        assert fuel == pytest.approx(EXPECTED["fuelflow_at_thrust"], rel=RTOL)
 
     def test_emission_nox(self):
         """Test NOx emission calculation."""
@@ -58,14 +82,38 @@ class TestNumpyBackend:
 
         nox = em.nox(ffac=1.0, tas=250, alt=35000)
         assert isinstance(nox, (float, np.floating))
-        assert nox > 0
+        assert nox == pytest.approx(EXPECTED["emission_nox"], rel=RTOL)
+
+    def test_emission_co2(self):
+        """Test CO2 emission calculation."""
+        em = Emission("A320")
+        co2 = em.co2(ffac=1.0)
+        assert co2 == pytest.approx(EXPECTED["emission_co2"], rel=RTOL)
+
+    def test_emission_h2o(self):
+        """Test H2O emission calculation."""
+        em = Emission("A320")
+        h2o = em.h2o(ffac=1.0)
+        assert h2o == pytest.approx(EXPECTED["emission_h2o"], rel=RTOL)
 
     def test_aero_temperature(self):
         """Test temperature calculation."""
         aero = Aero()
         T = aero.temperature(10000)  # 10km
         assert isinstance(T, (float, np.floating))
-        assert 200 < T < 290  # K, reasonable range
+        assert T == pytest.approx(EXPECTED["aero_temperature"], rel=RTOL)
+
+    def test_aero_density(self):
+        """Test density calculation."""
+        aero = Aero()
+        rho = aero.density(10000)  # 10km
+        assert rho == pytest.approx(EXPECTED["aero_density"], rel=RTOL)
+
+    def test_aero_pressure(self):
+        """Test pressure calculation."""
+        aero = Aero()
+        p = aero.pressure(10000)  # 10km
+        assert p == pytest.approx(EXPECTED["aero_pressure"], rel=RTOL)
 
     def test_array_inputs(self):
         """Test that array inputs work correctly."""
@@ -76,7 +124,7 @@ class TestNumpyBackend:
         T = thrust.takeoff(tas, alt)
         assert isinstance(T, np.ndarray)
         assert T.shape == (3,)
-        assert all(T > 0)
+        np.testing.assert_allclose(T, EXPECTED["thrust_array"], rtol=RTOL)
 
 
 class TestCasadiBackend:
@@ -101,8 +149,8 @@ class TestCasadiBackend:
 
         # Evaluate at numeric values
         f = casadi.Function("f", [tas, alt], [T])
-        result = f(150, 0)
-        assert float(result) > 0
+        result = float(f(150, 0))
+        assert result == pytest.approx(EXPECTED["thrust_takeoff"], rel=RTOL)
 
     def test_drag_symbolic(self, casadi):
         """Test drag with symbolic inputs."""
@@ -115,6 +163,11 @@ class TestCasadiBackend:
 
         assert isinstance(D, casadi.SX)
 
+        # Evaluate
+        f = casadi.Function("f", [mass, tas, alt], [D])
+        result = float(f(65000, 250, 35000))
+        assert result == pytest.approx(EXPECTED["drag_clean"], rel=RTOL)
+
     def test_fuelflow_symbolic(self, casadi):
         """Test fuel flow with symbolic inputs."""
         ff = FuelFlow("A320", backend=CasadiBackend())
@@ -125,6 +178,27 @@ class TestCasadiBackend:
         fuel = ff.enroute(mass, tas, alt)
 
         assert isinstance(fuel, casadi.SX)
+
+        # Evaluate
+        f = casadi.Function("f", [mass, tas, alt], [fuel])
+        result = float(f(65000, 250, 35000))
+        assert result == pytest.approx(EXPECTED["fuelflow_enroute"], rel=RTOL)
+
+    def test_emission_symbolic(self, casadi):
+        """Test emission with symbolic inputs."""
+        em = Emission("A320", backend=CasadiBackend())
+
+        ffac = casadi.SX.sym("ffac")
+        tas = casadi.SX.sym("tas")
+        alt = casadi.SX.sym("alt")
+        nox = em.nox(ffac, tas, alt)
+
+        assert isinstance(nox, casadi.SX)
+
+        # Evaluate
+        f = casadi.Function("f", [ffac, tas, alt], [nox])
+        result = float(f(1.0, 250, 35000))
+        assert result == pytest.approx(EXPECTED["emission_nox"], rel=RTOL)
 
     def test_jacobian(self, casadi):
         """Test that Jacobian can be computed."""
@@ -143,6 +217,10 @@ class TestCasadiBackend:
         result = jac_fn(150, 0)
         assert result.shape == (1, 1)
 
+        # dT/dtas should be negative (thrust decreases with speed at takeoff)
+        assert float(result) < 0
+        assert float(result) == pytest.approx(-276.19, rel=0.01)
+
     def test_aero_symbolic(self, casadi):
         """Test aero functions with symbolic inputs."""
         aero = Aero(backend=CasadiBackend())
@@ -151,6 +229,12 @@ class TestCasadiBackend:
         T = aero.temperature(h)
         assert isinstance(T, casadi.SX)
 
+        # Evaluate
+        f = casadi.Function("f", [h], [T])
+        result = float(f(10000))
+        assert result == pytest.approx(EXPECTED["aero_temperature"], rel=RTOL)
+
+        # Test distance
         lat1 = casadi.SX.sym("lat1")
         lon1 = casadi.SX.sym("lon1")
         lat2 = casadi.SX.sym("lat2")
@@ -183,7 +267,7 @@ class TestJaxBackend:
         assert type(thrust.backend).__name__ == "JaxBackend"
 
         T = thrust.takeoff(jnp.array(150.0), jnp.array(0.0))
-        assert float(T) > 0
+        assert float(T) == pytest.approx(EXPECTED["thrust_takeoff"], rel=RTOL)
 
     def test_drag_jax(self, jnp):
         """Test drag with JAX arrays."""
@@ -192,7 +276,7 @@ class TestJaxBackend:
         D = drag.clean(
             jnp.array(65000.0), jnp.array(250.0), jnp.array(35000.0)
         )
-        assert float(D) > 0
+        assert float(D) == pytest.approx(EXPECTED["drag_clean"], rel=RTOL)
 
     def test_fuelflow_jax(self, jnp):
         """Test fuel flow with JAX arrays."""
@@ -201,7 +285,14 @@ class TestJaxBackend:
         fuel = ff.enroute(
             jnp.array(65000.0), jnp.array(250.0), jnp.array(35000.0)
         )
-        assert float(fuel) > 0
+        assert float(fuel) == pytest.approx(EXPECTED["fuelflow_enroute"], rel=RTOL)
+
+    def test_emission_jax(self, jnp):
+        """Test emission with JAX arrays."""
+        em = Emission("A320", backend=JaxBackend())
+
+        nox = em.nox(jnp.array(1.0), jnp.array(250.0), jnp.array(35000.0))
+        assert float(nox) == pytest.approx(EXPECTED["emission_nox"], rel=RTOL)
 
     def test_jit_compilation(self, jax, jnp):
         """Test that JIT compilation works."""
@@ -216,9 +307,9 @@ class TestJaxBackend:
         # Second call uses compiled version
         result2 = compute_thrust(jnp.array(200.0), jnp.array(0.0))
 
-        assert float(result1) > 0
-        assert float(result2) > 0
-        assert float(result1) != float(result2)
+        assert float(result1) == pytest.approx(EXPECTED["thrust_takeoff"], rel=RTOL)
+        # Different input should give different output
+        assert float(result2) == pytest.approx(173103.59, rel=RTOL)
 
     def test_gradient(self, jax, jnp):
         """Test that gradients can be computed."""
@@ -230,15 +321,22 @@ class TestJaxBackend:
         grad_fn = jax.grad(thrust_fn)
         dT_dtas = grad_fn(150.0)
 
-        # Gradient should exist and be non-zero
+        # Gradient should match CasADi result
         assert not jnp.isnan(dT_dtas)
+        assert float(dT_dtas) == pytest.approx(-276.19, rel=0.01)
 
     def test_aero_jax(self, jnp):
         """Test aero functions with JAX."""
         aero = Aero(backend=JaxBackend())
 
         T = aero.temperature(jnp.array(10000.0))
-        assert 200 < float(T) < 290
+        assert float(T) == pytest.approx(EXPECTED["aero_temperature"], rel=RTOL)
+
+        rho = aero.density(jnp.array(10000.0))
+        assert float(rho) == pytest.approx(EXPECTED["aero_density"], rel=RTOL)
+
+        p = aero.pressure(jnp.array(10000.0))
+        assert float(p) == pytest.approx(EXPECTED["aero_pressure"], rel=RTOL)
 
 
 class TestBackendConsistency:
@@ -272,9 +370,10 @@ class TestBackendConsistency:
         thrust_jax = Thrust("A320", backend=JaxBackend())
         T_jax = float(thrust_jax.takeoff(jnp.array(150.0), jnp.array(0.0)))
 
-        # All should be close
-        assert abs(T_np - T_ca) / T_np < 0.001  # <0.1% difference
-        assert abs(T_np - T_jax) / T_np < 0.001
+        # All should match expected value
+        assert T_np == pytest.approx(EXPECTED["thrust_takeoff"], rel=RTOL)
+        assert T_ca == pytest.approx(EXPECTED["thrust_takeoff"], rel=RTOL)
+        assert T_jax == pytest.approx(EXPECTED["thrust_takeoff"], rel=RTOL)
 
     def test_drag_consistency(self, casadi, jax):
         """Test that all backends give same drag."""
@@ -301,9 +400,10 @@ class TestBackendConsistency:
             )
         )
 
-        # All should be close
-        assert abs(D_np - D_ca) / D_np < 0.001
-        assert abs(D_np - D_jax) / D_np < 0.001
+        # All should match expected value
+        assert D_np == pytest.approx(EXPECTED["drag_clean"], rel=RTOL)
+        assert D_ca == pytest.approx(EXPECTED["drag_clean"], rel=RTOL)
+        assert D_jax == pytest.approx(EXPECTED["drag_clean"], rel=RTOL)
 
     def test_fuelflow_consistency(self, casadi, jax):
         """Test that all backends give same fuel flow."""
@@ -330,9 +430,80 @@ class TestBackendConsistency:
             )
         )
 
-        # All should be close
-        assert abs(fuel_np - fuel_ca) / fuel_np < 0.001
-        assert abs(fuel_np - fuel_jax) / fuel_np < 0.001
+        # All should match expected value
+        assert fuel_np == pytest.approx(EXPECTED["fuelflow_enroute"], rel=RTOL)
+        assert fuel_ca == pytest.approx(EXPECTED["fuelflow_enroute"], rel=RTOL)
+        assert fuel_jax == pytest.approx(EXPECTED["fuelflow_enroute"], rel=RTOL)
+
+    def test_emission_consistency(self, casadi, jax):
+        """Test that all backends give same emissions."""
+        jnp = jax.numpy
+
+        # NumPy
+        em_np = Emission("A320", backend=NumpyBackend())
+        nox_np = em_np.nox(ffac=1.0, tas=250, alt=35000)
+
+        # CasADi
+        em_ca = Emission("A320", backend=CasadiBackend())
+        ffac = casadi.SX.sym("ffac")
+        tas = casadi.SX.sym("tas")
+        alt = casadi.SX.sym("alt")
+        nox_ca_sym = em_ca.nox(ffac, tas, alt)
+        f = casadi.Function("f", [ffac, tas, alt], [nox_ca_sym])
+        nox_ca = float(f(1.0, 250, 35000))
+
+        # JAX
+        em_jax = Emission("A320", backend=JaxBackend())
+        nox_jax = float(
+            em_jax.nox(jnp.array(1.0), jnp.array(250.0), jnp.array(35000.0))
+        )
+
+        # All should match expected value
+        assert nox_np == pytest.approx(EXPECTED["emission_nox"], rel=RTOL)
+        assert nox_ca == pytest.approx(EXPECTED["emission_nox"], rel=RTOL)
+        assert nox_jax == pytest.approx(EXPECTED["emission_nox"], rel=RTOL)
+
+    def test_aero_consistency(self, casadi, jax):
+        """Test that all backends give same aero values."""
+        jnp = jax.numpy
+
+        # NumPy
+        aero_np = Aero(backend=NumpyBackend())
+        T_np = aero_np.temperature(10000)
+        rho_np = aero_np.density(10000)
+        p_np = aero_np.pressure(10000)
+
+        # CasADi
+        aero_ca = Aero(backend=CasadiBackend())
+        h = casadi.SX.sym("h")
+        T_ca_sym = aero_ca.temperature(h)
+        rho_ca_sym = aero_ca.density(h)
+        p_ca_sym = aero_ca.pressure(h)
+        f_T = casadi.Function("f", [h], [T_ca_sym])
+        f_rho = casadi.Function("f", [h], [rho_ca_sym])
+        f_p = casadi.Function("f", [h], [p_ca_sym])
+        T_ca = float(f_T(10000))
+        rho_ca = float(f_rho(10000))
+        p_ca = float(f_p(10000))
+
+        # JAX
+        aero_jax = Aero(backend=JaxBackend())
+        T_jax = float(aero_jax.temperature(jnp.array(10000.0)))
+        rho_jax = float(aero_jax.density(jnp.array(10000.0)))
+        p_jax = float(aero_jax.pressure(jnp.array(10000.0)))
+
+        # All should match expected values
+        assert T_np == pytest.approx(EXPECTED["aero_temperature"], rel=RTOL)
+        assert T_ca == pytest.approx(EXPECTED["aero_temperature"], rel=RTOL)
+        assert T_jax == pytest.approx(EXPECTED["aero_temperature"], rel=RTOL)
+
+        assert rho_np == pytest.approx(EXPECTED["aero_density"], rel=RTOL)
+        assert rho_ca == pytest.approx(EXPECTED["aero_density"], rel=RTOL)
+        assert rho_jax == pytest.approx(EXPECTED["aero_density"], rel=RTOL)
+
+        assert p_np == pytest.approx(EXPECTED["aero_pressure"], rel=RTOL)
+        assert p_ca == pytest.approx(EXPECTED["aero_pressure"], rel=RTOL)
+        assert p_jax == pytest.approx(EXPECTED["aero_pressure"], rel=RTOL)
 
 
 class TestConvenienceModules:
@@ -351,11 +522,16 @@ class TestConvenienceModules:
         # Check prop is available
         ac = prop.aircraft("A320")
         assert "mtow" in ac
+        assert ac["mtow"] == pytest.approx(78000, rel=0.01)
 
-        # Check aero works symbolically
+        # Check aero works symbolically and gives correct values
         h = casadi.SX.sym("h")
         T = aero.temperature(h)
         assert isinstance(T, casadi.SX)
+
+        f = casadi.Function("f", [h], [T])
+        result = float(f(10000))
+        assert result == pytest.approx(EXPECTED["aero_temperature"], rel=RTOL)
 
     def test_jax_module(self):
         """Test openap.jax convenience module."""
@@ -368,13 +544,17 @@ class TestConvenienceModules:
         thrust = Thrust("A320")
         assert type(thrust.backend).__name__ == "JaxBackend"
 
-        # Check JIT works
+        # Check JIT works and gives correct values
         @jax.jit
         def compute(tas, alt):
             return thrust.takeoff(tas, alt)
 
         result = compute(jnp.array(150.0), jnp.array(0.0))
-        assert float(result) > 0
+        assert float(result) == pytest.approx(EXPECTED["thrust_takeoff"], rel=RTOL)
+
+        # Check aero gives correct values
+        T = aero.temperature(jnp.array(10000.0))
+        assert float(T) == pytest.approx(EXPECTED["aero_temperature"], rel=RTOL)
 
 
 if __name__ == "__main__":

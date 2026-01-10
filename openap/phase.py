@@ -6,12 +6,11 @@ from matplotlib import pyplot as plt
 from openap.extra import fuzzy
 
 
-class FlightPhase(object):
+class FlightPhase:
     """Fuzzy logic flight phase identification."""
 
     def __init__(self):
         """Initialize of the FlightPhase object."""
-        super(FlightPhase, self).__init__()
 
         # logic states
         self.alt_range = np.arange(0, 40000, 1)

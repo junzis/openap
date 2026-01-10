@@ -21,7 +21,7 @@ with open(fin, 'rb') as f:
     for line in f:
         try:
             line = line.strip().decode()
-        except:
+        except UnicodeDecodeError:
             continue
         items = re.split('\s+', line)
 

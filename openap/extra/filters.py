@@ -1,11 +1,11 @@
 import numpy as np
 from matplotlib import pyplot as plt
 from scipy.interpolate import UnivariateSpline
-from scipy.ndimage import filters
+from scipy.ndimage import convolve1d
 from scipy.signal.windows import gaussian
 
 
-class BaseFilter(object):
+class BaseFilter:
     def __init__(self, i=False):
         self.interpolate = i
 
@@ -31,7 +31,7 @@ class BaseFilter(object):
             try:
                 i = np.where(X == x)[0][0]
                 y = Y[i]
-            except:
+            except IndexError:
                 pass
 
             Yfull.append(y)
@@ -64,8 +64,8 @@ class SavitzkyGolay(BaseFilter):
         super(SavitzkyGolay, self).__init__(i=i)
 
         try:
-            window_size = np.abs(np.int(window_size))
-            order = np.abs(np.int(order))
+            window_size = abs(int(window_size))
+            order = abs(int(order))
         except ValueError:
             raise ValueError("window_size and order have to be of type int")
         if window_size % 2 != 1 or window_size < 1:
@@ -116,8 +116,8 @@ class Spline(BaseFilter):
         #    how-to-fix-scipys-interpolating-spline-default-behavior/
         series = np.asarray(series)
         b = gaussian(25, sigma)
-        averages = filters.convolve1d(series, b / b.sum())
-        variances = filters.convolve1d(np.power(series - averages, 2), b / b.sum())
+        averages = convolve1d(series, b / b.sum())
+        variances = convolve1d(np.power(series - averages, 2), b / b.sum())
         variances[variances == 0] = 1
         return averages, variances
 

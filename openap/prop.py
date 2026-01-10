@@ -1,14 +1,17 @@
 """Retrieve properties of aircraft and engines."""
 
 import glob
+import logging
 import os
 import warnings
 from functools import lru_cache
-
-import yaml
+from typing import Any, Dict, List, Optional
 
 import numpy as np
 import pandas as pd
+import yaml
+
+logger = logging.getLogger(__name__)
 
 warnings.simplefilter("once", UserWarning)
 
@@ -21,11 +24,14 @@ aircraft_synonym = pd.read_csv(file_synonym)
 
 
 @lru_cache()
-def available_aircraft(use_synonym=False):
+def available_aircraft(use_synonym: bool = False) -> List[str]:
     """Get available aircraft types in OpenAP model.
 
+    Args:
+        use_synonym: Include synonyms in the list. Defaults to False.
+
     Returns:
-        list of string: aircraft types.
+        List of aircraft type codes.
 
     """
     files = sorted(glob.glob(dir_aircraft + "*.yml"))
@@ -38,14 +44,15 @@ def available_aircraft(use_synonym=False):
     return acs
 
 
-def aircraft(ac, use_synonym=False, **kwargs):
+def aircraft(ac: str, use_synonym: bool = False, **kwargs) -> Dict[str, Any]:
     """Get details of an aircraft type.
 
     Args:
-        ac (string): ICAO aircraft type (for example: A320).
+        ac: ICAO aircraft type (for example: A320).
+        use_synonym: Use synonym if aircraft not found. Defaults to False.
 
     Returns:
-        dict: Performance parameters related to the aircraft.
+        Performance parameters related to the aircraft.
 
     """
     ac = ac.lower()
@@ -89,14 +96,14 @@ def aircraft(ac, use_synonym=False, **kwargs):
 
 
 @lru_cache()
-def aircraft_engine_options(ac):
+def aircraft_engine_options(ac: str) -> List[str]:
     """Get engine options of an aircraft type.
 
     Args:
-        ac (string): ICAO aircraft type (for example: A320).
+        ac: ICAO aircraft type (for example: A320).
 
     Returns:
-        list of string: Engine options.
+        Engine options for the aircraft.
 
     """
     acdict = aircraft(ac)
@@ -110,14 +117,14 @@ def aircraft_engine_options(ac):
 
 
 @lru_cache()
-def search_engine(eng):
+def search_engine(eng: str) -> Optional[List[str]]:
     """Search engine by the starting characters.
 
     Args:
-        eng (string): Engine type (for example: CFM56-5).
+        eng: Engine type (for example: CFM56-5).
 
     Returns:
-        list or None: Matching engine types.
+        Matching engine types, or None if not found.
 
     """
     ENG = eng.strip().upper()
@@ -126,25 +133,24 @@ def search_engine(eng):
     available_engines = engines.query("name.str.startswith(@ENG)", engine="python")
 
     if available_engines.shape[0] == 0:
-        print("Engine not found.")
+        logger.info("Engine not found.")
         result = None
     else:
-        print("Engines found:")
         result = available_engines.name.tolist()
-        print(result)
+        logger.info("Engines found: %s", result)
 
     return result
 
 
 @lru_cache()
-def engine(eng):
+def engine(eng: str) -> Dict[str, Any]:
     """Get engine parameters.
 
     Args:
-        eng (string): Engine type (for example: CFM56-5B6).
+        eng: Engine type (for example: CFM56-5B6).
 
     Returns:
-        dict: Engine parameters.
+        Engine parameters.
 
     """
     ENG = eng.strip().upper()

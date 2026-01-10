@@ -2,12 +2,15 @@
 
 import importlib
 import os
-from typing import Optional
+from typing import Any, Callable, Optional
 
 import pandas as pd
 
 from openap import prop
 from openap.backends import BackendType
+
+# Type alias for numeric inputs (scalar, array, or symbolic)
+Numeric = Any
 from openap.extra import ndarrayconvert
 from openap.extra.aero import fpm, kts
 
@@ -46,8 +49,7 @@ class FuelFlow(FuelFlowBase):
 
         self.use_synonym = kwargs.get("use_synonym", False)
 
-        self.ac = ac.lower()
-        self.aircraft = prop.aircraft(ac, **kwargs)
+        self.aircraft = prop.aircraft(self.ac, **kwargs)
 
         if eng is None:
             eng = self.aircraft["engine"]["default"]
@@ -63,7 +65,7 @@ class FuelFlow(FuelFlowBase):
 
         self.func_fuel = self._load_fuel_model()
 
-    def _load_fuel_model(self) -> dict:
+    def _load_fuel_model(self) -> Callable[[Numeric], Numeric]:
         curr_path = os.path.dirname(os.path.realpath(__file__))
         file_fuel_models = os.path.join(curr_path, "data/fuel/fuel_models.csv")
 
@@ -94,15 +96,14 @@ class FuelFlow(FuelFlowBase):
         )
 
     @ndarrayconvert
-    def at_thrust(self, total_ac_thrust):
+    def at_thrust(self, total_ac_thrust: Numeric) -> Numeric:
         """Compute the fuel flow at a given total thrust.
 
         Args:
-            total_ac_thrust (int or ndarray): The total net thrust of the
-                aircraft (unit: N).
+            total_ac_thrust: The total net thrust of the aircraft (unit: N).
 
         Returns:
-            float: Fuel flow (unit: kg/s).
+            Fuel flow (unit: kg/s).
 
         """
         b = self.backend
@@ -131,7 +132,12 @@ class FuelFlow(FuelFlowBase):
         return fuelflow
 
     @ndarrayconvert
-    def takeoff(self, tas, alt=None, throttle=1):
+    def takeoff(
+        self,
+        tas: Numeric,
+        alt: Optional[Numeric] = None,
+        throttle: Numeric = 1,
+    ) -> Numeric:
         """Compute the fuel flow at takeoff.
 
         The net thrust is first estimated based on the maximum thrust model
@@ -139,14 +145,13 @@ class FuelFlow(FuelFlowBase):
         the thrust.
 
         Args:
-            tas (int or ndarray): Aircraft true airspeed (unit: kt).
-            alt (int or ndarray): Altitude of airport (unit: ft).
-                Defaults to sea-level.
-            throttle (float or ndarray): The throttle setting, between 0 and 1.
+            tas: Aircraft true airspeed (unit: kt).
+            alt: Altitude of airport (unit: ft). Defaults to sea-level.
+            throttle: The throttle setting, between 0 and 1.
                 Defaults to 1, which is at full thrust.
 
         Returns:
-            float: Fuel flow (unit: kg/s).
+            Fuel flow (unit: kg/s).
 
         """
         Tmax = self.thrust.takeoff(tas=tas, alt=alt)
@@ -154,7 +159,16 @@ class FuelFlow(FuelFlowBase):
         return fuelflow
 
     @ndarrayconvert
-    def enroute(self, mass, tas, alt, vs=0, acc=0, dT=0, limit=True):
+    def enroute(
+        self,
+        mass: Numeric,
+        tas: Numeric,
+        alt: Numeric,
+        vs: Numeric = 0,
+        acc: Numeric = 0,
+        dT: Numeric = 0,
+        limit: bool = True,
+    ) -> Numeric:
         """Compute the fuel flow during climb, cruise, or descent.
 
         The net thrust is first estimated based on the dynamic equation.
@@ -162,14 +176,16 @@ class FuelFlow(FuelFlowBase):
         no flap deflection and no landing gear extended.
 
         Args:
-            mass (int or ndarray): Aircraft mass (unit: kg).
-            tas (int or ndarray): Aircraft true airspeed (unit: kt).
-            alt (int or ndarray): Aircraft altitude (unit: ft).
-            vs (float or ndarray): Vertical rate (unit: ft/min). Default is 0.
-            acc (float or ndarray): acceleration (unit: m/s^2). Default is 0.
-            dT (float or ndarray): Temperature shift (unit: K or degC), default = 0
+            mass: Aircraft mass (unit: kg).
+            tas: Aircraft true airspeed (unit: kt).
+            alt: Aircraft altitude (unit: ft).
+            vs: Vertical rate (unit: ft/min). Default is 0.
+            acc: Acceleration (unit: m/s^2). Default is 0.
+            dT: Temperature shift (unit: K or degC). Default is 0.
+            limit: Apply thrust limits. Default is True.
+
         Returns:
-            float: Fuel flow (unit: kg/s).
+            Fuel flow (unit: kg/s).
 
         """
         b = self.backend

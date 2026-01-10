@@ -1,9 +1,12 @@
 """OpenAP Emission model."""
 
-from typing import Optional
+from typing import Any, Optional, Tuple
 
 from openap import prop
 from openap.backends import BackendType
+
+# Type alias for numeric inputs (scalar, array, or symbolic)
+Numeric = Any
 from openap.extra import ndarrayconvert
 
 from .base import EmissionBase
@@ -38,7 +41,9 @@ class Emission(EmissionBase):
 
         self.engine = prop.engine(eng)
 
-    def _fl2sl(self, ffac, tas, alt, dT=0):
+    def _fl2sl(
+        self, ffac: Numeric, tas: Numeric, alt: Numeric, dT: Numeric = 0
+    ) -> Tuple[Numeric, Numeric]:
         """Convert to sea-level equivalent."""
         b = self.backend
 
@@ -47,78 +52,85 @@ class Emission(EmissionBase):
         theta = (self.aero.temperature(alt * self.aero.ft, dT=dT) / 288.15) / beta
         delta = (1 - 0.0019812 * alt / 288.15) ** 5.255876 / b.power(beta, 3.5)
         ratio = (theta**3.3) / (delta**1.02)
-        # TODO: Where does this equation come from?
+        # Boeing Fuel Flow Method 2 (BFFM2) - DuBois & Paynter (2006)
         ff_sl = (ffac / self.n_eng) * theta**3.8 / delta * beta
 
         return ff_sl, ratio
 
     @ndarrayconvert
-    def co2(self, ffac):
+    def co2(self, ffac: Numeric) -> Numeric:
         """Compute CO2 emission with given fuel flow.
 
         Args:
-            ffac (float or ndarray): Fuel flow for all engines (unit: kg/s).
+            ffac: Fuel flow for all engines (unit: kg/s).
 
         Returns:
-            float: CO2 emission from all engines (unit: g/s).
+            CO2 emission from all engines (unit: g/s).
 
         """
         # IATA: jet fuel -> co2
         return ffac * 3160
 
     @ndarrayconvert
-    def h2o(self, ffac):
+    def h2o(self, ffac: Numeric) -> Numeric:
         """Compute H2O emission with given fuel flow.
 
         Args:
-            ffac (float or ndarray): Fuel flow for all engines (unit: kg/s).
+            ffac: Fuel flow for all engines (unit: kg/s).
 
         Returns:
-            float: H2O emission from all engines (unit: g/s).
+            H2O emission from all engines (unit: g/s).
 
         """
         # kerosene -> water
         return ffac * 1230
 
     @ndarrayconvert
-    def soot(self, ffac):
+    def soot(self, ffac: Numeric) -> Numeric:
         """Compute soot emission with given fuel flow.
 
         Args:
-            ffac (float or ndarray): Fuel flow for all engines (unit: kg/s).
+            ffac: Fuel flow for all engines (unit: kg/s).
 
         Returns:
-            float: Soot emission from all engines (unit: g/s).
+            Soot emission from all engines (unit: g/s).
 
         """
         # Barrett et al. 2010 - Global Mortality Attributable to Aircraft Cruise Emissions
         return ffac * 0.03
 
     @ndarrayconvert
-    def sox(self, ffac):
+    def sox(self, ffac: Numeric) -> Numeric:
         """Compute SOx emission with given fuel flow.
 
         Args:
-            ffac (float or ndarray): Fuel flow for all engines (unit: kg/s).
+            ffac: Fuel flow for all engines (unit: kg/s).
 
         Returns:
-            float: SOx emission from all engines (unit: g/s).
+            SOx emission from all engines (unit: g/s).
 
         """
         # Barrett et al. 2010 - Global Mortality Attributable to Aircraft Cruise Emissions
         return ffac * 1.2
 
     @ndarrayconvert
-    def nox(self, ffac, tas, alt=0, dT=0):
+    def nox(
+        self,
+        ffac: Numeric,
+        tas: Numeric,
+        alt: Numeric = 0,
+        dT: Numeric = 0,
+    ) -> Numeric:
         """Compute NOx emission with given fuel flow, speed, and altitude.
 
         Args:
-            ffac (float or ndarray): Fuel flow for all engines (unit: kg/s).
-            tas (float or ndarray): Speed (unit: kt).
-            alt (int or ndarray): Aircraft altitude (unit: ft).
-            dT (float or ndarray): Temperature shift (unit: K or degC), default = 0
+            ffac: Fuel flow for all engines (unit: kg/s).
+            tas: Speed (unit: kt).
+            alt: Aircraft altitude (unit: ft). Defaults to 0.
+            dT: Temperature shift (unit: K or degC). Defaults to 0.
+
         Returns:
-            float: NOx emission from all engines (unit: g/s).
+            NOx emission from all engines (unit: g/s).
 
         """
         b = self.backend
@@ -144,7 +156,7 @@ class Emission(EmissionBase):
         # convert back to actual flight level
         omega = 10 ** (-3) * b.exp(-0.0001426 * (alt - 12900))
 
-        # TODO: source
+        # Boeing Fuel Flow Method 2 (BFFM2) - DuBois & Paynter (2006)
         nox_fl = nox_sl * b.sqrt(1 / ratio) * b.exp(-19 * (omega - 0.00634))
 
         # convert g/(kg fuel) to g/s for all engines
@@ -152,16 +164,23 @@ class Emission(EmissionBase):
         return nox_rate
 
     @ndarrayconvert
-    def co(self, ffac, tas, alt=0, dT=0):
+    def co(
+        self,
+        ffac: Numeric,
+        tas: Numeric,
+        alt: Numeric = 0,
+        dT: Numeric = 0,
+    ) -> Numeric:
         """Compute CO emission with given fuel flow, speed, and altitude.
 
         Args:
-            ffac (float or ndarray): Fuel flow for all engines (unit: kg/s).
-            tas (float or ndarray): Speed (unit: kt).
-            alt (int or ndarray): Aircraft altitude (unit: ft).
-            dT (float or ndarray): Temperature shift (unit: K or degC), default = 0
+            ffac: Fuel flow for all engines (unit: kg/s).
+            tas: Speed (unit: kt).
+            alt: Aircraft altitude (unit: ft). Defaults to 0.
+            dT: Temperature shift (unit: K or degC). Defaults to 0.
+
         Returns:
-            float: CO emission from all engines (unit: g/s).
+            CO emission from all engines (unit: g/s).
 
         """
         b = self.backend
@@ -184,7 +203,7 @@ class Emission(EmissionBase):
             ],
         )
 
-        # TODO: source
+        # Boeing Fuel Flow Method 2 (BFFM2) - DuBois & Paynter (2006)
         # convert back to actual flight level
         co_fl = co_sl * ratio
 
@@ -193,17 +212,23 @@ class Emission(EmissionBase):
         return co_rate
 
     @ndarrayconvert
-    def hc(self, ffac, tas, alt=0, dT=0):
+    def hc(
+        self,
+        ffac: Numeric,
+        tas: Numeric,
+        alt: Numeric = 0,
+        dT: Numeric = 0,
+    ) -> Numeric:
         """Compute HC emission with given fuel flow, speed, and altitude.
 
         Args:
-            ffac (float or ndarray): Fuel flow for all engines (unit: kg/s).
-            tas (float or ndarray): Speed (unit: kt).
-            alt (int or ndarray): Aircraft altitude (unit: ft).
-            dT (float or ndarray): Temperature shift (unit: K or degC), default = 0
+            ffac: Fuel flow for all engines (unit: kg/s).
+            tas: Speed (unit: kt).
+            alt: Aircraft altitude (unit: ft). Defaults to 0.
+            dT: Temperature shift (unit: K or degC). Defaults to 0.
 
         Returns:
-            float: HC emission from all engines (unit: g/s).
+            HC emission from all engines (unit: g/s).
 
         """
         b = self.backend
@@ -225,7 +250,7 @@ class Emission(EmissionBase):
                 self.engine["ei_hc_to"],
             ],
         )
-        # TODO: source
+        # Boeing Fuel Flow Method 2 (BFFM2) - DuBois & Paynter (2006)
         # convert back to actual flight level
         hc_fl = hc_sl * ratio
 

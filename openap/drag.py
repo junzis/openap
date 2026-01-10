@@ -3,13 +3,16 @@
 import glob
 import os
 import warnings
-from typing import Optional
+from typing import Any, Dict, Optional, Tuple
 
 import pandas as pd
 import yaml
 
 from . import prop
 from .backends import BackendType
+
+# Type alias for numeric inputs (scalar, array, or symbolic)
+Numeric = Any
 from .base import DragBase
 from .extra import ndarrayconvert
 
@@ -37,15 +40,14 @@ class Drag(DragBase):
 
         self.use_synonym = kwargs.get("use_synonym", False)
 
-        self.ac = ac.lower()
-        self.aircraft = prop.aircraft(ac, **kwargs)
+        self.aircraft = prop.aircraft(self.ac, **kwargs)
         self.polar = self.load_drag_model()
 
         self.wave_drag = wave_drag
         if self.wave_drag:
             warnings.warn("Warning: Wave drag is experimental.")
 
-    def load_drag_model(self):
+    def load_drag_model(self) -> Dict[str, Any]:
         """Find and construct the drag polar model.
 
         Returns:
@@ -87,7 +89,14 @@ class Drag(DragBase):
         return dragpolar
 
     @ndarrayconvert
-    def _cl(self, mass, tas, alt, vs=0, dT=0):
+    def _cl(
+        self,
+        mass: Numeric,
+        tas: Numeric,
+        alt: Numeric,
+        vs: Numeric = 0,
+        dT: Numeric = 0,
+    ) -> Tuple[Numeric, Numeric]:
         """Compute lift coefficient and dynamic pressure.
 
         Args:
@@ -116,7 +125,16 @@ class Drag(DragBase):
         return cl, qS
 
     @ndarrayconvert
-    def _calc_drag(self, mass, tas, alt, cd0, k, vs, dT=0):
+    def _calc_drag(
+        self,
+        mass: Numeric,
+        tas: Numeric,
+        alt: Numeric,
+        cd0: Numeric,
+        k: Numeric,
+        vs: Numeric,
+        dT: Numeric = 0,
+    ) -> Numeric:
         """Compute drag from drag polar coefficients.
 
         Args:
@@ -137,7 +155,14 @@ class Drag(DragBase):
         return D
 
     @ndarrayconvert
-    def clean(self, mass, tas, alt, vs=0, dT=0):
+    def clean(
+        self,
+        mass: Numeric,
+        tas: Numeric,
+        alt: Numeric,
+        vs: Numeric = 0,
+        dT: Numeric = 0,
+    ) -> Numeric:
         """Compute drag at clean configuration (considering compressibility).
 
         Args:
@@ -188,7 +213,16 @@ class Drag(DragBase):
         return D
 
     @ndarrayconvert
-    def nonclean(self, mass, tas, alt, flap_angle, vs=0, dT=0, landing_gear=False):
+    def nonclean(
+        self,
+        mass: Numeric,
+        tas: Numeric,
+        alt: Numeric,
+        flap_angle: Numeric,
+        vs: Numeric = 0,
+        dT: Numeric = 0,
+        landing_gear: bool = False,
+    ) -> Numeric:
         """Compute drag at non-clean configuration.
 
         Args:
