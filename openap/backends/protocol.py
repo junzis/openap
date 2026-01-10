@@ -99,6 +99,12 @@ class MathBackend(Protocol):
         """Create evenly spaced values."""
         ...
 
+    # --- Modulo ---
+
+    def fmod(self, x: Any, y: Any) -> Any:
+        """Floating-point modulo operation."""
+        ...
+
     # --- Constants ---
 
     @property

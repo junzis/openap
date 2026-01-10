@@ -114,6 +114,11 @@ class CasadiBackend:
 
         return np.linspace(start, stop, num)
 
+    # --- Modulo ---
+
+    def fmod(self, x: Any, y: Any) -> Any:
+        return self.ca.fmod(x, y)
+
     # --- Constants ---
 
     @property

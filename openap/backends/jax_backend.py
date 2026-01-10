@@ -109,6 +109,11 @@ class JaxBackend:
     def linspace(self, start: Any, stop: Any, num: int) -> Any:
         return self.jnp.linspace(start, stop, num)
 
+    # --- Modulo ---
+
+    def fmod(self, x: Any, y: Any) -> Any:
+        return self.jnp.fmod(x, y)
+
     # --- Constants ---
 
     @property

@@ -97,6 +97,12 @@ class NumpyBackend:
     def linspace(start: Any, stop: Any, num: int) -> Any:
         return np.linspace(start, stop, num)
 
+    # --- Modulo ---
+
+    @staticmethod
+    def fmod(x: Any, y: Any) -> Any:
+        return np.fmod(x, y)
+
     # --- Constants ---
 
     @property

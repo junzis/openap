@@ -219,7 +219,7 @@ class Aero:
             lon2_r - lon1_r
         )
         initial_bearing = b.arctan2(x, y) * rad2deg
-        return (initial_bearing + 360) % 360
+        return b.fmod(initial_bearing + 360, 360)
 
     def h_isa(self, p: Any, dT: Any = 0) -> Any:
         """Compute ISA altitude for a given pressure.

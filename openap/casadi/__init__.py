@@ -14,6 +14,7 @@ Usage:
     emission = Emission('A320')
 """
 
+from openap import prop
 from openap.aero import Aero
 from openap.backends import CasadiBackend
 
@@ -58,4 +59,4 @@ class Emission(_EmissionBase):
 # Export the CasADi-specific aero module for backward compatibility
 aero = Aero(backend=_casadi_backend)
 
-__all__ = ["Drag", "Thrust", "FuelFlow", "Emission", "aero"]
+__all__ = ["Drag", "Thrust", "FuelFlow", "Emission", "aero", "prop"]
