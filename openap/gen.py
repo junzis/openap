@@ -36,14 +36,14 @@ class FlightGenerator:
     """Generate trajectory using WRAP model."""
 
     def __init__(self, ac: str, random_seed: int = 42, use_synonym: bool = False) -> None:
-        """Intitialize the generator.
+        """Initialize the generator.
 
         Args:
-            ac (str): ICAO aircraft type (for example: A320).
-            random_seed (int): Random seed for noise generation.
+            ac: ICAO aircraft type (for example: A320).
+            random_seed: Random seed for noise generation. Defaults to 42.
+            use_synonym: Use aircraft synonym if not found. Defaults to False.
 
         """
-        super(FlightGenerator, self).__init__()
 
         self.ac = ac
         self.acdict = prop.aircraft(self.ac, use_synonym)
@@ -73,12 +73,15 @@ class FlightGenerator:
     def climb(self, **kwargs) -> pd.DataFrame:
         """Generate climb trajectory based on WRAP model.
 
-        Args:
-            **dt (int): Time step in seconds.
-            **cas_const_cl (int): Constant CAS for climb (kt).
-            **mach_const_cl (float): Constant Mach for climb (-).
-            **alt_cr (int): Target cruise altitude (ft).
-            **random (bool): Generate trajectory with random parameters.
+        Keyword Args:
+            dt: Time step in seconds. Defaults to 1.
+            cas_const_cl: Constant CAS for climb (kt).
+            mach_const_cl: Constant Mach for climb.
+            alt_cr: Target cruise altitude (ft).
+            random: Generate trajectory with random parameters. Defaults to False.
+
+        Returns:
+            DataFrame with trajectory data.
 
         """
         dt = kwargs.get("dt", 1)
@@ -232,13 +235,16 @@ class FlightGenerator:
     def descent(self, **kwargs) -> pd.DataFrame:
         """Generate descent trajectory based on WRAP model.
 
-        Args:
-            **dt (int): Time step in seconds.
-            **cas_const_de (int): Constant CAS for climb (kt).
-            **mach_const_de (float): Constant Mach for climb (-).
-            **alt_cr (int): top of descent altitude (ft).
-            **random (bool): Generate trajectory with random parameters, default to False.
-            **withcr (bool): Include a short cruise segment of 60 seconds, default to True.
+        Keyword Args:
+            dt: Time step in seconds. Defaults to 1.
+            cas_const_de: Constant CAS for descent (kt).
+            mach_const_de: Constant Mach for descent.
+            alt_cr: Top of descent altitude (ft).
+            random: Generate trajectory with random parameters. Defaults to False.
+            withcr: Include a short cruise segment of 60 seconds. Defaults to True.
+
+        Returns:
+            DataFrame with trajectory data.
 
         """
         dt = kwargs.get("dt", 1)
@@ -390,14 +396,17 @@ class FlightGenerator:
         return df
 
     def cruise(self, **kwargs) -> pd.DataFrame:
-        """Generate descent trajectory based on WRAP model.
+        """Generate cruise trajectory based on WRAP model.
 
-        Args:
-            **dt (int): Time step in seconds.
-            **range_cr (int): Cruise range (km).
-            **alt_cr (int): Cruise altitude (ft).
-            **mach_cr (float): Cruise Mach number (-).
-            **random (bool): Generate trajectory with random parameters.
+        Keyword Args:
+            dt: Time step in seconds. Defaults to 1.
+            range_cr: Cruise range (km).
+            alt_cr: Cruise altitude (ft).
+            mach_cr: Cruise Mach number.
+            random: Generate trajectory with random parameters. Defaults to False.
+
+        Returns:
+            DataFrame with trajectory data.
 
         """
         dt = kwargs.get("dt", 1)
@@ -482,16 +491,19 @@ class FlightGenerator:
     def complete(self, **kwargs) -> pd.DataFrame:
         """Generate a complete trajectory based on WRAP model.
 
-        Args:
-            **dt (int): Time step in seconds.
-            **cas_const_cl (int): Constant CAS for climb (kt).
-            **mach_const_cl (float): Constant Mach for climb (-).
-            **cas_const_de (int): Constant CAS for climb (kt).
-            **mach_const_de (float): Constant Mach for climb (-).
-            **range_cr (int): Cruise range (km).
-            **alt_cr (int): Target cruise altitude (ft).
-            **mach_cr (float): Cruise Mach number (-).
-            **random (bool): Generate trajectory with random parameters.
+        Keyword Args:
+            dt: Time step in seconds. Defaults to 1.
+            cas_const_cl: Constant CAS for climb (kt).
+            mach_const_cl: Constant Mach for climb.
+            cas_const_de: Constant CAS for descent (kt).
+            mach_const_de: Constant Mach for descent.
+            range_cr: Cruise range (km).
+            alt_cr: Target cruise altitude (ft).
+            mach_cr: Cruise Mach number.
+            random: Generate trajectory with random parameters. Defaults to False.
+
+        Returns:
+            DataFrame with complete trajectory data.
 
         """
         df_cr = self.cruise(**kwargs)

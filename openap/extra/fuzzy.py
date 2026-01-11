@@ -1,55 +1,40 @@
-"""
-To prevent conda breaking, following functions are extracted 
-from scikit-fuzzy library:
+"""Fuzzy logic membership functions.
 
+Extracted from scikit-fuzzy library to prevent conda breaking:
 https://github.com/scikit-fuzzy/scikit-fuzzy
 """
 
 import numpy as np
 
 
-def gaussmf(x, mean, sigma):
-    """
-    Gaussian fuzzy membership function.
+def gaussmf(x, mean: float, sigma: float):
+    """Gaussian fuzzy membership function.
 
-    Parameters
-    ----------
-    x : 1d array or iterable
-        Independent variable.
-    mean : float
-        Gaussian parameter for center (mean) value.
-    sigma : float
-        Gaussian parameter for standard deviation.
+    Args:
+        x: Independent variable (1d array or iterable).
+        mean: Gaussian parameter for center (mean) value.
+        sigma: Gaussian parameter for standard deviation.
 
-    Returns
-    -------
-    y : 1d array
+    Returns:
         Gaussian membership function for x.
+
     """
     return np.exp(-((x - mean) ** 2) / (2 * sigma**2))
 
 
-def zmf(x, a, b):
-    """
-    Z-function fuzzy membership generator.
+def zmf(x, a: float, b: float):
+    """Z-function fuzzy membership generator.
 
-    Parameters
-    ----------
-    x : 1d array
-        Independent variable.
-    a : float
-        'ceiling', where the function begins falling from 1.
-    b : float
-        'foot', where the function reattains zero.
+    Named for its Z-like shape.
 
-    Returns
-    -------
-    y : 1d array
-        Z-function.
+    Args:
+        x: Independent variable (1d array).
+        a: Ceiling, where the function begins falling from 1.
+        b: Foot, where the function reattains zero.
 
-    Notes
-    -----
-    Named such because of its Z-like shape.
+    Returns:
+        Z-function membership values.
+
     """
     assert a <= b, "a <= b is required."
 
@@ -67,27 +52,19 @@ def zmf(x, a, b):
     return y
 
 
-def smf(x, a, b):
-    """
-    S-function fuzzy membership generator.
+def smf(x, a: float, b: float):
+    """S-function fuzzy membership generator.
 
-    Parameters
-    ----------
-    x : 1d array
-        Independent variable.
-    a : float
-        'foot', where the function begins to climb from zero.
-    b : float
-        'ceiling', where the function levels off at 1.
+    Named for its S-like shape.
 
-    Returns
-    -------
-    y : 1d array
-        S-function.
+    Args:
+        x: Independent variable (1d array).
+        a: Foot, where the function begins to climb from zero.
+        b: Ceiling, where the function levels off at 1.
 
-    Notes
-    -----
-    Named such because of its S-like shape.
+    Returns:
+        S-function membership values.
+
     """
     assert a <= b, "a <= b is required."
 
@@ -104,40 +81,22 @@ def smf(x, a, b):
     return y
 
 
-def interp_membership(x, xmf, xx, zero_outside_x=True):
-    """
-    Find the degree of membership ``u(xx)`` for a given value of ``x = xx``.
+def interp_membership(x, xmf, xx, zero_outside_x: bool = True):
+    """Find the degree of membership u(xx) for a given value of x = xx.
 
-    Parameters
-    ----------
-    x : 1d array
-        Independent discrete variable vector.
-    xmf : 1d array
-        Fuzzy membership function for ``x``.  Same length as ``x``.
-    xx : float or array of floats
-        Value(s) on universe ``x`` where the interpolated membership is
-        desired.
-    zero_outside_x : bool, optional
-        Defines the behavior if ``xx`` contains value(s) which are outside the
-        universe range as defined by ``x``.  If `True` (default), all
-        extrapolated values will be zero.  If `False`, the first or last value
-        in ``x`` will be what is returned to the left or right of the range,
-        respectively.
-
-    Returns
-    -------
-    xxmf : float or array of floats
-        Membership function value at ``xx``, ``u(xx)``.  If ``xx`` is a single
-        value, this will be a single value; if it is an array or iterable the
-        result will be returned as a NumPy array of like shape.
-
-    Notes
-    -----
     For use in Fuzzy Logic, where an interpolated discrete membership function
-    u(x) for discrete values of x on the universe of ``x`` is given. Then,
-    consider a new value x = xx, which does not correspond to any discrete
-    values of ``x``. This function computes the membership value ``u(xx)``
-    corresponding to the value ``xx`` using linear interpolation.
+    u(x) for discrete values of x on the universe of x is given. This function
+    computes the membership value u(xx) using linear interpolation.
+
+    Args:
+        x: Independent discrete variable vector (1d array).
+        xmf: Fuzzy membership function for x. Same length as x.
+        xx: Value(s) on universe x where the interpolated membership is desired.
+        zero_outside_x: If True, extrapolated values will be zero. If False,
+            the first or last value in x will be returned. Defaults to True.
+
+    Returns:
+        Membership function value at xx, u(xx).
 
     """
     if not zero_outside_x:
@@ -147,37 +106,21 @@ def interp_membership(x, xmf, xx, zero_outside_x=True):
     return np.interp(xx, x, xmf, left=kwargs[0], right=kwargs[1])
 
 
-def defuzz(x, mfx, mode):
-    """
-    Defuzzification of a membership function, returning a defuzzified value
-    of the function at x, using various defuzzification methods.
+def defuzz(x, mfx, mode: str):
+    """Defuzzification of a membership function.
 
-    Parameters
-    ----------
-    x : 1d array or iterable, length N
-        Independent variable.
-    mfx : 1d array of iterable, length N
-        Fuzzy membership function.
-    mode : string
-        Controls which defuzzification method will be used.
-        * 'mom'     : mean of maximum
-        * 'som'     : min of maximum
-        * 'lom'     : max of maximum
+    Args:
+        x: Independent variable (1d array, length N).
+        mfx: Fuzzy membership function (1d array, length N).
+        mode: Defuzzification method ('mom': mean of maximum,
+            'som': min of maximum, 'lom': max of maximum).
 
-    Returns
-    -------
-    u : float or int
+    Returns:
         Defuzzified result.
 
-    Raises
-    ------
-    - EmptyMembershipError : When the membership function area is empty.
-    - InconsistentMFDataError : When the length of the 'x' and the fuzzy
-        membership function arrays are not equal.
+    Raises:
+        ValueError: When membership function data is inconsistent or mode invalid.
 
-    See Also
-    --------
-    skfuzzy.defuzzify.centroid, skfuzzy.defuzzify.dcentroid
     """
     mode = mode.lower()
     x = x.ravel()

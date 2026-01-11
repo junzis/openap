@@ -1,6 +1,7 @@
-"""Navigation module helps accessing the navigation databases."""
+"""Navigation module for accessing navigation databases."""
 
 import os
+from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 import pandas as pd
@@ -31,15 +32,15 @@ def _read_airport():
     return pd.read_csv(db_airport)
 
 
-def airport(name):
+def airport(name: str) -> Optional[Dict]:
     """Get the airport information.
 
     Args:
-        name (string): ICAO code of the airport.
+        name: ICAO code of the airport.
 
     Returns:
-        dict: Information ralted to the airport, including positon,
-            country, and region information.
+        Information related to the airport, including position,
+        country, and region information. None if not found.
 
     """
     NAME = str(name).upper()
@@ -54,15 +55,15 @@ def airport(name):
         return df.iloc[0, :].to_dict()
 
 
-def closest_airport(lat, lon):
-    """Get the closest airport of a location.
+def closest_airport(lat: float, lon: float) -> Optional[str]:
+    """Get the closest airport to a location.
 
     Args:
-        lat (float): Latitude.
-        lon (float): Longitude.
+        lat: Latitude.
+        lon: Longitude.
 
     Returns:
-        string or None: ICAO code of the airport
+        ICAO code of the airport, or None if not found.
 
     """
     global airports
@@ -87,14 +88,14 @@ def closest_airport(lat, lon):
     return ap.icao
 
 
-def fix(name):
-    """Get position of a fix or way point.
+def fix(name: str) -> List:
+    """Get position of a fix or waypoint.
 
     Args:
-        name (string): Name of the fix of way point.
+        name: Name of the fix or waypoint.
 
     Returns:
-        list: latitude and longitude
+        Latitude and longitude.
 
     """
     global fixes
@@ -107,16 +108,15 @@ def fix(name):
     return fix
 
 
-def closest_fix(lat, lon):
-    """Get the closest fix of a location.
+def closest_fix(lat: float, lon: float) -> Tuple[List, int]:
+    """Get the closest fix to a location.
 
     Args:
-        lat (float): Latitude.
-        lon (float): Longitude.
+        lat: Latitude.
+        lon: Longitude.
 
     Returns:
-        string: ICAO code of the airport.
-        int: Distance to the fix.
+        Tuple of (fix coordinates, distance to the fix in meters).
 
     """
     global fixes
