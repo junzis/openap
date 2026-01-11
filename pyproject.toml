@@ -14,7 +14,7 @@ classifiers = [
     "License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)",
     "Programming Language :: Python :: 3",
 ]
-requires-python = ">=3.12"
+requires-python = ">=3.11"
 dependencies = [
     "numpy>=2.1",
     "scipy>=1.14",
@@ -28,15 +28,23 @@ homepage = "https://openap.dev"
 repository = "https://github.com/junzis/openap"
 issues = "https://github.com/junzis/openap/issues"
 
+[project.optional-dependencies]
+casadi = ["casadi>=3.6"]
+jax = ["jax>=0.4"]
+all = ["casadi>=3.6", "jax>=0.4"]
+
 [dependency-groups]
 dev = [
     "ruff>=0.8.0",
     "ipykernel>=6.9.0",
     "pytest>=7.2.0",
+    "pytest-cov>=7.0.0",
+    "casadi>=3.7.2",
+    "jax>=0.8.2",
 ]
 
 [tool.ruff]
-target-version = "py312"
+target-version = "py311"
 
 [tool.ruff.lint]
 select = [
