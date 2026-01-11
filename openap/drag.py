@@ -5,8 +5,9 @@ import os
 import warnings
 from typing import Any, Dict, Optional, Tuple
 
-import pandas as pd
 import yaml
+
+import pandas as pd
 
 from . import prop
 from .backends import BackendType
@@ -182,7 +183,7 @@ class Drag(DragBase):
 
         if self.wave_drag:
             mach = self.aero.tas2mach(tas * self.aero.kts, alt * self.aero.ft, dT=dT)
-            cl, qS = self._cl(mass, tas, alt, dT=dT)
+            cl, _qS = self._cl(mass, tas, alt, dT=dT)
 
             sweep = self.aircraft["wing"]["sweep"] * b.pi / 180
             tc = self.aircraft["wing"]["t/c"]

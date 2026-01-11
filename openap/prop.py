@@ -7,9 +7,10 @@ import warnings
 from functools import lru_cache
 from typing import Any, Dict, List, Optional
 
+import yaml
+
 import numpy as np
 import pandas as pd
-import yaml
 
 logger = logging.getLogger(__name__)
 
@@ -127,7 +128,7 @@ def search_engine(eng: str) -> Optional[List[str]]:
         Matching engine types, or None if not found.
 
     """
-    ENG = eng.strip().upper()
+    ENG = eng.strip().upper()  # noqa: F841 - used in query via @ENG
     engines = pd.read_csv(file_engine)
 
     available_engines = engines.query("name.str.startswith(@ENG)", engine="python")
@@ -153,7 +154,7 @@ def engine(eng: str) -> Dict[str, Any]:
         Engine parameters.
 
     """
-    ENG = eng.strip().upper()
+    ENG = eng.strip().upper()  # noqa: F841 - used in query via @ENG
     engines = pd.read_csv(file_engine)
 
     # try to look for the unique engine

@@ -7,7 +7,7 @@ models with configurable backends (NumPy, CasADi, JAX).
 from typing import Optional
 
 from openap.aero import Aero
-from openap.backends import BackendType, NumpyBackend, default_backend
+from openap.backends import BackendType, default_backend
 from openap.extra import ndarrayconvert
 
 
@@ -36,7 +36,11 @@ class ThrustBase:
     """Base class for thrust models."""
 
     def __init__(
-        self, ac: str, eng: Optional[str] = None, backend: Optional[BackendType] = None, **kwargs
+        self,
+        ac: str,
+        eng: Optional[str] = None,
+        backend: Optional[BackendType] = None,
+        **kwargs,
     ):
         """Initialize ThrustBase object.
 
@@ -66,7 +70,11 @@ class FuelFlowBase:
     """Base class for fuel flow models."""
 
     def __init__(
-        self, ac: str, eng: Optional[str] = None, backend: Optional[BackendType] = None, **kwargs
+        self,
+        ac: str,
+        eng: Optional[str] = None,
+        backend: Optional[BackendType] = None,
+        **kwargs,
     ):
         """Initialize FuelFlowBase object.
 
@@ -94,7 +102,11 @@ class EmissionBase:
     """Base class for emission models."""
 
     def __init__(
-        self, ac: str, eng: Optional[str] = None, backend: Optional[BackendType] = None, **kwargs
+        self,
+        ac: str,
+        eng: Optional[str] = None,
+        backend: Optional[BackendType] = None,
+        **kwargs,
     ):
         """Initialize EmissionBase object.
 

@@ -35,7 +35,9 @@ from .kinematic import WRAP
 class FlightGenerator:
     """Generate trajectory using WRAP model."""
 
-    def __init__(self, ac: str, random_seed: int = 42, use_synonym: bool = False) -> None:
+    def __init__(
+        self, ac: str, random_seed: int = 42, use_synonym: bool = False
+    ) -> None:
         """Initialize the generator.
 
         Args:
@@ -211,7 +213,7 @@ class FlightGenerator:
         df = pd.DataFrame(data, columns=["t", "h", "s", "v", "vs", "seg"])
 
         if self.noise:
-            n = df.shape[0]
+            n = df.shape[0]  # noqa: F841 - used in df.eval via @n
             df = df.eval("""
             h = h + @self.rng.normal(0, @self.sigma_h, @n)
             s = s + @self.rng.normal(0, @self.sigma_s, @n)
@@ -370,7 +372,7 @@ class FlightGenerator:
         df = pd.DataFrame(data, columns=["t", "h", "s", "v", "vs", "seg"])
 
         if self.noise:
-            n = df.shape[0]
+            n = df.shape[0]  # noqa: F841 - used in df.eval via @n
             df = df.eval("""
             h = h + @self.rng.normal(0, @self.sigma_h, @n)
             s = s + @self.rng.normal(0, @self.sigma_s, @n)
@@ -470,7 +472,7 @@ class FlightGenerator:
         df = pd.DataFrame(data, columns=["t", "h", "s", "v", "vs"])
 
         if self.noise:
-            n = df.shape[0]
+            n = df.shape[0]  # noqa: F841 - used in df.eval via @n
             df = df.eval("""
             h = h + @self.rng.normal(0, @self.sigma_h, @n)
             s = s + @self.rng.normal(0, @self.sigma_s, @n)

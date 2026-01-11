@@ -59,4 +59,4 @@ class Emission(_EmissionBase):
 # Export the CasADi-specific aero module for backward compatibility
 aero = Aero(backend=_casadi_backend)
 
-__all__ = ["Drag", "Thrust", "FuelFlow", "Emission", "aero", "prop"]
+__all__ = ["Drag", "Emission", "FuelFlow", "Thrust", "aero", "prop"]

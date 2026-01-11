@@ -8,7 +8,7 @@ Models for Modern Two-Shaft Turbofan Engines
 - C. Svoboda, Turbofan engine database as a preliminary design (cruise thrust)
 """
 
-from typing import Any, Optional, Union
+from typing import Any, Optional
 
 from openap import prop
 from openap.backends import BackendType
@@ -119,9 +119,7 @@ class Thrust(ThrustBase):
         return m
 
     @ndarrayconvert
-    def takeoff(
-        self, tas: Numeric, alt: Numeric = 0, dT: Numeric = 0
-    ) -> Numeric:
+    def takeoff(self, tas: Numeric, alt: Numeric = 0, dT: Numeric = 0) -> Numeric:
         """Calculate thrust at take-off condition.
 
         Args:
@@ -246,9 +244,7 @@ class Thrust(ThrustBase):
         F = ratio * Fcr
         return F
 
-    def descent_idle(
-        self, tas: Numeric, alt: Numeric, dT: Numeric = 0
-    ) -> Numeric:
+    def descent_idle(self, tas: Numeric, alt: Numeric, dT: Numeric = 0) -> Numeric:
         """Calculate idle thrust during descent.
 
         Note: The idle thrust at the descent is taken as 7% of the maximum

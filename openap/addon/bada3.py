@@ -5,8 +5,7 @@ from typing import Optional
 
 from numpy import ndarray
 
-from .. import base
-from .. import prop
+from .. import base, prop
 from ..extra import ndarrayconvert
 
 

@@ -96,7 +96,7 @@ class Emission(EmissionBase):
             Soot emission from all engines (unit: g/s).
 
         """
-        # Barrett et al. 2010 - Global Mortality Attributable to Aircraft Cruise Emissions
+        # Barrett et al. 2010
         return ffac * 0.03
 
     @ndarrayconvert
@@ -110,7 +110,7 @@ class Emission(EmissionBase):
             SOx emission from all engines (unit: g/s).
 
         """
-        # Barrett et al. 2010 - Global Mortality Attributable to Aircraft Cruise Emissions
+        # Barrett et al. 2010
         return ffac * 1.2
 
     @ndarrayconvert

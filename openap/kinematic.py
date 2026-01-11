@@ -149,13 +149,13 @@ class WRAP:
     def cruise_mach(self):
         """Get average cruise Mach number."""
         return self._get_var("cr_v_mach_mean")
-    
+
     def cruise_max_mach(self):
         return self._get_var("cr_v_mach_max")
 
     def cruise_mean_vcas(self):
         return self._get_var("cr_v_cas_mean")
-    
+
     def descent_range(self):
         """Get descent range."""
         return self._get_var("de_d_range")

@@ -68,4 +68,4 @@ class Emission(_EmissionBase):
 # Export the JAX-specific aero module
 aero = Aero(backend=_jax_backend)
 
-__all__ = ["Drag", "Thrust", "FuelFlow", "Emission", "aero"]
+__all__ = ["Drag", "Emission", "FuelFlow", "Thrust", "aero"]

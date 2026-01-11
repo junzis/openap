@@ -162,9 +162,7 @@ class Aero:
         T = self.temperature(h, dT=dT)
         return self.backend.sqrt(gamma * R * T)
 
-    def distance(
-        self, lat1: Any, lon1: Any, lat2: Any, lon2: Any, h: Any = 0
-    ) -> Any:
+    def distance(self, lat1: Any, lon1: Any, lat2: Any, lon2: Any, h: Any = 0) -> Any:
         """Compute distance between coordinates using Haversine formula.
 
         Args:

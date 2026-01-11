@@ -5,7 +5,6 @@ import os
 from typing import Any, Callable, Optional
 
 import pandas as pd
-
 from openap import prop
 from openap.backends import BackendType
 

@@ -1,8 +1,9 @@
 """Fit data using different statistical models."""
 
-import numpy as np
 import scipy.stats
 from matplotlib import pyplot as plt
+
+import numpy as np
 
 
 def fit(data, models):
@@ -27,7 +28,6 @@ def fit(data, models):
 
     result = dict()
     for model in models:
-
         # fit distribution and run kstest
         dist = getattr(scipy.stats, model)
         if model == "norm":

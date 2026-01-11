@@ -55,7 +55,7 @@ def get_backend(name: BackendName = "numpy") -> BackendType:
         return JaxBackend()
     else:
         raise ValueError(
-            f"Unknown backend: {name}. " "Choose from: 'numpy', 'casadi', 'jax'"
+            f"Unknown backend: {name}. Choose from: 'numpy', 'casadi', 'jax'"
         )
 
 
@@ -69,12 +69,12 @@ def default_backend() -> NumpyBackend:
 
 
 __all__ = [
-    "MathBackend",
-    "NumpyBackend",
+    "BackendName",
+    "BackendType",
     "CasadiBackend",
     "JaxBackend",
-    "BackendType",
-    "BackendName",
-    "get_backend",
+    "MathBackend",
+    "NumpyBackend",
     "default_backend",
+    "get_backend",
 ]

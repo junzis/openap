@@ -1,8 +1,9 @@
-import numpy as np
 from matplotlib import pyplot as plt
 from scipy.interpolate import UnivariateSpline
 from scipy.ndimage import convolve1d
 from scipy.signal.windows import gaussian
+
+import numpy as np
 
 
 class BaseFilter:
@@ -86,7 +87,7 @@ class SavitzkyGolay(BaseFilter):
         order_range = list(range(self.order + 1))
         half_window = (self.window_size - 1) // 2
         # precompute coefficients
-        b = np.mat(
+        b = np.asmatrix(
             [[k**i for i in order_range] for k in range(-half_window, half_window + 1)]
         )
         m = np.linalg.pinv(b).A[self.deriv]
@@ -125,7 +126,7 @@ class Spline(BaseFilter):
         X, Y = self.sortxy(X, Y)
 
         # using gaussian kernel to get a better variances
-        avg, var = self.kernel(Y)
+        _avg, var = self.kernel(Y)
         spl = UnivariateSpline(X, Y, k=self.k, w=1 / np.sqrt(var))
 
         if self.interpolate:

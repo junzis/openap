@@ -1,8 +1,8 @@
 """Using fuzzy logic to identify flight phase in trajectory data."""
 
-import numpy as np
 from matplotlib import pyplot as plt
 
+import numpy as np
 from openap.extra import fuzzy
 
 
@@ -154,7 +154,7 @@ class FlightPhase:
             )
 
             state_raw = fuzzy.defuzz(self.states, aggregated, "lom")
-            state = int(round(state_raw))
+            state = round(state_raw)
             if state > 6:
                 state = 6
             if state < 1:
@@ -257,7 +257,6 @@ class FlightPhase:
         return (istart, ilof, iend + 1)
 
     def _get_fa_ld(self):
-
         # get the approach + landing data chunk (h=0)
         istart = 0
         iend = 0
@@ -318,7 +317,6 @@ class FlightPhase:
         return istart, iend
 
     def _get_de(self):
-
         labels = np.array(self.phaselabel())
 
         if "DE" not in labels:

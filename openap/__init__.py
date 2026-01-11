@@ -10,20 +10,20 @@ from .phase import FlightPhase
 from .thrust import Thrust
 
 __all__ = [
+    "WRAP",
     "Aero",
+    "CasadiBackend",
     "Drag",
     "Emission",
-    "FuelFlow",
     "FlightGenerator",
     "FlightPhase",
-    "Thrust",
-    "WRAP",
-    "NumpyBackend",
-    "CasadiBackend",
+    "FuelFlow",
     "JaxBackend",
-    "get_backend",
+    "NumpyBackend",
+    "Thrust",
     "aero",
     "filters",
+    "get_backend",
     "nav",
     "statistics",
 ]
