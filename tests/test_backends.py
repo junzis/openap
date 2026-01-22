@@ -234,18 +234,6 @@ class TestCasadiBackend:
         result = float(f(10000))
         assert result == pytest.approx(EXPECTED["aero_temperature"], rel=RTOL)
 
-        # Test distance
-        lat1 = casadi.SX.sym("lat1")
-        lon1 = casadi.SX.sym("lon1")
-        lat2 = casadi.SX.sym("lat2")
-        lon2 = casadi.SX.sym("lon2")
-
-        dist = aero.distance(lat1, lon1, lat2, lon2)
-        assert isinstance(dist, casadi.SX)
-
-        brg = aero.bearing(lat1, lon1, lat2, lon2)
-        assert isinstance(brg, casadi.SX)
-
 
 class TestJaxBackend:
     """Tests for JaxBackend."""

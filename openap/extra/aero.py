@@ -30,13 +30,11 @@ from openap.aero import (
     a0,
     # Functions
     atmos,
-    bearing,
     beta,
     cas2mach,
     cas2tas,
     crossover_alt,
     density,
-    distance,
     eas2tas,
     fpm,
     ft,
@@ -47,7 +45,6 @@ from openap.aero import (
     h_isa,
     inch,
     kts,
-    latlon,
     lbs,
     mach2cas,
     mach2tas,
@@ -63,6 +60,9 @@ from openap.aero import (
     temperature,
     vsound,
 )
+
+# Geographic functions from openap.geo
+from openap.geo import bearing, distance, latlon
 
 __all__ = [
     # Constants
