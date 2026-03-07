@@ -10,13 +10,15 @@ from ..extra import ndarrayconvert
 
 # %%
 def load_bada4(ac: str, path: str) -> ElementTree.ElementTree:
-    """Find and construct the drag polar model.
+    """Load BADA4 model XML.
+
     Args:
-        ac (str): aircraft type (for example: A320 or A320-231).
-        bada_path (str): path to BADA4 models.
+        ac: Aircraft type (for example: A320 or A320-231).
+        path: Path to BADA4 models.
 
     Returns:
-        xml.etree.ElementTree.ElementTree: BADA4 model XML.
+        BADA4 model XML tree.
+
     """
 
     ac_options = glob(f"{path}/{ac.upper()}*")
@@ -32,39 +34,14 @@ def load_bada4(ac: str, path: str) -> ElementTree.ElementTree:
 
 # %%
 class Drag(base.DragBase):
-    """
-    Compute the drag of an aircraft using BADA4 models.
+    """Compute the drag of an aircraft using BADA4 models."""
 
-    Attributes:
-        ac (str): aircraft type (e.g.: A320 or A320-231).
-        scalar (float): Scalar value for drag coefficient calculation.
-        d_ (ndarray): Array of drag coefficient parameters.
-        mach_max (float): Maximum Mach number.
-        S (float): Wing surface area (m^2).
-
-    Methods:
-        _cd_base(cl, mach):
-            Compute the base drag coefficient (CD) for givenlift coefficient (CL)
-            and Mach number.
-
-        _cd(cl, mach):
-            Compute the drag coefficient (CD) for given lift coefficient (CL)
-            and Mach number, considering critical Mach number effects.
-
-        _cl(mass, tas, alt, vs=0):
-            Compute the lift coefficient (CL) for given aircraft mass,
-            true airspeed (TAS), altitude, and vertical speed.
-
-        clean(mass, tas, alt, vs=0):
-            Compute the total drag (N) for the aircraft in clean configuration.
-    """
-
-    def __init__(self, ac, bada_path, **kwargs):
+    def __init__(self, ac: str, bada_path: str, **kwargs):
         """Initialize Drag object.
 
         Args:
-            ac (str): aircraft type (for example: A320).
-            path (str): path to BADA4 models.
+            ac: Aircraft type (for example: A320).
+            bada_path: Path to BADA4 models.
 
         """
         super().__init__(ac, **kwargs)
@@ -140,13 +117,13 @@ class Drag(base.DragBase):
         """Compute drag at clean configuration.
 
         Args:
-            mass (float | ndarray): Mass of the aircraft (kg).
-            tas (float | ndarray): True airspeed (kt).
-            alt (float | ndarray): Altitude (ft).
-            vs (float): Vertical rate (feet/min). Default: 0.
+            mass: Mass of the aircraft (kg).
+            tas: True airspeed (kt).
+            alt: Altitude (ft).
+            vs: Vertical rate (ft/min). Defaults to 0.
 
         Returns:
-            float | ndarray: Total drag (N).
+            Total drag (N).
 
         """
         v = tas * self.aero.kts
@@ -161,36 +138,14 @@ class Drag(base.DragBase):
 
 
 class Thrust(base.ThrustBase):
-    """
-    Thrust class for computing the thrust of an aircraft using BADA4 models.
+    """Compute the thrust of an aircraft using BADA4 models."""
 
-    This class provides methods to compute the thrust coefficient and thrust force
-    during different phases of flight such as climb, cruise, and takeoff.
-
-    Attributes:
-        ac (str): aircraft type (e.g.: A320 or A320-231).
-        a_ (list): List of coefficients for thrust computation.
-        b_ (dict): Dictionary of flat rating coefficients for different ratings.
-        c_ (dict): Dictionary of temperature rating coefficients for different ratings.
-
-    Methods:
-        cT(mach, h, rating, dT=0):
-            Compute the thrust coefficient considering altitude, Mach, and rating.
-        climb(mass, tas, alt, dT=0):
-            Compute the thrust force during climb phase.
-        cruise(mass, tas, alt, dT=0):
-            Compute the thrust force during cruise phase.
-        takeoff(mass, tas, alt=0, dT=0):
-            Compute the thrust force during takeoff phase.
-
-    """
-
-    def __init__(self, ac, bada_path, **kwargs):
+    def __init__(self, ac: str, bada_path: str, **kwargs):
         """Initialize Thrust object.
 
         Args:
-            ac (str): aircraft type (for example: A320).
-            path (str): path to BADA4 models.
+            ac: Aircraft type (for example: A320).
+            bada_path: Path to BADA4 models.
 
         """
         super().__init__(ac, **kwargs)
@@ -218,8 +173,17 @@ class Thrust(base.ThrustBase):
 
     @ndarrayconvert(column=True)
     def cT(self, mach, h, rating, dT=0) -> float | ndarray:
-        """
-        Compute the thrust coefficient, considering the altitude, Mach, and rating.
+        """Compute the thrust coefficient.
+
+        Args:
+            mach: Mach number.
+            h: Altitude (m).
+            rating: Thrust rating ('MCRZ', 'MCMB', or 'LIDL').
+            dT: ISA temperature deviation (K). Defaults to 0.
+
+        Returns:
+            Thrust coefficient.
+
         """
 
         rating = rating.upper()
@@ -261,15 +225,16 @@ class Thrust(base.ThrustBase):
 
     @ndarrayconvert(column=True)
     def climb(self, tas, alt, dT=0) -> float | ndarray:
-        """
-        Compute the thrust force during the climb phase.
+        """Compute the thrust force during the climb phase.
 
-        Parameters:
-            tas (float | ndarray): True airspeed (kts).
-            alt (float | ndarray): Altitude (ft).
-            dT (float | ndarray, optional): ISA temperature deviation (K). Default: 0.
+        Args:
+            tas: True airspeed (kt).
+            alt: Altitude (ft).
+            dT: ISA temperature deviation (K). Defaults to 0.
+
         Returns:
-            float | ndarray: The thrust force during the climb phase in Newtons.
+            Thrust force during climb (N).
+
         """
         h = alt * self.aero.ft
         v = tas * self.aero.kts
@@ -282,15 +247,16 @@ class Thrust(base.ThrustBase):
 
     @ndarrayconvert(column=True)
     def cruise(self, tas, alt, dT=0) -> float | ndarray:
-        """
-        Compute the thrust force during the cruise phase.
+        """Compute the thrust force during the cruise phase.
 
-        Parameters:
-            tas (float | ndarray): True airspeed (kts).
-            alt (float | ndarray): Altitude (ft).
-            dT (float | ndarray, optional): ISA temperature deviation (K). Default: 0.
+        Args:
+            tas: True airspeed (kt).
+            alt: Altitude (ft).
+            dT: ISA temperature deviation (K). Defaults to 0.
+
         Returns:
-            float | ndarray: The thrust force during the climb phase in Newtons.
+            Thrust force during cruise (N).
+
         """
         h = alt * self.aero.ft
         v = tas * self.aero.kts
@@ -303,29 +269,31 @@ class Thrust(base.ThrustBase):
 
     @ndarrayconvert(column=True)
     def takeoff(self, tas, alt=0, dT=0) -> float | ndarray:
-        """
-        Compute the thrust force at takeoff
+        """Compute the thrust force at takeoff.
 
-        Parameters:
-            tas (float | ndarray): True airspeed (kts).
-            alt (float | ndarray): Altitude (ft). Default: 0.
-            dT (float | ndarray, optional): ISA temperature deviation (K). Default: 0.
+        Args:
+            tas: True airspeed (kt).
+            alt: Altitude (ft). Defaults to 0.
+            dT: ISA temperature deviation (K). Defaults to 0.
+
         Returns:
-            float | ndarray: The thrust force during the climb phase in Newtons.
+            Thrust force during takeoff (N).
+
         """
         return self.climb(tas, alt=alt, dT=dT)
 
     @ndarrayconvert(column=True)
     def idle(self, tas, alt=0, dT=0) -> float | ndarray:
-        """
-        Compute the idle thrust
+        """Compute the idle thrust.
 
-        Parameters:
-            tas (float | ndarray): True airspeed (kts).
-            alt (float | ndarray): Altitude (ft). Default: 0.
-            dT (float | ndarray, optional): ISA temperature deviation (K). Default: 0.
+        Args:
+            tas: True airspeed (kt).
+            alt: Altitude (ft). Defaults to 0.
+            dT: ISA temperature deviation (K). Defaults to 0.
+
         Returns:
-            float | ndarray: The thrust force during the climb phase in Newtons.
+            Idle thrust force (N).
+
         """
         h = alt * self.aero.ft
         v = tas * self.aero.kts
@@ -339,31 +307,14 @@ class Thrust(base.ThrustBase):
 
 # %%
 class FuelFlow(base.FuelFlowBase):
-    """
-    FuelFlow class to compute the fuel flow of an aircraft using BADA4 models.
+    """Compute the fuel flow of an aircraft using BADA4 models."""
 
-    Attributes:
-        ac (str): aircraft type (e.g.: A320 or A320-231).
-        mass_ref (float): Reference mass (kg).
-        f_ (list): List of coefficients for fuel flow computation.
-        fi_ (list): List of coefficients for idle rating.
-        lhv (float): Lower heating value (J/kg).
-
-    Methods:
-        idle(mass, tas, alt, **kwargs):
-            Compute the fuel flow with idle rating.
-
-        enroute(mass, tas, alt, vs=0, **kwargs):
-            Compute the fuel flow at not-idle.
-
-    """
-
-    def __init__(self, ac, bada_path, **kwargs):
+    def __init__(self, ac: str, bada_path: str, **kwargs):
         """Initialize FuelFlow object.
 
         Args:
-            ac (str): aircraft type (for example: A320).
-            path (str): path to BADA4 models.
+            ac: Aircraft type (for example: A320).
+            bada_path: Path to BADA4 models.
 
         """
         super().__init__(ac, **kwargs)
@@ -395,12 +346,12 @@ class FuelFlow(base.FuelFlowBase):
         """Compute the fuel flow at idle conditions.
 
         Args:
-            mass (float | ndarray): Aircraft mass (kg).
-            tas (float | ndarray): Aircraft true airspeed (kt).
-            alt (float | ndarray): Aircraft altitude (ft).
+            mass: Aircraft mass (kg).
+            tas: Aircraft true airspeed (kt).
+            alt: Aircraft altitude (ft).
 
         Returns:
-            float: Fuel flow (kg/s).
+            Fuel flow (kg/s).
 
         """
 
@@ -422,16 +373,16 @@ class FuelFlow(base.FuelFlowBase):
 
     @ndarrayconvert(column=True)
     def enroute(self, mass, tas, alt, vs=0, **kwargs) -> float | ndarray:
-        """Compute the fuel flow at not-idle conditions.
+        """Compute the fuel flow at non-idle conditions.
 
         Args:
-            mass (float | ndarray): Aircraft mass (kg).
-            tas (float | ndarray): Aircraft true airspeed (kt).
-            alt (float | ndarray): Aircraft altitude (ft).
-            vs (float | ndarray): Vertical rate (ft/min). Default is 0.
+            mass: Aircraft mass (kg).
+            tas: Aircraft true airspeed (kt).
+            alt: Aircraft altitude (ft).
+            vs: Vertical rate (ft/min). Defaults to 0.
 
         Returns:
-            float: Fuel flow (kg/s).
+            Fuel flow (kg/s).
 
         """
         h = alt * self.aero.ft

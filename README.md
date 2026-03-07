@@ -1,6 +1,12 @@
 # OpenAP: Open Aircraft Performance Model and Toolkit
 
-This repository contains the OpenAP model data and Python packages for aircraft performance and emission calculations.
+[![PyPI version](https://img.shields.io/pypi/v/openap.svg)](https://pypi.org/project/openap/)
+[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/openap.svg)](https://pypi.org/project/openap/)
+[![License: LGPL v3](https://img.shields.io/badge/License-LGPL%20v3-blue.svg)](https://www.gnu.org/licenses/lgpl-3.0)
+
+Open-source aircraft performance model and toolkit for Python. Calculate aircraft performance, fuel consumption, and emissions for air transportation studies and simulations.
+
+**Requirements:** Python 3.11+
 
 ## 🕮 User Guide
 
@@ -48,17 +54,22 @@ The OpenAP Python library includes the following packages:
 - `phase`: Module provides `FlightPhase()` class for determining flight phases.
 - `gen`: Module provides `FlightGenerator()` class for trajectory generation.
 
-Examples:
+Example:
 
 ```python
 import openap
 
-openap.prop.aircraft("A320")
+# Get aircraft properties
+aircraft = openap.prop.aircraft("A320")
+print(aircraft["mtow"])  # max takeoff weight: 78000 (kg)
+
+# Calculate fuel flow during cruise
 fuelflow = openap.FuelFlow("A320")
-fuelflow.enroute(mass, tas, alt) # -> kg/s
+ff = fuelflow.enroute(mass=60000, tas=250, alt=30000)
+print(ff)  # fuel flow: 0.92 (kg/s)
 ```
 
-The input parameters can be scalar, list, or ndarray. Most of the OpenAP methods' parameters are in aeronautical units, such as knots, feet, feet/min. The mass is always in SI units, i.e., kilograms.
+**Units:** Input parameters can be scalar, list, or ndarray. Speeds are in knots, altitudes in feet, vertical rates in feet/min. Mass is in kilograms (SI).
 
 ### Add-ons
 
@@ -72,19 +83,40 @@ fuelflow = bada4.FuelFlow()
 
 The methods and attributes of `openap.addon.bada4.FuelFlow()` are the same as those of `openap.FuelFlow()`.
 
-## Symbolic Implementation for CasADi
+## Alternative Backends: CasADi and JAX
 
-The OpenAP model can also be used with the CasADi library for symbolic computations. The symbolic model is available in the `openap.casadi` package. For example, you can use the following code to create a symbolic model for fuel flow:
+OpenAP supports multiple computational backends beyond NumPy:
 
-```python
-from openap.casadi import FuelFlow
+- **CasADi**: For symbolic computations and optimization
+- **JAX**: For automatic differentiation and GPU acceleration
 
-fuelflow = FuelFlow()
+### Installation
+
+Install with optional backend support:
+
+```sh
+pip install openap[casadi]  # CasADi backend
+pip install openap[jax]     # JAX backend
+pip install openap[all]     # Both backends
 ```
 
-All the methods of `openap.casadi.FuelFlow()` are the same as those of `openap.FuelFlow()`, and they are now symbolic functions that can be used to compute fuel flow for given flight conditions in CasADi `DM`, `SX`, or `MX` types.
+### Usage
 
-How did we implement this? When the `casadi` module is initiated, a metaclass is used to replace the `sci` function from `numpy`, which overrides all the `numpy` functions with `casadi` functions. For more details, check the `openap/casadi/__init__.py` code.
+```python
+# CasADi backend
+import openap.casadi as oc
+
+fuelflow = oc.FuelFlow("A320")
+fuelflow.enroute(mass, tas, alt)  # works with CasADi DM, SX, or MX types
+
+# JAX backend
+import openap.jax as oj
+
+fuelflow = oj.FuelFlow("A320")
+fuelflow.enroute(mass, tas, alt)  # works with JAX arrays
+```
+
+The API is identical to the standard `openap` module. The backends are implemented using a protocol-based architecture in `openap/backends/`.
 
 ## Citing OpenAP
 

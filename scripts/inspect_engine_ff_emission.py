@@ -12,7 +12,7 @@ for ac in acs:
         try:
             e = prop.engine(eng)
             print(e)
-        except:
+        except (KeyError, ValueError):
             print(f"{eng} from {ac} cannot be found.")
             continue
 

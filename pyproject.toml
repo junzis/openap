@@ -14,13 +14,13 @@ classifiers = [
     "License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)",
     "Programming Language :: Python :: 3",
 ]
-requires-python = ">=3.9"
+requires-python = ">=3.11"
 dependencies = [
-    "numpy>=1.24",
-    "scipy>=1.7",
-    "pandas>=1.2",
-    "pyyaml>=5.1",
-    "matplotlib>=3.1",
+    "numpy>=2.1",
+    "scipy>=1.14",
+    "pandas>=2.0",
+    "pyyaml>=6.0",
+    "matplotlib>=3.8",
 ]
 
 [project.urls]
@@ -28,14 +28,19 @@ homepage = "https://openap.dev"
 repository = "https://github.com/junzis/openap"
 issues = "https://github.com/junzis/openap/issues"
 
-[tool.uv]
-dev-dependencies = [
-    "flake8>=5.0.0",
-    "black>=22.12.0",
-    "isort>=5.11.4",
+[project.optional-dependencies]
+casadi = ["casadi>=3.6"]
+jax = ["jax>=0.4"]
+all = ["casadi>=3.6", "jax>=0.4"]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.8.0",
     "ipykernel>=6.9.0",
-    # "mypy>=0.991",
-    # "pytest>=7.2.0",
+    "pytest>=7.2.0",
+    "pytest-cov>=7.0.0",
+    "casadi>=3.7.2",
+    "jax>=0.8.2",
 ]
 
 [tool.ruff]
@@ -51,6 +56,10 @@ select = [
     # "PD",  # pandas
     "DTZ", # flake8-datetimez
     "RUF",
+]
+ignore = [
+    "E402",   # module level import not at top (intentional for type aliases)
+    "RUF022", # __all__ not sorted (keep organized by category)
 ]
 
 [tool.ruff.lint.isort]

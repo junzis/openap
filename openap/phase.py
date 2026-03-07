@@ -1,17 +1,16 @@
-"""Using fuzzy logic to indentify flight phase in trajectory data."""
+"""Using fuzzy logic to identify flight phase in trajectory data."""
 
-import numpy as np
 from matplotlib import pyplot as plt
 
+import numpy as np
 from openap.extra import fuzzy
 
 
-class FlightPhase(object):
+class FlightPhase:
     """Fuzzy logic flight phase identification."""
 
     def __init__(self):
         """Initialize of the FlightPhase object."""
-        super(FlightPhase, self).__init__()
 
         # logic states
         self.alt_range = np.arange(0, 40000, 1)
@@ -44,14 +43,14 @@ class FlightPhase(object):
         self.spd = None
         self.roc = None
 
-    def set_trajectory(self, ts, alt, spd, roc):
+    def set_trajectory(self, ts, alt, spd, roc) -> None:
         """Set trajectory data.
 
         Args:
-            ts (list): Time (unit: second).
-            alt (list): Altitude (unit: ft).
-            spd (list): True airspeed (unit: kt).
-            roc (list): Rate of climb (unit: ft/min). Negative for descent.
+            ts: Time (unit: second).
+            alt: Altitude (unit: ft).
+            spd: True airspeed (unit: kt).
+            roc: Rate of climb (unit: ft/min). Negative for descent.
 
         """
         self.ts = ts - ts[0]
@@ -66,15 +65,14 @@ class FlightPhase(object):
 
         return
 
-    def phaselabel(self, twindow=60):
+    def phaselabel(self, twindow: int = 60) -> list:
         """Fuzzy logic for determining phase label.
 
         Args:
-            twindow (int): Time window in number of seconds. Default to 60.
+            twindow: Time window in number of seconds. Defaults to 60.
 
         Returns:
-            list: Labels could be: ground [GND], climb [CL], descent [DE],
-                cruise [CR], leveling [LVL].
+            Labels: ground [GND], climb [CL], descent [DE], cruise [CR], level [LVL].
 
         """
         if self.ts is None:
@@ -156,7 +154,7 @@ class FlightPhase(object):
             )
 
             state_raw = fuzzy.defuzz(self.states, aggregated, "lom")
-            state = int(round(state_raw))
+            state = round(state_raw)
             if state > 6:
                 state = 6
             if state < 1:
@@ -259,7 +257,6 @@ class FlightPhase(object):
         return (istart, ilof, iend + 1)
 
     def _get_fa_ld(self):
-
         # get the approach + landing data chunk (h=0)
         istart = 0
         iend = 0
@@ -320,7 +317,6 @@ class FlightPhase(object):
         return istart, iend
 
     def _get_de(self):
-
         labels = np.array(self.phaselabel())
 
         if "DE" not in labels:
@@ -361,12 +357,12 @@ class FlightPhase(object):
 
         return istart, iend
 
-    def flight_phase_indices(self):
-        """Get the indices of data, of which different flight phase start.
+    def flight_phase_indices(self) -> dict:
+        """Get the indices where different flight phases start.
 
         Returns:
-            dict: Indices for takeoff (TO), initial climb (IC), climb (CL),
-                cruise (CR), descent (DE), final approach (FA), landing (LD).
+            Indices for takeoff (TO), initial climb (IC), climb (CL),
+            cruise (CR), descent (DE), final approach (FA), landing (LD).
 
         """
         # Process the data and get the phase index

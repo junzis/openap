@@ -1,10 +1,15 @@
-""" "OpenAP FuelFlow model."""
+"""OpenAP FuelFlow model."""
 
 import importlib
 import os
+from typing import Any, Callable, Optional
 
 import pandas as pd
 from openap import prop
+from openap.backends import BackendType
+
+# Type alias for numeric inputs (scalar, array, or symbolic)
+Numeric = Any
 from openap.extra import ndarrayconvert
 from openap.extra.aero import fpm, kts
 
@@ -14,17 +19,23 @@ from .base import FuelFlowBase
 class FuelFlow(FuelFlowBase):
     """Fuel flow model based on ICAO emission databank."""
 
-    def __init__(self, ac, eng=None, **kwargs):
+    def __init__(
+        self,
+        ac: str,
+        eng: Optional[str] = None,
+        backend: Optional[BackendType] = None,
+        **kwargs,
+    ):
         """Initialize FuelFlow object.
 
         Args:
-            ac (string): ICAO aircraft type (for example: A320).
-            eng (string): Engine type (for example: CFM56-5A3).
+            ac: ICAO aircraft type (for example: A320).
+            eng: Engine type (for example: CFM56-5A3).
                 Leave empty to use the default engine specified
                 by in the aircraft database.
-
+            backend: Math backend to use. Defaults to NumpyBackend.
         """
-        super().__init__(ac, eng, **kwargs)
+        super().__init__(ac, eng, backend=backend, **kwargs)
 
         if not hasattr(self, "Thrust"):
             self.Thrust = importlib.import_module("openap.thrust").Thrust
@@ -37,8 +48,7 @@ class FuelFlow(FuelFlowBase):
 
         self.use_synonym = kwargs.get("use_synonym", False)
 
-        self.ac = ac.lower()
-        self.aircraft = prop.aircraft(ac, **kwargs)
+        self.aircraft = prop.aircraft(self.ac, **kwargs)
 
         if eng is None:
             eng = self.aircraft["engine"]["default"]
@@ -47,13 +57,14 @@ class FuelFlow(FuelFlowBase):
 
         self.engine = prop.engine(eng)
 
-        self.thrust = self.Thrust(ac, eng, **kwargs)
-        self.drag = self.Drag(ac, **kwargs)
+        # Pass backend to Thrust and Drag
+        self.thrust = self.Thrust(ac, eng, backend=self.backend, **kwargs)
+        self.drag = self.Drag(ac, backend=self.backend, **kwargs)
         self.wrap = self.WRAP(ac, **kwargs)
 
         self.func_fuel = self._load_fuel_model()
 
-    def _load_fuel_model(self) -> dict:
+    def _load_fuel_model(self) -> Callable[[Numeric], Numeric]:
         curr_path = os.path.dirname(os.path.realpath(__file__))
         file_fuel_models = os.path.join(curr_path, "data/fuel/fuel_models.csv")
 
@@ -78,22 +89,24 @@ class FuelFlow(FuelFlowBase):
             ref_engine = prop.engine(params["engine_type"])
             scale = self.engine["ff_to"] / ref_engine["ff_to"]
 
+        b = self.backend
         return lambda x: scale * (
-            c1 - self.sci.exp(-c2 * (x * self.sci.exp(c3 * x) - self.sci.log(c1) / c2))
+            c1 - b.exp(-c2 * (x * b.exp(c3 * x) - b.log(c1) / c2))
         )
 
     @ndarrayconvert
-    def at_thrust(self, total_ac_thrust):
+    def at_thrust(self, total_ac_thrust: Numeric) -> Numeric:
         """Compute the fuel flow at a given total thrust.
 
         Args:
-            total_ac_thrust (int or ndarray): The total net thrust of the
-                aircraft (unit: N).
+            total_ac_thrust: The total net thrust of the aircraft (unit: N).
 
         Returns:
-            float: Fuel flow (unit: kg/s).
+            Fuel flow (unit: kg/s).
 
         """
+        b = self.backend
+
         max_eng_thrust = self.engine["max_thrust"]
         n_eng = self.aircraft["engine"]["number"]
 
@@ -107,10 +120,10 @@ class FuelFlow(FuelFlowBase):
         # limit the lowest/highest ratio to 0.03/1 without creating discontinuity
         ratio = (
             (
-                self.sci.log(1 + self.sci.exp(50 * (ratio - 0.03)))
-                - self.sci.log(1 + self.sci.exp(50 * (ratio - 1.2)))
+                b.log(1 + b.exp(50 * (ratio - 0.03)))
+                - b.log(1 + b.exp(45 * (ratio - 1.2)))
             )
-            / (self.sci.log(1 + self.sci.exp(50)))
+            / (b.log(1 + b.exp(50)))
         ) + 0.03
 
         fuelflow = self.func_fuel(ratio) * n_eng
@@ -118,7 +131,12 @@ class FuelFlow(FuelFlowBase):
         return fuelflow
 
     @ndarrayconvert
-    def takeoff(self, tas, alt=None, throttle=1):
+    def takeoff(
+        self,
+        tas: Numeric,
+        alt: Optional[Numeric] = None,
+        throttle: Numeric = 1,
+    ) -> Numeric:
         """Compute the fuel flow at takeoff.
 
         The net thrust is first estimated based on the maximum thrust model
@@ -126,14 +144,13 @@ class FuelFlow(FuelFlowBase):
         the thrust.
 
         Args:
-            tas (int or ndarray): Aircraft true airspeed (unit: kt).
-            alt (int or ndarray): Altitude of airport (unit: ft).
-                Defaults to sea-level.
-            throttle (float or ndarray): The throttle setting, between 0 and 1.
+            tas: Aircraft true airspeed (unit: kt).
+            alt: Altitude of airport (unit: ft). Defaults to sea-level.
+            throttle: The throttle setting, between 0 and 1.
                 Defaults to 1, which is at full thrust.
 
         Returns:
-            float: Fuel flow (unit: kg/s).
+            Fuel flow (unit: kg/s).
 
         """
         Tmax = self.thrust.takeoff(tas=tas, alt=alt)
@@ -141,7 +158,16 @@ class FuelFlow(FuelFlowBase):
         return fuelflow
 
     @ndarrayconvert
-    def enroute(self, mass, tas, alt, vs=0, acc=0, dT=0, limit=True):
+    def enroute(
+        self,
+        mass: Numeric,
+        tas: Numeric,
+        alt: Numeric,
+        vs: Numeric = 0,
+        acc: Numeric = 0,
+        dT: Numeric = 0,
+        limit: bool = True,
+    ) -> Numeric:
         """Compute the fuel flow during climb, cruise, or descent.
 
         The net thrust is first estimated based on the dynamic equation.
@@ -149,21 +175,25 @@ class FuelFlow(FuelFlowBase):
         no flap deflection and no landing gear extended.
 
         Args:
-            mass (int or ndarray): Aircraft mass (unit: kg).
-            tas (int or ndarray): Aircraft true airspeed (unit: kt).
-            alt (int or ndarray): Aircraft altitude (unit: ft).
-            vs (float or ndarray): Vertical rate (unit: ft/min). Default is 0.
-            acc (float or ndarray): acceleration (unit: m/s^2). Default is 0.
-            dT (float or ndarray): Temperature shift (unit: K or degC), default = 0
+            mass: Aircraft mass (unit: kg).
+            tas: Aircraft true airspeed (unit: kt).
+            alt: Aircraft altitude (unit: ft).
+            vs: Vertical rate (unit: ft/min). Default is 0.
+            acc: Acceleration (unit: m/s^2). Default is 0.
+            dT: Temperature shift (unit: K or degC). Default is 0.
+            limit: Apply thrust limits. Default is True.
+
         Returns:
-            float: Fuel flow (unit: kg/s).
+            Fuel flow (unit: kg/s).
 
         """
+        b = self.backend
+
         D = self.drag.clean(mass=mass, tas=tas, alt=alt, vs=vs, dT=dT)
 
-        gamma = self.sci.arctan2(vs * fpm, tas * kts)
+        gamma = b.arctan2(vs * fpm, tas * kts)
 
-        T = D + mass * 9.81 * self.sci.sin(gamma) + mass * acc
+        T = D + mass * 9.81 * b.sin(gamma) + mass * acc
 
         fuelflow = self.at_thrust(T)
 
@@ -190,7 +220,7 @@ class FuelFlow(FuelFlowBase):
         ]
         plt.scatter(x, y, color="k")
 
-        xx = self.sci.linspace(0, 1, 50)
+        xx = self.backend.linspace(0, 1, 50)
         yy = self.func_fuel(xx)
         plt.plot(xx, yy, "--", color="gray")
 

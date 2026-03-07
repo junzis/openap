@@ -33,18 +33,16 @@ file_synonym = os.path.join(curr_path, "data/wrap/_synonym.csv")
 wrap_synonym = pd.read_csv(file_synonym)
 
 
-class WRAP(object):
-    """Construct the kinematic model of the aicraft."""
+class WRAP:
+    """Construct the kinematic model of the aircraft."""
 
-    def __init__(self, ac, **kwargs):
+    def __init__(self, ac: str, **kwargs):
         """Initialize WRAP object.
 
         Args:
-            ac (string): ICAO aircraft type (for example: A320).
+            ac: ICAO aircraft type (for example: A320).
 
         """
-        super(WRAP, self).__init__()
-
         self.ac = ac.lower()
 
         self.use_synonym = kwargs.get("use_synonym", True)
@@ -86,11 +84,11 @@ class WRAP(object):
         return self._get_var("to_v_lof")
 
     def takeoff_distance(self):
-        """Get takeoff takeoff distance."""
+        """Get takeoff distance."""
         return self._get_var("to_d_tof")
 
     def takeoff_acceleration(self):
-        """Get takeoff takeoff acceleration."""
+        """Get takeoff acceleration."""
         return self._get_var("to_acc_tof")
 
     def initclimb_vcas(self):
@@ -134,7 +132,7 @@ class WRAP(object):
         return self._get_var("cl_vs_avg_mach_const")
 
     def cruise_range(self):
-        """Get crusie range."""
+        """Get cruise range."""
         return self._get_var("cr_d_range")
 
     def cruise_alt(self):
@@ -142,22 +140,22 @@ class WRAP(object):
         return self._get_var("cr_h_mean")
 
     def cruise_init_alt(self):
-        """Get initial crusie altitude."""
+        """Get initial cruise altitude."""
         return self._get_var("cr_h_init")
 
     def cruise_max_alt(self):
         return self._get_var("cr_h_max")
 
     def cruise_mach(self):
-        """Get average crusie Mach number."""
+        """Get average cruise Mach number."""
         return self._get_var("cr_v_mach_mean")
-    
+
     def cruise_max_mach(self):
         return self._get_var("cr_v_mach_max")
 
     def cruise_mean_vcas(self):
         return self._get_var("cr_v_cas_mean")
-    
+
     def descent_range(self):
         """Get descent range."""
         return self._get_var("de_d_range")

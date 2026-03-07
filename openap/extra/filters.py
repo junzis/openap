@@ -1,11 +1,12 @@
-import numpy as np
 from matplotlib import pyplot as plt
 from scipy.interpolate import UnivariateSpline
-from scipy.ndimage import filters
+from scipy.ndimage import convolve1d
 from scipy.signal.windows import gaussian
 
+import numpy as np
 
-class BaseFilter(object):
+
+class BaseFilter:
     def __init__(self, i=False):
         self.interpolate = i
 
@@ -31,7 +32,7 @@ class BaseFilter(object):
             try:
                 i = np.where(X == x)[0][0]
                 y = Y[i]
-            except:
+            except IndexError:
                 pass
 
             Yfull.append(y)
@@ -64,8 +65,8 @@ class SavitzkyGolay(BaseFilter):
         super(SavitzkyGolay, self).__init__(i=i)
 
         try:
-            window_size = np.abs(np.int(window_size))
-            order = np.abs(np.int(order))
+            window_size = abs(int(window_size))
+            order = abs(int(order))
         except ValueError:
             raise ValueError("window_size and order have to be of type int")
         if window_size % 2 != 1 or window_size < 1:
@@ -86,7 +87,7 @@ class SavitzkyGolay(BaseFilter):
         order_range = list(range(self.order + 1))
         half_window = (self.window_size - 1) // 2
         # precompute coefficients
-        b = np.mat(
+        b = np.asmatrix(
             [[k**i for i in order_range] for k in range(-half_window, half_window + 1)]
         )
         m = np.linalg.pinv(b).A[self.deriv]
@@ -116,8 +117,8 @@ class Spline(BaseFilter):
         #    how-to-fix-scipys-interpolating-spline-default-behavior/
         series = np.asarray(series)
         b = gaussian(25, sigma)
-        averages = filters.convolve1d(series, b / b.sum())
-        variances = filters.convolve1d(np.power(series - averages, 2), b / b.sum())
+        averages = convolve1d(series, b / b.sum())
+        variances = convolve1d(np.power(series - averages, 2), b / b.sum())
         variances[variances == 0] = 1
         return averages, variances
 
@@ -125,7 +126,7 @@ class Spline(BaseFilter):
         X, Y = self.sortxy(X, Y)
 
         # using gaussian kernel to get a better variances
-        avg, var = self.kernel(Y)
+        _avg, var = self.kernel(Y)
         spl = UnivariateSpline(X, Y, k=self.k, w=1 / np.sqrt(var))
 
         if self.interpolate:

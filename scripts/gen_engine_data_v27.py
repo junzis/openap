@@ -23,7 +23,7 @@ def clean_name(name):
 def clean_bpr(bpr):
     try:
         bpr = float(bpr)
-    except:
+    except (ValueError, TypeError):
         bpr = "-"
     return bpr
 
