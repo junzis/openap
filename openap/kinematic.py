@@ -80,23 +80,23 @@ class WRAP:
         return res
 
     def takeoff_speed(self):
-        """Get takeoff speed."""
+        """Get takeoff liftoff speed (in m/s)."""
         return self._get_var("to_v_lof")
 
     def takeoff_distance(self):
-        """Get takeoff distance."""
+        """Get takeoff distance (in km)."""
         return self._get_var("to_d_tof")
 
     def takeoff_acceleration(self):
-        """Get takeoff acceleration."""
+        """Get mean takeoff acceleration (in m/s^2)."""
         return self._get_var("to_acc_tof")
 
     def initclimb_vcas(self):
-        """Get initial climb CAS."""
+        """Get initial climb CAS (in m/s)."""
         return self._get_var("ic_va_avg")
 
     def initclimb_vs(self):
-        """Get initial climb vertical rate."""
+        """Get initial climb vertical rate (in m/s)."""
         return self._get_var("ic_vs_avg")
 
     def climb_range(self):
@@ -104,46 +104,47 @@ class WRAP:
         return self._get_var("cl_d_range")
 
     def climb_const_vcas(self):
-        """Get speed for constant CAS climb."""
+        """Get speed for constant CAS climb (in m/s)."""
         return self._get_var("cl_v_cas_const")
 
     def climb_const_mach(self):
-        """Get speed during constant Mach climb."""
+        """Get Mach number during constant Mach climb."""
         return self._get_var("cl_v_mach_const")
 
     def climb_cross_alt_concas(self):
-        """Get cross over altitude when constant CAS climb starts."""
+        """Get cross over altitude when constant CAS climb starts (in km)."""
         return self._get_var("cl_h_cas_const")
 
     def climb_cross_alt_conmach(self):
-        """Get cross over altitude from constant CAS to Mach climb."""
+        """Get cross over altitude from constant CAS to Mach climb (in km)."""
         return self._get_var("cl_h_mach_const")
 
     def climb_vs_pre_concas(self):
-        """Get vertical rate before constant CAS climb."""
+        """Get vertical rate before constant CAS climb (in m/s)."""
         return self._get_var("cl_vs_avg_pre_cas")
 
     def climb_vs_concas(self):
-        """Get vertical rate during constant CAS climb."""
+        """Get vertical rate during constant CAS climb (in m/s)."""
         return self._get_var("cl_vs_avg_cas_const")
 
     def climb_vs_conmach(self):
-        """Get vertical rate during constant Mach climb."""
+        """Get vertical rate during constant Mach climb (in m/s)."""
         return self._get_var("cl_vs_avg_mach_const")
 
     def cruise_range(self):
-        """Get cruise range."""
+        """Get cruise range (in km)."""
         return self._get_var("cr_d_range")
 
     def cruise_alt(self):
-        """Get average cruise altitude."""
+        """Get average cruise altitude (in km)."""
         return self._get_var("cr_h_mean")
 
     def cruise_init_alt(self):
-        """Get initial cruise altitude."""
+        """Get initial cruise altitude (in km)."""
         return self._get_var("cr_h_init")
 
     def cruise_max_alt(self):
+        """Get maximum cruise altitude (in km)."""
         return self._get_var("cr_h_max")
 
     def cruise_mach(self):
@@ -151,59 +152,61 @@ class WRAP:
         return self._get_var("cr_v_mach_mean")
 
     def cruise_max_mach(self):
+        """Get maximum cruise Mach number."""
         return self._get_var("cr_v_mach_max")
 
     def cruise_mean_vcas(self):
+        """Get mean cruise CAS (in m/s)."""
         return self._get_var("cr_v_cas_mean")
 
     def descent_range(self):
-        """Get descent range."""
+        """Get descent range (in km)."""
         return self._get_var("de_d_range")
 
     def descent_const_mach(self):
-        """Get speed during the constant Mach descent."""
+        """Get Mach number during the constant Mach descent."""
         return self._get_var("de_v_mach_const")
 
     def descent_const_vcas(self):
-        """Get speed during the constant CAS descent."""
+        """Get speed during the constant CAS descent (in m/s)."""
         return self._get_var("de_v_cas_const")
 
     def descent_cross_alt_conmach(self):
-        """Get crossover altitude from constant Mach to CAS descent."""
+        """Get crossover altitude from constant Mach to CAS descent (in km)."""
         return self._get_var("de_h_mach_const")
 
     def descent_cross_alt_concas(self):
-        """Get crossover altitude from constant Mach to CAS descent."""
+        """Get crossover altitude from constant CAS to post-constant-CAS descent (in km)."""
         return self._get_var("de_h_cas_const")
 
     def descent_vs_conmach(self):
-        """Get vertical rate during constant Mach descent."""
+        """Get vertical rate during constant Mach descent (in m/s)."""
         return self._get_var("de_vs_avg_mach_const")
 
     def descent_vs_concas(self):
-        """Get vertical rate during constant CAS descent."""
+        """Get vertical rate during constant CAS descent (in m/s)."""
         return self._get_var("de_vs_avg_cas_const")
 
     def descent_vs_post_concas(self):
-        """Get vertical rate after constant CAS descent."""
+        """Get vertical rate after constant CAS descent (in m/s)."""
         return self._get_var("de_vs_avg_after_cas")
 
     def finalapp_vcas(self):
-        """Get CAS for final approach."""
+        """Get CAS for final approach (in m/s)."""
         return self._get_var("fa_va_avg")
 
     def finalapp_vs(self):
-        """Get vertical speed for final approach."""
+        """Get vertical speed for final approach (in m/s)."""
         return self._get_var("fa_vs_avg")
 
     def landing_speed(self):
-        """Get landing speed."""
+        """Get landing speed (in m/s)."""
         return self._get_var("ld_v_app")
 
     def landing_distance(self):
-        """Get breaking distance for landing."""
+        """Get braking distance for landing (in km)."""
         return self._get_var("ld_d_brk")
 
     def landing_acceleration(self):
-        """Get landing deceleration."""
+        """Get landing deceleration (in m/s^2)."""
         return self._get_var("ld_acc_brk")
