@@ -37,7 +37,7 @@ def fit(data, models):
         else:
             param_train = dist.fit(train, floc=dmin, fscale=dscale)
 
-        ks = scipy.stats.kstest(test, model, param_train)
+        ks = scipy.stats.kstest(test, dist.cdf, args=param_train)
         error = ks[0]  # D-stats
 
         # recompute distribution based on all data
