@@ -603,34 +603,53 @@ def test_bada4_fuel_enroute_supports_casadi_symbolics(casadi, bada4_path):
     assert result == pytest.approx(numeric)
 
 
-def test_bada4_smooth_fuel_switch_reduces_idle_discontinuity(bada4_path):
-    hard = bada4.FuelFlow("A320-TEST", bada4_path)
-    smooth = bada4.FuelFlow("A320-TEST", bada4_path, smooth=True)
+@pytest.mark.parametrize("smooth", [False, True])
+@pytest.mark.parametrize("symbolic", [False, True])
+@pytest.mark.parametrize("vertical_rate", [-251.0, -300.0, -1500.0])
+def test_bada4_powered_descent_uses_required_thrust_fuel(
+    casadi, bada4_path, smooth, symbolic, vertical_rate
+):
+    options = {"backend": CasadiBackend()} if symbolic else {}
+    fuel_flow = bada4.FuelFlow("A320-TEST", bada4_path, smooth=smooth, **options)
+    mass, tas, alt = 60000.0, 300.0, 12000.0
+    idle = float(fuel_flow.idle(mass, tas, alt))
+    level = float(fuel_flow.enroute(mass, tas, alt, vs=0.0))
+    vs = casadi.MX.sym("vs") if symbolic else vertical_rate
+    result = fuel_flow.enroute(mass, tas, alt, vs)
+    if symbolic:
+        result = float(casadi.Function("fuel", [vs], [result])(vertical_rate))
+    assert idle < float(result) < level
 
-    hard_below = hard.enroute(mass=60000.0, tas=300.0, alt=12000.0, vs=-251.0)
-    hard_above = hard.enroute(mass=60000.0, tas=300.0, alt=12000.0, vs=-249.0)
-    smooth_below = smooth.enroute(mass=60000.0, tas=300.0, alt=12000.0, vs=-251.0)
-    smooth_above = smooth.enroute(mass=60000.0, tas=300.0, alt=12000.0, vs=-249.0)
 
-    assert abs(smooth_above - smooth_below) < abs(hard_above - hard_below)
+@pytest.mark.parametrize("smooth", [False, True])
+@pytest.mark.parametrize("symbolic", [False, True])
+@pytest.mark.parametrize("vertical_rate", [-1500.0, 0.0, 500.0])
+def test_bada4_enroute_respects_idle_fuel_floor(
+    casadi, bada4_path, smooth, symbolic, vertical_rate
+):
+    options = {"backend": CasadiBackend()} if symbolic else {}
+    fuel_flow = bada4.FuelFlow("A320-TEST", bada4_path, smooth=smooth, **options)
+    fuel_flow.f_ = [0.0] * 25
+    vs = casadi.MX.sym("vs") if symbolic else vertical_rate
+    result = fuel_flow.enroute(60000.0, 300.0, 12000.0, vs)
+    if symbolic:
+        result = float(casadi.Function("fuel", [vs], [result])(vertical_rate))
+    idle = float(fuel_flow.idle(60000.0, 300.0, 12000.0))
+    assert idle <= float(result) <= idle + 5e-4
 
 
-def test_bada4_smooth_fuel_switch_supports_symbolic_derivative(casadi, bada4_path):
+def test_bada4_smooth_fuel_supports_symbolic_derivative(casadi, bada4_path):
     fuel_flow = bada4.FuelFlow(
-        "A320-TEST",
-        bada4_path,
-        backend=CasadiBackend(),
-        smooth=True,
+        "A320-TEST", bada4_path, backend=CasadiBackend(), smooth=True
     )
     vs = casadi.SX.sym("vs")
     ff = fuel_flow.enroute(60000.0, 300.0, 12000.0, vs)
-    jac = casadi.jacobian(ff, vs)
-    f = casadi.Function("f", [vs], [ff, jac])
-
-    value, derivative = f(-250.0)
-
-    assert float(value) > 0
-    assert np.isfinite(float(derivative))
+    derivative = casadi.jacobian(ff, vs)
+    function = casadi.Function("fuel", [vs], [ff, derivative])
+    for vertical_rate in (-251.0, -250.0, -249.0):
+        value, slope = function(vertical_rate)
+        assert float(value) > 0
+        assert np.isfinite(float(slope))
 
 
 @pytest.mark.parametrize("smooth", [False, True])
@@ -654,3 +673,19 @@ def test_bada3_nominal_respects_idle_floor_in_kg_s(
         assert float(nominal) <= idle_kg_s + 0.0025
     else:
         assert float(nominal) == pytest.approx(idle_kg_s)
+
+
+@pytest.mark.parametrize("kind", ["bada3", "bada4"])
+def test_bada_fraction_mass_and_mtow_validation(kind, bada3_model, bada4_path):
+    if kind == "bada3":
+        drag = bada3.Drag("A320", bada_path=None, model=bada3_model)
+        fuel = bada3.FuelFlow("A320", model=bada3_model)
+    else:
+        drag = bada4.Drag("A320-TEST", bada_path=str(bada4_path))
+        fuel = bada4.FuelFlow("A320-TEST", bada_path=str(bada4_path))
+    for method in (drag.clean, fuel.enroute, fuel.idle):
+        assert float(method(0.87, 420, 30000, vs=500)) == pytest.approx(
+            float(method(0.87 * fuel.mtow, 420, 30000, vs=500))
+        )
+        with pytest.raises(ValueError, match="MTOW"):
+            method(fuel.mtow + 1, 420, 30000)

@@ -142,3 +142,24 @@ The API is identical to the standard `openap` module. The backends are implement
   publisher={Multidisciplinary Digital Publishing Institute}
 }
 ```
+
+
+### Mass inputs
+
+`Drag` and `FuelFlow` accept mass in kilograms or as an MTOW fraction in
+`(0, 1]`. The value `1` means full MTOW. Larger values are kilograms.
+Arrays may contain both forms. Concrete inputs above MTOW, zero, negative,
+or non-finite inputs raise `ValueError`. The BADA add-ons use the OpenAP
+MTOW for the base ICAO aircraft type, consistent with OpenTOP's mass scale.
+
+```python
+fuel = openap.FuelFlow("A320")
+flow = fuel.enroute(mass=0.87, tas=420, alt=30000)
+mass_kg = fuel.mass_to_kg(0.87)
+```
+
+Keep mass in kilograms during fuel integration. Convert the initial value
+before subtracting burned fuel in kilograms. Symbolic CasADi and traced JAX
+inputs retain symbolic conversion; the caller must enforce the valid mass
+range. These expressions cannot raise a Python exception for a value that
+is unknown at construction time.

@@ -316,7 +316,7 @@ class Drag(base.DragBase):
         """Compute lift coefficient (BADA3 eq. 3.6-1).
 
         Args:
-            mass: Mass of the aircraft (kg).
+            mass: Aircraft mass in kg or an MTOW fraction in (0, 1].
             tas: True airspeed (kt).
             alt: Geopotential pressure altitude (ft).
             dT: ISA temperature deviation (K). Defaults to 0.
@@ -331,6 +331,7 @@ class Drag(base.DragBase):
 
         # calculate total lift
         qS = 0.5 * rho * v**2 * self.S
+        mass = self.mass_to_kg(mass)
         L = mass * self.aero.g0
         if self.smooth:
             qS_safe = self.backend.smooth_max(qS, 1e-3, softness=1e-4)
@@ -345,7 +346,7 @@ class Drag(base.DragBase):
         """Compute drag in clean configuration (BADA3 eq. 3.6-5).
 
         Args:
-            mass: Mass of the aircraft (kg).
+            mass: Aircraft mass in kg or an MTOW fraction in (0, 1].
             tas: True airspeed (kt).
             alt: Geopotential pressure altitude (ft).
             vs: Unused.
@@ -365,7 +366,7 @@ class Drag(base.DragBase):
         """Compute drag in non-clean configuration (BADA3 eq. 3.6-3, 3.6-4, 3.6-5).
 
         Args:
-            mass: Mass of the aircraft (kg).
+            mass: Aircraft mass in kg or an MTOW fraction in (0, 1].
             tas: True airspeed (kt).
             alt: Geopotential pressure altitude (ft).
             landing_gear: Whether landing gear is extended. Defaults to False.
@@ -575,7 +576,7 @@ class FuelFlow(base.FuelFlowBase):
         """Calculate nominal fuel flow (BADA3 eq. 3.9-1, 3.9-2, 3.9-3).
 
         Args:
-            mass: Mass of the aircraft (kg).
+            mass: Aircraft mass in kg or an MTOW fraction in (0, 1].
             tas: True airspeed (kt).
             alt: Geopotential pressure altitude (ft).
             vs: Vertical rate (ft/min). Defaults to 0.
@@ -585,6 +586,7 @@ class FuelFlow(base.FuelFlowBase):
             Nominal fuel flow (kg/s).
 
         """
+        mass = self.mass_to_kg(mass)
         # calculate gamma angle and drag
         v = tas * self.aero.kts
         gamma = self.backend.arctan2(vs * self.aero.fpm, v)
@@ -629,7 +631,7 @@ class FuelFlow(base.FuelFlowBase):
         """Calculate nominal enroute fuel flow.
 
         Args:
-            mass: Mass of the aircraft (kg).
+            mass: Aircraft mass in kg or an MTOW fraction in (0, 1].
             tas: True airspeed (kt).
             alt: Geopotential pressure altitude (ft).
             vs: Vertical rate (ft/min). Defaults to 0.
@@ -648,7 +650,7 @@ class FuelFlow(base.FuelFlowBase):
         """Calculate cruise fuel flow with the BADA3 cruise correction (eq. 3.9-6).
 
         Args:
-            mass: Mass of the aircraft (kg).
+            mass: Aircraft mass in kg or an MTOW fraction in (0, 1].
             tas: True airspeed (kt).
             alt: Geopotential pressure altitude (ft).
             vs: Vertical rate (ft/min). Defaults to 0.
@@ -667,7 +669,7 @@ class FuelFlow(base.FuelFlowBase):
         """Calculate idle fuel flow (BADA3 eq. 3.9-4).
 
         Args:
-            mass: Unused.
+            mass: Aircraft mass in kg or an MTOW fraction in (0, 1].
             tas: Unused.
             alt: Geopotential pressure altitude (ft).
             vs: Unused.
@@ -676,6 +678,7 @@ class FuelFlow(base.FuelFlowBase):
             Idle fuel flow (kg/s).
 
         """
+        self.mass_to_kg(mass)
         if self.engine_type in ("turbofan", "turboprop"):
             f_min = self.cf3 * (1 - alt / self.cf4)
         elif self.engine_type in ("piston", "electric"):
@@ -691,7 +694,7 @@ class FuelFlow(base.FuelFlowBase):
         Only applicable to jet and turboprop aircraft.
 
         Args:
-            mass: Mass of the aircraft (kg).
+            mass: Aircraft mass in kg or an MTOW fraction in (0, 1].
             tas: True airspeed (kt).
             alt: Geopotential pressure altitude (ft).
             vs: Vertical rate (ft/min). Defaults to 0.

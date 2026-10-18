@@ -176,7 +176,7 @@ class FuelFlow(FuelFlowBase):
         no flap deflection and no landing gear extended.
 
         Args:
-            mass: Aircraft mass (unit: kg).
+            mass: Aircraft mass in kg or an MTOW fraction in (0, 1].
             tas: Aircraft true airspeed (unit: kt).
             alt: Aircraft altitude (unit: ft).
             vs: Vertical rate (unit: ft/min). Default is 0.
@@ -190,6 +190,7 @@ class FuelFlow(FuelFlowBase):
         """
         b = self.backend
 
+        mass = self.mass_to_kg(mass)
         D = self.drag.clean(mass=mass, tas=tas, alt=alt, vs=vs, dT=dT)
 
         gamma = b.arctan2(vs * fpm, tas * kts)

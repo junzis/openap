@@ -175,6 +175,7 @@ class Drag(base.DragBase):
         rho = self.aero.density(h, dT=dT)
 
         qS = 0.5 * rho * v**2 * self.S
+        mass = self.mass_to_kg(mass)
         L = mass * self.aero.g0
 
         if self.smooth:
@@ -190,7 +191,7 @@ class Drag(base.DragBase):
         """Compute drag at clean configuration.
 
         Args:
-            mass: Mass of the aircraft (kg).
+            mass: Aircraft mass in kg or an MTOW fraction in (0, 1].
             tas: True airspeed (kt).
             alt: Altitude (ft).
             vs: Vertical rate (ft/min). Defaults to 0.
@@ -280,18 +281,14 @@ class Thrust(base.ThrustBase):
             b = self.backend
             mach_terms_6 = [mach**i for i in range(6)]
             delta_terms_6 = [delta**i for i in range(6)]
-            flat_delta_T = _poly2(
-                self.b_[rating], (6, 6), delta_terms_6, mach_terms_6
-            )
+            flat_delta_T = _poly2(self.b_[rating], (6, 6), delta_terms_6, mach_terms_6)
 
             mach_terms_5 = [mach**i for i in range(5)]
             theta_t = theta * (1 + (mach**2) * (k - 1) / 2)
             temp_terms = [theta_t**i for i in range(5)] + [
                 delta**i for i in range(1, 5)
             ]
-            temp_delta_T = _poly2(
-                self.c_[rating], (9, 5), temp_terms, mach_terms_5
-            )
+            temp_delta_T = _poly2(self.c_[rating], (9, 5), temp_terms, mach_terms_5)
             if self.smooth:
                 delta_T = b.smooth_switch(
                     dT,
@@ -440,7 +437,7 @@ class FuelFlow(base.FuelFlowBase):
         """Compute the fuel flow at idle conditions.
 
         Args:
-            mass: Aircraft mass (kg).
+            mass: Aircraft mass in kg or an MTOW fraction in (0, 1].
             tas: Aircraft true airspeed (kt).
             alt: Aircraft altitude (ft).
             dT: Temperature deviation (K). Defaults to 0.
@@ -450,6 +447,7 @@ class FuelFlow(base.FuelFlowBase):
 
         """
 
+        mass = self.mass_to_kg(mass)
         h = alt * self.aero.ft
         v = tas * self.aero.kts
         dT = kwargs.get("dT", 0)
@@ -472,7 +470,7 @@ class FuelFlow(base.FuelFlowBase):
         """Compute the fuel flow at non-idle conditions.
 
         Args:
-            mass: Aircraft mass (kg).
+            mass: Aircraft mass in kg or an MTOW fraction in (0, 1].
             tas: Aircraft true airspeed (kt).
             alt: Aircraft altitude (ft).
             vs: Vertical rate (ft/min). Defaults to 0.
@@ -482,6 +480,7 @@ class FuelFlow(base.FuelFlowBase):
             Fuel flow (kg/s).
 
         """
+        mass = self.mass_to_kg(mass)
         h = alt * self.aero.ft
         v = tas * self.aero.kts
         dT = kwargs.get("dT", 0)
@@ -503,19 +502,13 @@ class FuelFlow(base.FuelFlowBase):
         fuel_flow_non_idle = self._calc_fuel(mass, delta, theta, cF_gen)
         fuel_flow_idle = self.idle(mass, tas, alt, dT=dT)
 
+        # BADA 4 eq. 3.4-2: enroute fuel follows required thrust, with an
+        # idle lower bound. A descent can still require thrust above idle.
         if self.smooth:
-            fuel_flow = self.backend.smooth_switch(
-                vs,
-                -250.0,
-                fuel_flow_idle,
-                fuel_flow_non_idle,
-                softness=10.0,
+            fuel_flow = self.backend.smooth_max(
+                fuel_flow_non_idle, fuel_flow_idle, softness=1e-3
             )
         else:
-            fuel_flow = self.backend.where(
-                vs < -250,
-                fuel_flow_idle,
-                fuel_flow_non_idle,
-            )
+            fuel_flow = self.backend.maximum(fuel_flow_non_idle, fuel_flow_idle)
 
         return fuel_flow

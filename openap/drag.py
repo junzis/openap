@@ -101,7 +101,7 @@ class Drag(DragBase):
         """Compute lift coefficient and dynamic pressure.
 
         Args:
-            mass: Aircraft mass (kg).
+            mass: Aircraft mass in kg or an MTOW fraction in (0, 1].
             tas: True airspeed (kt).
             alt: Altitude (ft).
             vs: Vertical speed (ft/min). Defaults to 0.
@@ -119,6 +119,7 @@ class Drag(DragBase):
         S = self.aircraft["wing"]["area"]
         rho = self.aero.density(h, dT=dT)
         qS = 0.5 * rho * v**2 * S
+        mass = self.mass_to_kg(mass)
         L = mass * self.aero.g0 * b.cos(gamma)
         if getattr(b, "smooth_guards", False):
             qS = b.smooth_max(qS, 1e-3, softness=1e-4)
@@ -142,7 +143,7 @@ class Drag(DragBase):
         """Compute drag from drag polar coefficients.
 
         Args:
-            mass: Aircraft mass (kg).
+            mass: Aircraft mass in kg or an MTOW fraction in (0, 1].
             tas: True airspeed (kt).
             alt: Altitude (ft).
             cd0: Zero-lift drag coefficient.
@@ -170,7 +171,7 @@ class Drag(DragBase):
         """Compute drag at clean configuration (considering compressibility).
 
         Args:
-            mass: Mass of the aircraft (kg).
+            mass: Aircraft mass in kg or an MTOW fraction in (0, 1].
             tas: True airspeed (kt).
             alt: Altitude (ft).
             vs: Vertical rate (ft/min). Defaults to 0.
@@ -233,7 +234,7 @@ class Drag(DragBase):
         """Compute drag at non-clean configuration.
 
         Args:
-            mass: Mass of the aircraft (kg).
+            mass: Aircraft mass in kg or an MTOW fraction in (0, 1].
             tas: True airspeed (kt).
             alt: Altitude (ft).
             flap_angle: Flap deflection angle (degree).

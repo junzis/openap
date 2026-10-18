@@ -4,14 +4,30 @@ These base classes provide the foundation for thrust, drag, and fuel flow
 models with configurable backends (NumPy, CasADi, JAX).
 """
 
+from functools import cached_property
 from typing import Optional
 
 from openap.aero import Aero
 from openap.backends import BackendType, default_backend
-from openap.extra import ndarrayconvert
+from openap.extra import mass_to_kg, ndarrayconvert
 
 
-class DragBase:
+class _MassModel:
+    @cached_property
+    def mtow(self):
+        from openap import prop
+
+        aircraft = getattr(self, "aircraft", None)
+        if aircraft is None:
+            aircraft = prop.aircraft(self.ac.split("-", 1)[0])
+        return aircraft["mtow"]
+
+    def mass_to_kg(self, mass):
+        """Return kg from kg or an MTOW fraction in (0, 1]."""
+        return mass_to_kg(mass, self.mtow, backend=self.backend)
+
+
+class DragBase(_MassModel):
     """Base class for drag models."""
 
     def __init__(self, ac: str, backend: Optional[BackendType] = None, **kwargs):
@@ -66,7 +82,7 @@ class ThrustBase:
         raise NotImplementedError
 
 
-class FuelFlowBase:
+class FuelFlowBase(_MassModel):
     """Base class for fuel flow models."""
 
     def __init__(

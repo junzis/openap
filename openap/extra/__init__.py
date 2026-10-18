@@ -94,3 +94,34 @@ def ndarrayconvert(func=None, column=False):
     if func is not None:
         return _decorator(func)
     return _decorator
+
+
+def mass_to_kg(mass, mtow, backend=None):
+    """Convert mass in kg or a fraction of MTOW to kg, element by element.
+
+    Values in (0, 1] are MTOW fractions. Larger values are kilograms.
+    Concrete inputs must be finite, positive, and no greater than MTOW.
+    Symbolic/traced inputs retain their backend; their caller must enforce
+    the same domain when evaluating or optimizing the resulting expression.
+    Fuel integration must use kg internally, including the initial state.
+    """
+    from openap.backends import default_backend
+
+    if not np.isfinite(mtow) or mtow <= 1:
+        raise ValueError("MTOW must be finite and greater than 1 kg")
+    if type(mass).__module__.startswith("casadi") and not mass.is_constant():
+        values = None
+    elif _is_symbolic_type(mass):
+        try:
+            values = np.asarray(mass, dtype=float)
+        except (TypeError, ValueError, RuntimeError):
+            values = None
+    else:
+        values = np.asarray(mass, dtype=float)
+        mass = values
+    if values is not None:
+        if np.any(~np.isfinite(values)) or np.any(values <= 0):
+            raise ValueError("mass must be finite and positive")
+        if np.any(values > mtow):
+            raise ValueError(f"mass must not exceed MTOW ({mtow:g} kg)")
+    return (backend or default_backend()).where(mass <= 1, mass * mtow, mass)
