@@ -1,23 +1,59 @@
-"""OpenAP drag model."""
+"""OpenAP drag model, computed with the Aerox geometry drag model.
 
-import glob
+The clean drag comes from Aerox (https://github.com/open-aviation/aerox): a
+component drag build-up from the aircraft geometry, with Mach and Reynolds
+number effects and wave drag. Aerox gives the model as a closed-form
+expression, so it runs with the NumPy, CasADi, and JAX backends.
+
+Aerox covers the clean configuration only. ``nonclean()`` adds OpenAP's flap
+and landing gear increments to the Aerox clean drag.
+"""
+
 import os
 import warnings
+from dataclasses import replace
 from typing import Any, Dict, Optional, Tuple
 
 import yaml
+from aerox import get_available_aircraft, load_aircraft
+from aerox.models.drag import (
+    TransonicGeometryDragModel,
+    build_drag_model,
+    build_parabolic_polar,
+)
 
 import pandas as pd
 
 from . import prop
 from .backends import BackendType
-
-# Type alias for numeric inputs (scalar, array, or symbolic)
-Numeric = Any
 from .base import DragBase
 from .extra import ndarrayconvert
 
+# Type alias for numeric inputs (scalar, array, or symbolic)
+Numeric = Any
+
 warnings.simplefilter("once", UserWarning)
+
+_DATA = os.path.join(os.path.dirname(os.path.realpath(__file__)), "data")
+
+# Flap parameters for aircraft without OpenAP flap data (the most common values)
+_DEFAULT_FLAPS = {"lambda_f": 0.9, "cf/c": 0.15, "Sf/S": 0.15}
+
+# Lower bound of the Reynolds number per metre, which keeps the skin-friction
+# logarithm defined at very low speed.
+_MIN_REYNOLDS_PER_M = 1.0e5
+
+
+class _SmoothMath:
+    """Backend functions with a smooth maximum, for gradient-based solvers."""
+
+    def __init__(self, backend):
+        self.log = backend.log
+        self.sqrt = backend.sqrt
+        self._backend = backend
+
+    def maximum(self, x, y):
+        return self._backend.smooth_max(x, y, softness=1e-3)
 
 
 class Drag(DragBase):
@@ -26,7 +62,7 @@ class Drag(DragBase):
     def __init__(
         self,
         ac: str,
-        wave_drag: bool = False,
+        wave_drag: bool = True,
         backend: Optional[BackendType] = None,
         **kwargs,
     ):
@@ -34,60 +70,88 @@ class Drag(DragBase):
 
         Args:
             ac: ICAO aircraft type (for example: A320).
-            wave_drag: Enable wave drag model (experimental).
+            wave_drag: Include wave drag. Defaults to True.
             backend: Math backend to use. Defaults to NumpyBackend.
+            use_synonym: Use a similar aircraft type if this one is not
+                available. Defaults to False.
         """
         super().__init__(ac, backend=backend, **kwargs)
 
         self.use_synonym = kwargs.get("use_synonym", False)
 
-        self.aircraft = prop.aircraft(self.ac, **kwargs)
-        self.polar = self.load_drag_model()
+        aerox_aircraft = self._load_aerox_aircraft()
+        self.model = build_drag_model(aerox_aircraft)
+        geometry = (
+            self.model.base_model
+            if isinstance(self.model, TransonicGeometryDragModel)
+            else self.model
+        )
+        self.wing_area = geometry.reference_area_m2
+        self.wing_span = geometry.wing_span_m
 
-        self.wave_drag = wave_drag
-        if self.wave_drag:
-            warnings.warn("Warning: Wave drag is experimental.")
+        expression = self.model.expression()
+        if not wave_drag:
+            expression = replace(
+                expression, critical_mach_zero_lift=None, critical_mach_slope=None
+            )
+        self.expression = expression
+        self.wave_drag = expression.has_wave_drag
 
-    def load_drag_model(self) -> Dict[str, Any]:
-        """Find and construct the drag polar model.
+        self.aircraft = self._aircraft_properties(aerox_aircraft, **kwargs)
+        self.polar = self._polar(aerox_aircraft)
 
-        Returns:
-            dict: Drag polar model parameters.
-        """
-        # Load drag polar data
-        curr_path = os.path.dirname(os.path.realpath(__file__))
-        dir_dragpolar = os.path.join(curr_path, "data/dragpolar/")
-        file_synonym = os.path.join(curr_path, "data/dragpolar/_synonym.csv")
-        polar_synonym = pd.read_csv(file_synonym)
+        b = self.backend
+        self._math = _SmoothMath(b) if getattr(b, "smooth_guards", False) else b
 
-        polar_files = glob.glob(dir_dragpolar + "*.yml")
-        ac_polar_available = [s[-8:-4].lower() for s in polar_files]
+    def _load_aerox_aircraft(self):
+        available = set(get_available_aircraft())
+        code = self.ac.upper()
+        if code in available:
+            return load_aircraft(code)
 
-        if self.ac in ac_polar_available:
-            ac = self.ac
-        else:
-            syno = polar_synonym.query("orig==@self.ac")
-            if self.use_synonym and syno.shape[0] > 0:
-                ac = syno.new.iloc[0]
+        synonyms = pd.read_csv(os.path.join(_DATA, "dragpolar/_synonym.csv"))
+        match = synonyms.query("orig==@self.ac")
+        if self.use_synonym and match.shape[0] > 0:
+            new = match.new.iloc[0].upper()
+            if new in available:
                 warnings.warn(
-                    f"Drag polar: using synonym {ac} for {self.ac}",
-                    UserWarning,
-                    stacklevel=0,
+                    f"Drag: using synonym {new} for {code}", UserWarning, stacklevel=0
                 )
-            elif self.use_synonym:
-                raise ValueError(
-                    f"Drag polar for {self.ac} not available, and no synonym found."
-                )
-            else:
-                raise ValueError(
-                    f"Drag polar for {self.ac} not available. "
-                    "Try to set `use_synonym=True` to initialize the object."
-                )
+                return load_aircraft(new)
+        if self.use_synonym:
+            raise ValueError(
+                f"Drag model for {code} not available, and no synonym found."
+            )
+        raise ValueError(
+            f"Drag model for {code} not available. "
+            "Try to set `use_synonym=True` to initialize the object."
+        )
 
-        f = dir_dragpolar + ac + ".yml"
-        with open(f, "r") as file:
-            dragpolar = yaml.safe_load(file.read())
-        return dragpolar
+    def _aircraft_properties(self, aerox_aircraft, **kwargs) -> Dict[str, Any]:
+        """OpenAP aircraft properties, or the Aerox record for other types."""
+        try:
+            return prop.aircraft(self.ac, **kwargs)
+        except ValueError:
+            pass
+        mount = str(aerox_aircraft.engine.mount or "").lower()
+        mtow = aerox_aircraft.mtow
+        return {
+            "aircraft": aerox_aircraft.aircraft,
+            "mtow": mtow,
+            "limits": {"MTOW": mtow},
+            "wing": {"area": self.wing_area, "span": self.wing_span},
+            "engine": {"mount": "rear" if "rear" in mount or "aft" in mount else mount},
+        }
+
+    def _polar(self, aerox_aircraft) -> Dict[str, Any]:
+        """Parabolic polar at the Aerox reference condition, and flap data."""
+        polar = build_parabolic_polar(aerox_aircraft)
+        flaps = dict(_DEFAULT_FLAPS)
+        path = os.path.join(_DATA, "dragpolar", f"{self.ac}.yml")
+        if os.path.exists(path):
+            with open(path, "r") as file:
+                flaps.update(yaml.safe_load(file.read()).get("flaps") or {})
+        return {"clean": {"cd0": polar.cd0, "k": polar.k}, "flaps": flaps}
 
     @ndarrayconvert
     def _cl(
@@ -116,9 +180,8 @@ class Drag(DragBase):
         h = alt * self.aero.ft
         vs = vs * self.aero.fpm
         gamma = b.arctan2(vs, v)
-        S = self.aircraft["wing"]["area"]
         rho = self.aero.density(h, dT=dT)
-        qS = 0.5 * rho * v**2 * S
+        qS = 0.5 * rho * v**2 * self.wing_area
         mass = self.mass_to_kg(mass)
         L = mass * self.aero.g0 * b.cos(gamma)
         if getattr(b, "smooth_guards", False):
@@ -129,35 +192,31 @@ class Drag(DragBase):
 
         return cl, qS
 
-    @ndarrayconvert
-    def _calc_drag(
+    def _mach_reynolds(
+        self, tas: Numeric, alt: Numeric, dT: Numeric = 0
+    ) -> Tuple[Numeric, Numeric]:
+        """Mach number and Reynolds number per metre (Sutherland viscosity)."""
+        v = tas * self.aero.kts
+        h = alt * self.aero.ft
+        mach = self.aero.tas2mach(v, h, dT=dT)
+        rho = self.aero.density(h, dT=dT)
+        T = self.aero.temperature(h, dT=dT)
+        mu = 1.458e-6 * T**1.5 / (T + 110.4)
+        reynolds = self._math.maximum(rho * v / mu, _MIN_REYNOLDS_PER_M)
+        return mach, reynolds
+
+    def _clean_cd(
         self,
         mass: Numeric,
         tas: Numeric,
         alt: Numeric,
-        cd0: Numeric,
-        k: Numeric,
-        vs: Numeric,
+        vs: Numeric = 0,
         dT: Numeric = 0,
-    ) -> Numeric:
-        """Compute drag from drag polar coefficients.
-
-        Args:
-            mass: Aircraft mass in kg or an MTOW fraction in (0, 1].
-            tas: True airspeed (kt).
-            alt: Altitude (ft).
-            cd0: Zero-lift drag coefficient.
-            k: Induced drag factor.
-            vs: Vertical speed (ft/min).
-            dT: Temperature deviation (K). Defaults to 0.
-
-        Returns:
-            Total drag (N).
-        """
+    ) -> Tuple[Numeric, Numeric, Numeric]:
         cl, qS = self._cl(mass, tas, alt, vs, dT=dT)
-        cd = cd0 + k * cl**2
-        D = cd * qS
-        return D
+        mach, reynolds = self._mach_reynolds(tas, alt, dT=dT)
+        cd = self.expression.cd(cl, mach, reynolds, xp=self._math)
+        return cd, cl, qS
 
     @ndarrayconvert
     def clean(
@@ -168,7 +227,11 @@ class Drag(DragBase):
         vs: Numeric = 0,
         dT: Numeric = 0,
     ) -> Numeric:
-        """Compute drag at clean configuration (considering compressibility).
+        """Compute drag at clean configuration.
+
+        The drag coefficient depends on the lift coefficient, the Mach number,
+        and the Reynolds number, and includes wave drag unless the model was
+        created with ``wave_drag=False``.
 
         Args:
             mass: Aircraft mass in kg or an MTOW fraction in (0, 1].
@@ -180,45 +243,8 @@ class Drag(DragBase):
         Returns:
             Total drag (N).
         """
-        b = self.backend
-
-        cd0 = self.polar["clean"]["cd0"]
-        k = self.polar["clean"]["k"]
-
-        if self.wave_drag:
-            mach = self.aero.tas2mach(tas * self.aero.kts, alt * self.aero.ft, dT=dT)
-            cl, _qS = self._cl(mass, tas, alt, dT=dT)
-
-            sweep = self.aircraft["wing"]["sweep"] * b.pi / 180
-            tc = self.aircraft["wing"]["t/c"]
-
-            # Default thickness to chord ratio, based on Obert (2009)
-            if tc is None:
-                tc = 0.12
-
-            cos_sweep = b.cos(sweep)
-
-            kappa = 0.95  # assume supercritical airfoils
-
-            # Equation 17 and 18 in Gur et al. (2010) - for conventional airfoil
-            mach_crit = (
-                kappa / cos_sweep - tc / cos_sweep**2 - 0.1 * cl / cos_sweep**3 - 0.108
-            )
-
-            # Equation 15 in Gur et al. (2010)
-            if getattr(b, "smooth_guards", False):
-                dmach = b.smooth_max(mach - mach_crit, 0.0, softness=1e-3)
-            else:
-                dmach = b.maximum(mach - mach_crit, 0.0)
-            dCdw = 20 * dmach**4
-
-        else:
-            dCdw = 0
-
-        cd0 = cd0 + dCdw
-
-        D = self._calc_drag(mass, tas, alt, cd0, k, vs, dT=dT)
-        return D
+        cd, _, qS = self._clean_cd(mass, tas, alt, vs, dT=dT)
+        return cd * qS
 
     @ndarrayconvert
     def nonclean(
@@ -232,6 +258,8 @@ class Drag(DragBase):
         landing_gear: bool = False,
     ) -> Numeric:
         """Compute drag at non-clean configuration.
+
+        The Aerox clean drag plus OpenAP's flap and landing gear increments.
 
         Args:
             mass: Aircraft mass in kg or an MTOW fraction in (0, 1].
@@ -247,10 +275,8 @@ class Drag(DragBase):
         """
         b = self.backend
 
-        cd0 = self.polar["clean"]["cd0"]
-        k = self.polar["clean"]["k"]
+        cd_clean, cl, qS = self._clean_cd(mass, tas, alt, vs, dT=dT)
 
-        # --- calc new CD0 ---
         lambda_f = self.polar["flaps"]["lambda_f"]
         cfc = self.polar["flaps"]["cf/c"]
         SfS = self.polar["flaps"]["Sf/S"]
@@ -264,19 +290,14 @@ class Drag(DragBase):
             # Equation 6.1 in Mair and Birdsall (1996)
             # 3.16e-5 is the K_uc factor value corresponding to
             # maximum flap deflection
+            mtow = self.aircraft["limits"]["MTOW"]
             delta_cd_gear = (
-                self.aircraft["limits"]["MTOW"]
-                * self.aero.g0
-                / self.aircraft["wing"]["area"]
-                * 3.16e-5
-                * self.aircraft["limits"]["MTOW"] ** (-0.215)
+                mtow * self.aero.g0 / self.wing_area * 3.16e-5 * mtow ** (-0.215)
             )
         else:
             delta_cd_gear = 0
 
-        cd0_total = cd0 + delta_cd_flap + delta_cd_gear
-
-        # --- calc new k ---
+        # Induced drag factor with flaps
         if self.aircraft["engine"]["mount"] == "rear":
             # See Figure 27.38 in Obert (2009)
             delta_e_flap = 0.0046 * flap_angle
@@ -284,8 +305,9 @@ class Drag(DragBase):
             # See Figure 27.39 in Obert (2009)
             delta_e_flap = 0.0026 * flap_angle
 
-        ar = self.aircraft["wing"]["span"] ** 2 / self.aircraft["wing"]["area"]
-        k_total = 1 / (1 / k + b.pi * ar * delta_e_flap)
+        k = self.expression.span_induced_factor
+        ar = self.wing_span**2 / self.wing_area
+        k_flap = 1 / (1 / k + b.pi * ar * delta_e_flap)
 
-        D = self._calc_drag(mass, tas, alt, cd0_total, k_total, vs, dT=dT)
-        return D
+        cd = cd_clean + delta_cd_flap + delta_cd_gear + (k_flap - k) * cl**2
+        return cd * qS

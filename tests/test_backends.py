@@ -14,8 +14,8 @@ from openap.backends import CasadiBackend, JaxBackend, NumpyBackend
 EXPECTED = {
     "thrust_takeoff": 185981.10,  # N, tas=150kt, alt=0ft
     "thrust_climb": 72317.87,  # N, tas=280kt, alt=20000ft, roc=2000fpm
-    "drag_clean": 47722.51,  # N, mass=65000kg, tas=250kt, alt=35000ft
-    "fuelflow_enroute": 0.988612,  # kg/s, mass=65000kg, tas=250kt, alt=35000ft
+    "drag_clean": 54590.75,  # N, mass=65000kg, tas=250kt, alt=35000ft (Aerox drag)
+    "fuelflow_enroute": 1.114353,  # kg/s, mass=65000kg, tas=250kt, alt=35000ft
     "fuelflow_at_thrust": 1.030994,  # kg/s, thrust=50000N
     "emission_nox": 16.2334,  # g/s, ffac=1.0kg/s, tas=250kt, alt=35000ft
     "emission_co2": 3160.0,  # g/s, ffac=1.0kg/s
