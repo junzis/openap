@@ -44,10 +44,6 @@ dev = [
     "jax>=0.8.2",
 ]
 
-# Until aerox 0.2.0 is on PyPI, use the local checkout.
-[tool.uv.sources]
-aerox = { path = "../aerox", editable = true }
-
 [tool.ruff]
 target-version = "py312"
 

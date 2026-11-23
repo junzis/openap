@@ -21,6 +21,7 @@ from aerox.models.drag import (
     build_drag_model,
     build_parabolic_polar,
 )
+from aerox.models.drag.expression import isa_reynolds_per_m
 
 import pandas as pd
 
@@ -48,6 +49,7 @@ class _SmoothMath:
         self.log = backend.log
         self.sqrt = backend.sqrt
         self.sin = backend.sin
+        self.exp = backend.exp
         self._backend = backend
 
     def maximum(self, x, y):
@@ -188,15 +190,11 @@ class Drag(DragBase):
     def _mach_reynolds(
         self, tas: Numeric, alt: Numeric, dT: Numeric = 0
     ) -> Tuple[Numeric, Numeric]:
-        """Mach number and Reynolds number per metre (Sutherland viscosity)."""
-        v = tas * self.aero.kts
+        """Mach number and Reynolds number per metre in the ISA atmosphere."""
         h = alt * self.aero.ft
-        mach = self.aero.tas2mach(v, h, dT=dT)
-        rho = self.aero.density(h, dT=dT)
-        T = self.aero.temperature(h, dT=dT)
-        mu = 1.458e-6 * T**1.5 / (T + 110.4)
-        reynolds = self._math.maximum(rho * v / mu, _MIN_REYNOLDS_PER_M)
-        return mach, reynolds
+        mach = self.aero.tas2mach(tas * self.aero.kts, h, dT=dT)
+        reynolds = isa_reynolds_per_m(mach, h, dT, xp=self._math)
+        return mach, self._math.maximum(reynolds, _MIN_REYNOLDS_PER_M)
 
     def _drag(
         self,
