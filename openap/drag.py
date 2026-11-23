@@ -5,8 +5,9 @@ component drag build-up from the aircraft geometry, with Mach and Reynolds
 number effects and wave drag. Aerox gives the model as a closed-form
 expression, so it runs with the NumPy, CasADi, and JAX backends.
 
-Aerox covers the clean configuration only. ``nonclean()`` adds OpenAP's flap
-and landing gear increments to the Aerox clean drag.
+``nonclean()`` adds the Aerox flap and landing gear drag: flap profile drag
+(McCormick), a lower span efficiency with flaps (Roskam), and gear drag
+(Torenbeek).
 """
 
 import os
@@ -14,7 +15,6 @@ import warnings
 from dataclasses import replace
 from typing import Any, Dict, Optional, Tuple
 
-import yaml
 from aerox import get_available_aircraft, load_aircraft
 from aerox.models.drag import (
     TransonicGeometryDragModel,
@@ -36,9 +36,6 @@ warnings.simplefilter("once", UserWarning)
 
 _DATA = os.path.join(os.path.dirname(os.path.realpath(__file__)), "data")
 
-# Flap parameters for aircraft without OpenAP flap data (the most common values)
-_DEFAULT_FLAPS = {"lambda_f": 0.9, "cf/c": 0.15, "Sf/S": 0.15}
-
 # Lower bound of the Reynolds number per metre, which keeps the skin-friction
 # logarithm defined at very low speed.
 _MIN_REYNOLDS_PER_M = 1.0e5
@@ -50,6 +47,7 @@ class _SmoothMath:
     def __init__(self, backend):
         self.log = backend.log
         self.sqrt = backend.sqrt
+        self.sin = backend.sin
         self._backend = backend
 
     def maximum(self, x, y):
@@ -144,14 +142,9 @@ class Drag(DragBase):
         }
 
     def _polar(self, aerox_aircraft) -> Dict[str, Any]:
-        """Parabolic polar at the Aerox reference condition, and flap data."""
+        """Parabolic polar at the Aerox reference condition."""
         polar = build_parabolic_polar(aerox_aircraft)
-        flaps = dict(_DEFAULT_FLAPS)
-        path = os.path.join(_DATA, "dragpolar", f"{self.ac}.yml")
-        if os.path.exists(path):
-            with open(path, "r") as file:
-                flaps.update(yaml.safe_load(file.read()).get("flaps") or {})
-        return {"clean": {"cd0": polar.cd0, "k": polar.k}, "flaps": flaps}
+        return {"clean": {"cd0": polar.cd0, "k": polar.k}}
 
     @ndarrayconvert
     def _cl(
@@ -205,18 +198,19 @@ class Drag(DragBase):
         reynolds = self._math.maximum(rho * v / mu, _MIN_REYNOLDS_PER_M)
         return mach, reynolds
 
-    def _clean_cd(
+    def _drag(
         self,
         mass: Numeric,
         tas: Numeric,
         alt: Numeric,
         vs: Numeric = 0,
         dT: Numeric = 0,
-    ) -> Tuple[Numeric, Numeric, Numeric]:
+        **configuration,
+    ) -> Numeric:
         cl, qS = self._cl(mass, tas, alt, vs, dT=dT)
         mach, reynolds = self._mach_reynolds(tas, alt, dT=dT)
-        cd = self.expression.cd(cl, mach, reynolds, xp=self._math)
-        return cd, cl, qS
+        cd = self.expression.cd(cl, mach, reynolds, xp=self._math, **configuration)
+        return cd * qS
 
     @ndarrayconvert
     def clean(
@@ -243,8 +237,7 @@ class Drag(DragBase):
         Returns:
             Total drag (N).
         """
-        cd, _, qS = self._clean_cd(mass, tas, alt, vs, dT=dT)
-        return cd * qS
+        return self._drag(mass, tas, alt, vs, dT=dT)
 
     @ndarrayconvert
     def nonclean(
@@ -259,7 +252,7 @@ class Drag(DragBase):
     ) -> Numeric:
         """Compute drag at non-clean configuration.
 
-        The Aerox clean drag plus OpenAP's flap and landing gear increments.
+        The Aerox drag with flaps and, optionally, the landing gear deployed.
 
         Args:
             mass: Aircraft mass in kg or an MTOW fraction in (0, 1].
@@ -273,41 +266,12 @@ class Drag(DragBase):
         Returns:
             Total drag (N).
         """
-        b = self.backend
-
-        cd_clean, cl, qS = self._clean_cd(mass, tas, alt, vs, dT=dT)
-
-        lambda_f = self.polar["flaps"]["lambda_f"]
-        cfc = self.polar["flaps"]["cf/c"]
-        SfS = self.polar["flaps"]["Sf/S"]
-
-        # Equation 3.45-3.46 in McCormick (1994), page 109.
-        delta_cd_flap = (
-            lambda_f * (cfc) ** 1.38 * (SfS) * b.sin(flap_angle * b.pi / 180) ** 2
+        return self._drag(
+            mass,
+            tas,
+            alt,
+            vs,
+            dT=dT,
+            flap_angle_rad=flap_angle * self.backend.pi / 180,
+            gear_extension_fraction=1.0 if landing_gear else 0.0,
         )
-
-        if landing_gear:
-            # Equation 6.1 in Mair and Birdsall (1996)
-            # 3.16e-5 is the K_uc factor value corresponding to
-            # maximum flap deflection
-            mtow = self.aircraft["limits"]["MTOW"]
-            delta_cd_gear = (
-                mtow * self.aero.g0 / self.wing_area * 3.16e-5 * mtow ** (-0.215)
-            )
-        else:
-            delta_cd_gear = 0
-
-        # Induced drag factor with flaps
-        if self.aircraft["engine"]["mount"] == "rear":
-            # See Figure 27.38 in Obert (2009)
-            delta_e_flap = 0.0046 * flap_angle
-        else:
-            # See Figure 27.39 in Obert (2009)
-            delta_e_flap = 0.0026 * flap_angle
-
-        k = self.expression.span_induced_factor
-        ar = self.wing_span**2 / self.wing_area
-        k_flap = 1 / (1 / k + b.pi * ar * delta_e_flap)
-
-        cd = cd_clean + delta_cd_flap + delta_cd_gear + (k_flap - k) * cl**2
-        return cd * qS
