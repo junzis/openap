@@ -10,20 +10,16 @@ expression, so it runs with the NumPy, CasADi, and JAX backends.
 (Torenbeek).
 """
 
-import os
-import warnings
 from dataclasses import replace
 from typing import Any, Dict, Optional, Tuple
 
-from aerox import get_available_aircraft, load_aircraft
+from aerox import load_aircraft
 from aerox.models.drag import (
     TransonicGeometryDragModel,
     build_drag_model,
     build_parabolic_polar,
 )
 from aerox.models.drag.expression import isa_reynolds_per_m
-
-import pandas as pd
 
 from . import prop
 from .backends import BackendType
@@ -32,10 +28,6 @@ from .extra import ndarrayconvert
 
 # Type alias for numeric inputs (scalar, array, or symbolic)
 Numeric = Any
-
-warnings.simplefilter("once", UserWarning)
-
-_DATA = os.path.join(os.path.dirname(os.path.realpath(__file__)), "data")
 
 # Lower bound of the Reynolds number per metre, which keeps the skin-friction
 # logarithm defined at very low speed.
@@ -72,14 +64,12 @@ class Drag(DragBase):
             ac: ICAO aircraft type (for example: A320).
             wave_drag: Include wave drag. Defaults to True.
             backend: Math backend to use. Defaults to NumpyBackend.
-            use_synonym: Use a similar aircraft type if this one is not
-                available. Defaults to False.
+            use_synonym: Has no effect. Kept for compatibility.
         """
         super().__init__(ac, backend=backend, **kwargs)
 
-        self.use_synonym = kwargs.get("use_synonym", False)
-
-        aerox_aircraft = self._load_aerox_aircraft()
+        self.aircraft = prop.aircraft(self.ac)
+        aerox_aircraft = load_aircraft(self.ac.upper())
         self.model = build_drag_model(aerox_aircraft)
         geometry = (
             self.model.base_model
@@ -97,51 +87,10 @@ class Drag(DragBase):
         self.expression = expression
         self.wave_drag = expression.has_wave_drag
 
-        self.aircraft = self._aircraft_properties(aerox_aircraft, **kwargs)
         self.polar = self._polar(aerox_aircraft)
 
         b = self.backend
         self._math = _SmoothMath(b) if getattr(b, "smooth_guards", False) else b
-
-    def _load_aerox_aircraft(self):
-        available = set(get_available_aircraft())
-        code = self.ac.upper()
-        if code in available:
-            return load_aircraft(code)
-
-        synonyms = pd.read_csv(os.path.join(_DATA, "dragpolar/_synonym.csv"))
-        match = synonyms.query("orig==@self.ac")
-        if self.use_synonym and match.shape[0] > 0:
-            new = match.new.iloc[0].upper()
-            if new in available:
-                warnings.warn(
-                    f"Drag: using synonym {new} for {code}", UserWarning, stacklevel=0
-                )
-                return load_aircraft(new)
-        if self.use_synonym:
-            raise ValueError(
-                f"Drag model for {code} not available, and no synonym found."
-            )
-        raise ValueError(
-            f"Drag model for {code} not available. "
-            "Try to set `use_synonym=True` to initialize the object."
-        )
-
-    def _aircraft_properties(self, aerox_aircraft, **kwargs) -> Dict[str, Any]:
-        """OpenAP aircraft properties, or the Aerox record for other types."""
-        try:
-            return prop.aircraft(self.ac, **kwargs)
-        except ValueError:
-            pass
-        mount = str(aerox_aircraft.engine.mount or "").lower()
-        mtow = aerox_aircraft.mtow
-        return {
-            "aircraft": aerox_aircraft.aircraft,
-            "mtow": mtow,
-            "limits": {"MTOW": mtow},
-            "wing": {"area": self.wing_area, "span": self.wing_span},
-            "engine": {"mount": "rear" if "rear" in mount or "aft" in mount else mount},
-        }
 
     def _polar(self, aerox_aircraft) -> Dict[str, Any]:
         """Parabolic polar at the Aerox reference condition."""

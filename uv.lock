@@ -8,16 +8,37 @@ resolution-markers = [
 
 [[package]]
 name = "aerox"
-version = "0.2.0"
-source = { registry = "https://pypi.org/simple" }
+version = "0.3.0"
+source = { editable = "../aerox" }
 dependencies = [
     { name = "numpy" },
     { name = "pyyaml" },
     { name = "scipy" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/a5/90/106e2f084f24819e8fd0db2ad1e042e2e127634ef53e4e17d711e8943254/aerox-0.2.0.tar.gz", hash = "sha256:a4222ae3dab19bc55551d785ade6526ac5b12089a352f3f42bd3910abc83706f", size = 1948901, upload-time = "2026-11-23T21:46:06.452Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/ef/fa/32e096002f0ba21850a44cea385cebf519f787a9151e2f1ad10602003ec8/aerox-0.2.0-py3-none-any.whl", hash = "sha256:74319676344147f0183a798050ff71e7d0b3098c9a6a546a5b6ec6cf73579dcf", size = 1602146, upload-time = "2026-11-23T21:46:04.325Z" },
+
+[package.metadata]
+requires-dist = [
+    { name = "fastmeteo", marker = "extra == 'research'", specifier = ">=1.1.1,<2" },
+    { name = "flask", marker = "extra == 'editor'", specifier = ">=3.1.2" },
+    { name = "matplotlib", marker = "extra == 'plot'", specifier = ">=3.10.7" },
+    { name = "matplotlib", marker = "extra == 'research'", specifier = ">=3.10.7" },
+    { name = "numpy", specifier = ">=2.3.5" },
+    { name = "pandas", marker = "extra == 'research'", specifier = ">=2.3.3" },
+    { name = "pyarrow", marker = "extra == 'research'", specifier = ">=21.0.0" },
+    { name = "pyyaml", specifier = ">=6.0.3" },
+    { name = "scipy", specifier = ">=1.16.3" },
+]
+provides-extras = ["editor", "plot", "research"]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "ipykernel", specifier = ">=7.1.0" },
+    { name = "matplotlib", specifier = ">=3.10.7" },
+    { name = "pandas", specifier = ">=2.3.3" },
+    { name = "pyarrow", specifier = ">=21.0.0" },
+    { name = "pytest", specifier = ">=9.0.1" },
+    { name = "ruff", specifier = ">=0.12.0" },
+    { name = "scipy", specifier = ">=1.16.3" },
 ]
 
 [[package]]
@@ -807,7 +828,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "aerox", specifier = ">=0.2.0" },
+    { name = "aerox", editable = "../aerox" },
     { name = "casadi", marker = "extra == 'all'", specifier = ">=3.6" },
     { name = "casadi", marker = "extra == 'casadi'", specifier = ">=3.6" },
     { name = "jax", marker = "extra == 'all'", specifier = ">=0.4" },

@@ -1,99 +1,130 @@
-"""Retrieve properties of aircraft and engines."""
+"""Retrieve properties of aircraft and engines.
 
-import glob
+The aircraft properties come from the Aerox aircraft records
+(https://github.com/open-aviation/aerox).
+"""
+
+import copy
 import logging
 import os
-import warnings
 from functools import lru_cache
 from typing import Any, Dict, List, Optional
 
-import yaml
+import aerox
 
 import numpy as np
 import pandas as pd
 
 logger = logging.getLogger(__name__)
 
-warnings.simplefilter("once", UserWarning)
-
 curr_path = os.path.dirname(os.path.realpath(__file__))
-dir_aircraft = os.path.join(curr_path, "data/aircraft/")
 file_engine = os.path.join(curr_path, "data/engine/engines.csv")
-file_synonym = os.path.join(curr_path, "data/aircraft/_synonym.csv")
 
-aircraft_synonym = pd.read_csv(file_synonym)
+_FT = 0.3048
+_NM_TO_KM = 1.852
 
 
 @lru_cache()
 def available_aircraft(use_synonym: bool = False) -> List[str]:
     """Get available aircraft types in OpenAP model.
 
+    These are the turbofan aircraft in Aerox whose default engine is in the
+    OpenAP engine table, so that all OpenAP models can be built for them.
+
     Args:
-        use_synonym: Include synonyms in the list. Defaults to False.
+        use_synonym: Has no effect. Kept for compatibility.
 
     Returns:
-        List of aircraft type codes.
+        List of aircraft type codes, in lower case.
 
     """
-    files = sorted(glob.glob(dir_aircraft + "*.yml"))
-    acs = [f[-8:-4] for f in files]
+    engine_names = set(pd.read_csv(file_engine).name.str.upper())
+    codes = []
+    for code in aerox.get_available_aircraft():
+        record_engine = aerox.load_aircraft(code).engine
+        if record_engine is None or record_engine.type != "turbofan":
+            continue
+        default = (record_engine.default or "").strip().upper()
+        if any(name.startswith(default) for name in engine_names) and default:
+            codes.append(code.lower())
+    return codes
 
-    if use_synonym:
-        syno = aircraft_synonym.orig.to_list()
-        acs = acs + syno
 
-    return acs
+@lru_cache()
+def _aircraft(ac: str) -> Dict[str, Any]:
+    code = ac.upper()
+    if code not in aerox.get_available_aircraft():
+        raise ValueError(f"Aircraft {ac} not available.")
+    record = aerox.load_aircraft(code)
+
+    def group(obj, *names, rename=None):
+        if obj is None:
+            return {name: None for name in names}
+        rename = rename or {}
+        return {rename.get(name, name): getattr(obj, name) for name in names}
+
+    kinematic = record.kinematic
+    cruise_range_nm = getattr(kinematic, "cruise_range_nm", None)
+    engine = group(record.engine, "type", "mount", "number", "default")
+    engine["options"] = list(record.engine.options or []) if record.engine else []
+    acdict = {
+        "aircraft": record.aircraft,
+        "mtow": record.mtow,
+        "mlw": record.mlw,
+        "oew": record.oew,
+        "mfc": record.mfc,  # litres
+        "vmo": record.vmo,  # kt
+        "mmo": record.mmo,
+        "ceiling": None if record.ceiling is None else record.ceiling * _FT,  # m
+        "pax": group(record.pax, "max", "low", "high"),
+        "fuselage": group(record.fuselage, "length", "height", "width"),
+        "wing": group(
+            record.wing, "area", "span", "mac", "sweep", "t_c", rename={"t_c": "t/c"}
+        ),
+        "flaps": group(
+            record.flaps,
+            "type",
+            "area",
+            "bf_b",
+            "lambda_f",
+            "cf_c",
+            "Sf_S",
+            rename={"bf_b": "bf/b", "cf_c": "cf/c", "Sf_S": "Sf/S"},
+        ),
+        "cruise": {
+            "mach": getattr(kinematic, "cruise_mach", None),
+            "range": None if cruise_range_nm is None else cruise_range_nm * _NM_TO_KM,
+        },
+        "engine": engine,
+    }
+    acdict["limits"] = dict(
+        MTOW=acdict["mtow"],
+        MLW=acdict["mlw"],
+        OEW=acdict["oew"],
+        MFC=acdict["mfc"],
+        VMO=acdict["vmo"],
+        MMO=acdict["mmo"],
+        ceiling=acdict["ceiling"],
+    )
+    return acdict
 
 
 def aircraft(ac: str, use_synonym: bool = False, **kwargs) -> Dict[str, Any]:
     """Get details of an aircraft type.
 
+    The values come from the Aerox aircraft record. Units: masses in kg,
+    ``mfc`` in litres, ``vmo`` in kt, ``ceiling`` in m, lengths in m, areas in
+    m², ``cruise.range`` in km.
+
     Args:
         ac: ICAO aircraft type (for example: A320).
-        use_synonym: Use synonym if aircraft not found. Defaults to False.
+        use_synonym: Has no effect. Kept for compatibility.
 
     Returns:
         Performance parameters related to the aircraft.
 
     """
-    ac = ac.lower()
-
-    files = glob.glob(dir_aircraft + ac + ".yml")
-
-    if len(files) == 0:
-        syno = aircraft_synonym.query("orig==@ac")
-        if use_synonym and syno.shape[0] > 0:
-            new_ac = syno.new.iloc[0]
-            files = glob.glob(dir_aircraft + new_ac + ".yml")
-            warnings.warn(
-                f"Aircraft: using synonym {new_ac} for {ac}",
-                UserWarning,
-                stacklevel=0,
-            )
-        elif use_synonym:
-            raise ValueError(f"Aircraft {ac} not available, and no synonym found.")
-        else:
-            raise ValueError(
-                f"Aircraft {ac} not available. "
-                "Try to set `use_synonym=True` to initialize the object."
-            )
-
-    f = files[0]
-    with open(f, "r") as file:
-        acdict = yaml.safe_load(file.read())
-
-    # compatibility with old aircraft files
-    acdict["limits"] = dict(
-        MTOW=acdict.get("mtow"),
-        MLW=acdict.get("mlw"),
-        OEW=acdict.get("oew"),
-        MFC=acdict.get("mfc"),
-        VMO=acdict.get("vmo"),
-        MMO=acdict.get("mmo"),
-        ceiling=acdict.get("ceiling"),
-    )
-
-    return acdict
+    return copy.deepcopy(_aircraft(ac.upper()))
 
 
 @lru_cache()

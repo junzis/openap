@@ -44,9 +44,6 @@ class FuelFlow(FuelFlowBase):
         if not hasattr(self, "Drag"):
             self.Drag = importlib.import_module("openap.drag").Drag
 
-        if not hasattr(self, "WRAP"):
-            self.WRAP = importlib.import_module("openap.kinematic").WRAP
-
         self.use_synonym = kwargs.get("use_synonym", False)
 
         self.aircraft = prop.aircraft(self.ac, **kwargs)
@@ -61,7 +58,6 @@ class FuelFlow(FuelFlowBase):
         # Pass backend to Thrust and Drag
         self.thrust = self.Thrust(ac, eng, backend=self.backend, **kwargs)
         self.drag = self.Drag(ac, backend=self.backend, **kwargs)
-        self.wrap = self.WRAP(ac, **kwargs)
 
         self.func_fuel = self._load_fuel_model()
 

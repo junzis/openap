@@ -62,16 +62,21 @@ class Thrust(ThrustBase):
                 )
             )
 
-        self.cruise_alt = aircraft["cruise"]["height"] / self.aero.ft
         self.eng_bpr = engine["bpr"]
         self.eng_max_thrust = engine["max_thrust"]
         self.eng_number = aircraft["engine"]["number"]
 
+        # Reference point of the thrust lapse: the engine cruise thrust at its
+        # cruise Mach number and altitude (ft). Without engine cruise data,
+        # estimate the cruise thrust at 35,000 ft, the reference altitude of
+        # most engines in the database, and the aircraft cruise Mach number.
         if engine["cruise_mach"] > 0:
             self.cruise_mach = engine["cruise_mach"]
+            self.cruise_alt = engine["cruise_alt"]
             self.eng_cruise_thrust = engine["cruise_thrust"]
         else:
             self.cruise_mach = aircraft["cruise"]["mach"]
+            self.cruise_alt = 35000
             self.eng_cruise_thrust = 0.2 * self.eng_max_thrust + 890
 
     def _dfunc(self, mratio: Numeric) -> Numeric:

@@ -13,7 +13,9 @@ from openap.backends import CasadiBackend, JaxBackend, NumpyBackend
 # Expected values computed with NumPy backend (reference)
 EXPECTED = {
     "thrust_takeoff": 185981.10,  # N, tas=150kt, alt=0ft
-    "thrust_climb": 72317.87,  # N, tas=280kt, alt=20000ft, roc=2000fpm
+    # N, tas=280kt, alt=20000ft, roc=2000fpm; reference at the engine cruise
+    # altitude (35,000 ft for the CFM56-5B4)
+    "thrust_climb": 70446.56,
     "drag_clean": 54590.75,  # N, mass=65000kg, tas=250kt, alt=35000ft (Aerox drag)
     "fuelflow_enroute": 1.114353,  # kg/s, mass=65000kg, tas=250kt, alt=35000ft
     "fuelflow_at_thrust": 1.030994,  # kg/s, thrust=50000N
@@ -332,18 +334,14 @@ class TestJaxBackend:
         """Test drag with JAX arrays."""
         drag = Drag("A320", backend=JaxBackend())
 
-        D = drag.clean(
-            jnp.array(65000.0), jnp.array(250.0), jnp.array(35000.0)
-        )
+        D = drag.clean(jnp.array(65000.0), jnp.array(250.0), jnp.array(35000.0))
         assert float(D) == pytest.approx(EXPECTED["drag_clean"], rel=RTOL)
 
     def test_fuelflow_jax(self, jnp):
         """Test fuel flow with JAX arrays."""
         ff = FuelFlow("A320", backend=JaxBackend())
 
-        fuel = ff.enroute(
-            jnp.array(65000.0), jnp.array(250.0), jnp.array(35000.0)
-        )
+        fuel = ff.enroute(jnp.array(65000.0), jnp.array(250.0), jnp.array(35000.0))
         assert float(fuel) == pytest.approx(EXPECTED["fuelflow_enroute"], rel=RTOL)
 
     def test_emission_jax(self, jnp):
@@ -454,9 +452,7 @@ class TestBackendConsistency:
         # JAX
         drag_jax = Drag("A320", backend=JaxBackend())
         D_jax = float(
-            drag_jax.clean(
-                jnp.array(65000.0), jnp.array(250.0), jnp.array(35000.0)
-            )
+            drag_jax.clean(jnp.array(65000.0), jnp.array(250.0), jnp.array(35000.0))
         )
 
         # All should match expected value
@@ -484,9 +480,7 @@ class TestBackendConsistency:
         # JAX
         ff_jax = FuelFlow("A320", backend=JaxBackend())
         fuel_jax = float(
-            ff_jax.enroute(
-                jnp.array(65000.0), jnp.array(250.0), jnp.array(35000.0)
-            )
+            ff_jax.enroute(jnp.array(65000.0), jnp.array(250.0), jnp.array(35000.0))
         )
 
         # All should match expected value
