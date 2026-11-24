@@ -16,7 +16,7 @@ classifiers = [
 ]
 requires-python = ">=3.12"
 dependencies = [
-    "aerox>=0.3.0",
+    "aerox>=0.3",
     "numpy>=2.1",
     "scipy>=1.14",
     "pandas>=2.0",
@@ -69,7 +69,3 @@ known-first-party = ["numpy", "pandas", "pyproj"]
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
-
-# Until aerox 0.3.0 is on PyPI, use the local checkout.
-[tool.uv.sources]
-aerox = { path = "../aerox", editable = true }

@@ -9,36 +9,15 @@ resolution-markers = [
 [[package]]
 name = "aerox"
 version = "0.3.0"
-source = { editable = "../aerox" }
+source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "numpy" },
     { name = "pyyaml" },
     { name = "scipy" },
 ]
-
-[package.metadata]
-requires-dist = [
-    { name = "fastmeteo", marker = "extra == 'research'", specifier = ">=1.1.1,<2" },
-    { name = "flask", marker = "extra == 'editor'", specifier = ">=3.1.2" },
-    { name = "matplotlib", marker = "extra == 'plot'", specifier = ">=3.10.7" },
-    { name = "matplotlib", marker = "extra == 'research'", specifier = ">=3.10.7" },
-    { name = "numpy", specifier = ">=2.3.5" },
-    { name = "pandas", marker = "extra == 'research'", specifier = ">=2.3.3" },
-    { name = "pyarrow", marker = "extra == 'research'", specifier = ">=21.0.0" },
-    { name = "pyyaml", specifier = ">=6.0.3" },
-    { name = "scipy", specifier = ">=1.16.3" },
-]
-provides-extras = ["editor", "plot", "research"]
-
-[package.metadata.requires-dev]
-dev = [
-    { name = "ipykernel", specifier = ">=7.1.0" },
-    { name = "matplotlib", specifier = ">=3.10.7" },
-    { name = "pandas", specifier = ">=2.3.3" },
-    { name = "pyarrow", specifier = ">=21.0.0" },
-    { name = "pytest", specifier = ">=9.0.1" },
-    { name = "ruff", specifier = ">=0.12.0" },
-    { name = "scipy", specifier = ">=1.16.3" },
+sdist = { url = "https://files.pythonhosted.org/packages/79/7f/b57b354655766cfcd6ab7f17f7317fb41aa322e8eb19942b64532fbf9894/aerox-0.3.tar.gz", hash = "sha256:68c2ac7625611ea71839a0039ae366e7a3d0ea976f9a794e56cf7d82d25e73a0", size = 1984991, upload-time = "2026-11-24T11:35:43.44Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/99/ca/f7dadfe2946e60bd332df0a7f2173fc410b92f41e630b5daeafa7f3a64a6/aerox-0.3-py3-none-any.whl", hash = "sha256:beb81a09ba72bd0c7971588390b92284c05856167aa2a655d0d1bce8d7bead26", size = 1656202, upload-time = "2026-11-24T11:35:41.598Z" },
 ]
 
 [[package]]
@@ -828,7 +807,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "aerox", editable = "../aerox" },
+    { name = "aerox", specifier = ">=0.3" },
     { name = "casadi", marker = "extra == 'all'", specifier = ">=3.6" },
     { name = "casadi", marker = "extra == 'casadi'", specifier = ">=3.6" },
     { name = "jax", marker = "extra == 'all'", specifier = ">=0.4" },
